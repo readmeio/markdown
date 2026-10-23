@@ -45,19 +45,16 @@ ${JSON.stringify(
             <th style={{ textAlign: "left" }}>
               Field
             </th>
-
             <th style={{ textAlign: "left" }}>
               Description
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td style={{ textAlign: "left" }}>
               orderby
             </td>
-
             <td style={{ textAlign: "left" }}>
               \`\`\`
               {
@@ -104,30 +101,25 @@ ${JSON.stringify(
             <th style={{ textAlign: "left" }}>
               Field
             </th>
-
             <th style={{ textAlign: "left" }}>
               Description
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td style={{ textAlign: "left" }}>
               numbered lists
             </td>
-
             <td style={{ textAlign: "left" }}>
               1. numbered lists
               2. are supported too
             </td>
           </tr>
-
           <tr>
             <td style={{ textAlign: "left" }}>
               loose lists
             </td>
-
             <td style={{ textAlign: "left" }}>
               * loose lists
 
@@ -173,19 +165,16 @@ ${JSON.stringify(
             <th style={{ textAlign: "left" }}>
               Field
             </th>
-
             <th style={{ textAlign: "left" }}>
               Description
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td style={{ textAlign: "left" }}>
               reproduction
             </td>
-
             <td style={{ textAlign: "left" }}>
               Oh no
 
@@ -194,12 +183,10 @@ ${JSON.stringify(
               * Im so sorry
             </td>
           </tr>
-
           <tr>
             <td style={{ textAlign: "left" }}>
               reproduction 2
             </td>
-
             <td style={{ textAlign: "left" }}>
               Oh no
 
@@ -208,12 +195,10 @@ ${JSON.stringify(
               * Im so sorry
             </td>
           </tr>
-
           <tr>
             <td style={{ textAlign: "left" }}>
               reproduction 3
             </td>
-
             <td style={{ textAlign: "left" }}>
               Oh no
 
@@ -245,7 +230,6 @@ ${JSON.stringify(
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td>
@@ -289,29 +273,24 @@ ${JSON.stringify(
             <th style={{ textAlign: "left" }}>
               **Shortcut Name**
             </th>
-
             <th style={{ textAlign: "left" }}>
               **WindowsOS**
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td style={{ textAlign: "left" }}>
               **Select None**
             </td>
-
             <td style={{ textAlign: "left" }}>
               \`ESC\`
             </td>
           </tr>
-
           <tr>
             <td style={{ textAlign: "left" }}>
               **Select All**
             </td>
-
             <td style={{ textAlign: "left" }}>
               \`CTRL\` + \`A\`
             </td>
@@ -351,19 +330,16 @@ ${JSON.stringify(
             <th>
               Field
             </th>
-
             <th>
               Description
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td>
               reproduction
             </td>
-
             <td>
               Oh no
 
@@ -410,23 +386,19 @@ ${JSON.stringify(
             <th style={{ textAlign: "left" }}>
               **Shortcut Name**
             </th>
-
             <th style={{ textAlign: "left" }}>
               **WindowsOS**
             </th>
-
             <th style={{ textAlign: "left" }}>
               *Apple - macOS*
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td style={{ textAlign: "left" }}>
               *Cut selection*
             </td>
-
             <td style={{ textAlign: "left" }}>
               **also**
 
@@ -434,7 +406,6 @@ ${JSON.stringify(
 
               **no no no**
             </td>
-
             <td style={{ textAlign: "left" }}>
               !BAD
             </td>
@@ -474,19 +445,16 @@ ${JSON.stringify(
             <th style={{ textAlign: "left" }}>
               Action
             </th>
-
             <th style={{ textAlign: "left" }}>
               Description
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td style={{ textAlign: "left" }}>
               Details
             </td>
-
             <td style={{ textAlign: "left" }}>
               View additional details such as:\\
               *Type*\\
