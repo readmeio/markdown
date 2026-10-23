@@ -1,6 +1,6 @@
 import type { Gemoji } from 'gemoji';
 
-import { gemoji, nameToEmoji } from 'gemoji';
+import { nameToEmoji } from 'gemoji';
 
 export const owlmoji = [
   {
@@ -51,6 +51,4 @@ export default class Owlmoji {
   };
 
   static nameToEmoji = nameToEmoji;
-
-  static owlmoji = gemoji.concat(owlmoji);
 }
