@@ -87,6 +87,15 @@ const Form = () => {
             />
           </div>
           <div>
+            <label htmlFor="mermaid-controls">Mermaid Controls</label>
+            <input
+              checked={searchParams.has('mermaidControls')}
+              id="mermaid-controls"
+              onChange={onCheck('mermaidControls')}
+              type="checkbox"
+            />
+          </div>
+          <div>
             <label htmlFor="safe-mode">Safe Mode</label>
             <input
               checked={searchParams.has('safeMode')}
