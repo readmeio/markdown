@@ -53,7 +53,7 @@
     "debug": "^4.3.4",
     "deepmerge": "^4.3.1",
     "emoji-regex": "^10.2.1",
-    "entities": "^4.5.0",
+    "entities": "^6.0.1",
     "estree-util-build-jsx": "^3.0.1",
     "estree-util-to-js": "^2.0.0",
     "estree-util-value-to-estree": "^3.1.1",
@@ -219,6 +219,9 @@
     "@readme/markdown-legacy": {
       "@readme/variable": "^18.0.0"
     },
-    "conventional-changelog-conventionalcommits": ">= 8.0.0"
+    "conventional-changelog-conventionalcommits": ">= 8.0.0",
+    "parse5": {
+      "entities": "$entities"
+    }
   }
 }
