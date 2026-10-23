@@ -239,12 +239,6 @@ export interface NoTranslate extends Node {
 declare module 'mdast' {
   // eslint-disable-next-line @typescript-eslint/no-shadow -- augmenting mdast's `Data` requires reusing the name
   interface Data {
-    /**
-     * Marks the root of a re-parsed subtree: this node's and its descendants' positions
-     * index into this string rather than the document. Resolve a node's source from its
-     * nearest stamped self-or-ancestor; unstamped means `parserReadyContent`.
-     */
-    reparseSource?: string;
     /** Set by a dedicated tokenizer (`lib/micromark/no-translate`) on an html node that holds a whole tag. */
     tokenized?: boolean;
   }

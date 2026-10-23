@@ -6,6 +6,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 
+import { footnoteLabels } from '../../../lib/micromark/footnote-labels';
 import { FEATURES, mdxishExtensions } from '../../../lib/micromark/mdxish-extensions';
 
 export interface MarkdownFragment {
@@ -38,8 +39,26 @@ const CONTENTLESS_LINE_RE = /^[\s>]*$/;
 // Markdown ends a line at `\r\n`, `\r` or `\n`.
 const LINE_ENDING_RE = /\r\n|\r|\n/g;
 
-const buildComponentBodyProcessor = (safeMode: boolean) => {
-  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, { safeMode });
+export interface FragmentParseOptions {
+  /** The page the fragment was cut from; positions are mapped onto it. */
+  documentSource: string;
+  // Footnotes the document defines, so `[^a]` in the fragment still links.
+  footnotes?: readonly string[];
+  // Phrasing only, so the fragment always comes back as one paragraph. Without it an inline
+  // body like `[a]: https://b.com` parses as a link definition and renders nothing.
+  phrasing?: boolean;
+  safeMode?: boolean;
+}
+
+type ProcessorOptions = Omit<FragmentParseOptions, 'documentSource'>;
+
+const buildComponentBodyProcessor = ({ footnotes = [], phrasing = false, safeMode = false }: ProcessorOptions) => {
+  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, {
+    phrasing,
+    safeMode,
+  });
+  if (footnotes.length) micromarkExtensions.push(footnoteLabels(footnotes));
+
   return unified()
     .data('micromarkExtensions', micromarkExtensions)
     .data('fromMarkdownExtensions', fromMarkdownExtensions)
@@ -47,13 +66,30 @@ const buildComponentBodyProcessor = (safeMode: boolean) => {
     .use(remarkGfm);
 };
 
-const componentBodyProcessors = new Map<boolean, ReturnType<typeof buildComponentBodyProcessor>>();
+type ComponentBodyProcessor = ReturnType<typeof buildComponentBodyProcessor>;
 
-const getComponentBodyProcessor = (safeMode: boolean) => {
-  let processor = componentBodyProcessors.get(safeMode);
+const componentBodyProcessors = new Map<string, ComponentBodyProcessor>();
+
+// Footnotes differ per document, so only the latest set is kept: one page's bodies reuse it, and it can't grow.
+let footnoteProcessor: { key: string; processor: ComponentBodyProcessor } | undefined;
+
+/**
+ * Memoized per option set, so the construction cost isn't paid on every parse.
+ * The key covers every option, so a new option has to join it.
+ */
+const getComponentBodyProcessor = (options: ProcessorOptions) => {
+  const key = `${!!options.phrasing}:${!!options.safeMode}`;
+  if (options.footnotes?.length) {
+    const footnoteKey = `${key}:${options.footnotes.join('\n')}`;
+    if (footnoteProcessor?.key !== footnoteKey) {
+      footnoteProcessor = { key: footnoteKey, processor: buildComponentBodyProcessor(options) };
+    }
+    return footnoteProcessor.processor;
+  }
+  let processor = componentBodyProcessors.get(key);
   if (!processor) {
-    processor = buildComponentBodyProcessor(safeMode);
-    componentBodyProcessors.set(safeMode, processor);
+    processor = buildComponentBodyProcessor(options);
+    componentBodyProcessors.set(key, processor);
   }
   return processor;
 };
@@ -190,9 +226,9 @@ export const mapReparsedPositionsToDocument = (
 export const reparseMarkdownFragment = (
   fragment: MarkdownFragment,
   textToParse: string,
-  { documentSource, safeMode = false }: { documentSource: string; safeMode?: boolean },
+  { documentSource, ...processorOptions }: FragmentParseOptions,
 ): RootContent[] => {
-  const { children } = getComponentBodyProcessor(safeMode).parse(textToParse);
+  const { children } = getComponentBodyProcessor(processorOptions).parse(textToParse);
   mapReparsedPositionsToDocument(children, fragment, textToParse, documentSource);
   return children;
 };

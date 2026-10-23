@@ -2158,7 +2158,7 @@ ${lowercaseTable}
   });
 
   describe('given a table nested inside a component body (CX-3705)', () => {
-    // The component body is re-parsed by `getInlineMdProcessor`, which must
+    // The component body is re-parsed by `reparseMarkdownFragment`, which must
     // include the `jsxTable` tokenizer. Without it, blank lines between rows let
     // CommonMark HTML block type 6 fragment the table — rows spill out as text
     // and indented code blocks instead of rendering as a table.
