@@ -1,4 +1,5 @@
 import type { GlossaryTerm } from '../contexts/GlossaryTerms';
+import type { RenderConfig } from '../contexts/RenderConfig';
 import type { CustomComponents, RMDXModule } from '../types';
 import type { Variables } from '../utils/user';
 import type { RunOptions } from '@mdx-js/mdx';
@@ -16,19 +17,29 @@ import User from '../utils/user';
 import compile from './compile';
 import makeUseMDXComponents from './utils/makeUseMdxComponents';
 
-export type RunOpts = Omit<RunOptions, 'Fragment'> & {
-  baseUrl?: string;
-  components?: CustomComponents;
-  copyButtons?: boolean;
-  imports?: Record<string, unknown>;
-  terms?: GlossaryTerm[];
-  theme?: 'dark' | 'light';
-  variables?: Variables;
-};
+export type RunOpts = Omit<RunOptions, 'Fragment'> &
+  RenderConfig & {
+    baseUrl?: string;
+    components?: CustomComponents;
+    imports?: Record<string, unknown>;
+    terms?: GlossaryTerm[];
+    theme?: 'dark' | 'light';
+    variables?: Variables;
+  };
 
 const run = (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime;
-  const { components = {}, terms, variables, baseUrl, imports = {}, theme, copyButtons, ...opts } = _opts;
+  const {
+    components = {},
+    terms,
+    variables,
+    baseUrl,
+    imports = {},
+    theme,
+    copyButtons,
+    mermaidControls,
+    ...opts
+  } = _opts;
 
   const tocsByTag: Record<string, RMDXModule['toc']> = {};
   const exportedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
@@ -71,7 +82,14 @@ const run = (string: string, _opts: RunOpts = {}) => {
 
   return {
     default: (props: MDXProps) => (
-      <Contexts baseUrl={baseUrl} copyButtons={copyButtons} terms={terms} theme={theme} variables={variables}>
+      <Contexts
+        baseUrl={baseUrl}
+        copyButtons={copyButtons}
+        mermaidControls={mermaidControls}
+        terms={terms}
+        theme={theme}
+        variables={variables}
+      >
         <Content {...props} />
       </Contexts>
     ),

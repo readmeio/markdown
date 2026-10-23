@@ -4,6 +4,7 @@ import type { Callout } from 'types';
 import emojiRegex from 'emoji-regex';
 import { gfmToMarkdown } from 'mdast-util-gfm';
 import { mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
+import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -16,6 +17,7 @@ import plain from '../../lib/plain';
 import compatibility from '../compile/compatibility';
 import gemoji from '../compile/gemoji';
 import variable from '../compile/variable';
+import { isText } from '../utils';
 
 import { extractText } from './extract-text';
 
@@ -26,6 +28,8 @@ const toMarkdownExtensions = [
   gfmToMarkdown(),
   // For mdx variable syntaxes (e.g., {user.name})
   mdxExpressionToMarkdown(),
+  // Inline components in the title (`<NoTranslate>`, `<Anchor href={…}>`) are JSX nodes in MDXish
+  mdxJsxToMarkdown(),
   // Important: This is required and would crash the parser if there's no variable, gemoji, fa-icon, or glossary node handler
   {
     handlers: {
@@ -39,10 +43,9 @@ const toMarkdownExtensions = [
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
 
-const findFirst = (node: Node): Node | null => {
+const findFirst = (node: Node): Text | null => {
   if ('children' in node) return findFirst(node.children[0]);
-  if (node.type === 'text') return node;
-  return null;
+  return isText(node) ? node : null;
 };
 
 export const wrapHeading = (node: Blockquote | Callout): Heading => {
@@ -121,15 +124,22 @@ const splitParagraphAtNewline = (paragraph: Paragraph): Paragraph['children'] | 
   return bodyChildren.length > 0 ? bodyChildren : null;
 };
 
+/** Drops a prefix from a text node's value, moving its start past it so the text keeps its own source. */
+const dropTextPrefix = (text: Text, prefixLength: number) => {
+  text.value = text.value.slice(prefixLength);
+  if (text.position?.start.offset !== undefined) {
+    text.position.start.offset += prefixLength;
+    text.position.start.column += prefixLength;
+  }
+};
+
 /**
  * Removes the icon/match prefix from the first text node in a paragraph.
  * This is needed to clean up the raw AST after we've extracted the icon.
  */
 const removeIconPrefix = (paragraph: Paragraph, prefixLength: number) => {
   const firstTextNode = findFirst(paragraph);
-  if (firstTextNode && 'value' in firstTextNode && typeof firstTextNode.value === 'string') {
-    firstTextNode.value = firstTextNode.value.slice(prefixLength);
-  }
+  if (firstTextNode) dropTextPrefix(firstTextNode, prefixLength);
 };
 
 const processBlockquote = (
@@ -174,7 +184,7 @@ const processBlockquote = (
 
     removeIconPrefix(firstParagraph, match.length);
 
-    const firstText = findFirst(firstParagraph) as Text | null;
+    const firstText = findFirst(firstParagraph);
     const rawValue = firstText?.value ?? '';
     const hasContent = rawValue.trim().length > 0 || firstParagraph.children.length > 1;
     const empty = !hasContent;
@@ -186,7 +196,7 @@ const processBlockquote = (
       // # heading syntax is handled via direct AST manipulation so we can
       // set the depth while preserving the original inline children (bold, etc.)
       if (headingMatch) {
-        firstText!.value = rawValue.slice(headingMatch[0].length);
+        dropTextPrefix(firstText!, headingMatch[0].length);
         const heading = wrapHeading(node);
         heading.depth = headingMatch[1].length as Heading['depth'];
         node.children[0] = heading;

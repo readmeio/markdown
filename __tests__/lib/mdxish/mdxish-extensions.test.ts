@@ -100,6 +100,70 @@ describe('mdxishExtensions', () => {
     });
   });
 
+  describe('phrasing', () => {
+    const parseWith = (doc: string) => {
+      const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, {
+        phrasing: true,
+      });
+      return unified()
+        .data('micromarkExtensions', micromarkExtensions)
+        .data('fromMarkdownExtensions', fromMarkdownExtensions)
+        .use(remarkParse)
+        .parse(doc);
+    };
+
+    it('turns off the block constructs of CommonMark and of every selected feature', () => {
+      const { micromarkExtensions } = mdxishExtensions(FEATURES.componentBody, { phrasing: true });
+      const disabled = (micromarkExtensions[0] as { disable: { null: string[] } }).disable.null;
+
+      expect(disabled).toStrictEqual(
+        expect.arrayContaining([
+          'blockQuote',
+          'list',
+          'definition',
+          'codeFenced',
+          'headingAtx',
+          'htmlFlow',
+          'setextUnderline',
+          'thematicBreak',
+          'jsxTable',
+          'noTranslate',
+          'magicBlock',
+          'mdxFlowExpression',
+          'mdxComponent',
+          'htmlBlockComponent',
+        ]),
+      );
+      expect(disabled).not.toContain('noTranslateText');
+      expect(disabled).not.toContain('mdxComponentText');
+    });
+
+    it('leaves the block constructs on without the option', () => {
+      const { micromarkExtensions } = mdxishExtensions(FEATURES.componentBody);
+
+      expect(micromarkExtensions[0]).toStrictEqual({ disable: { null: ['codeIndented'] } });
+    });
+
+    it.each([
+      ['a link definition', '[a]: https://b.com'],
+      ['a heading', '# not a heading'],
+      ['a list', '- not a list'],
+      ['a fence', '```\nnot code\n```'],
+      ['a block NoTranslate', '<NoTranslate>\nstill one paragraph\n</NoTranslate>'],
+    ])('parses %s as one paragraph of text', (_label, doc) => {
+      const tree = parseWith(doc);
+
+      expect(tree.children).toHaveLength(1);
+      expect(tree.children[0].type).toBe('paragraph');
+    });
+
+    it('still claims an inline NoTranslate', () => {
+      const tree = parseWith('Hi <NoTranslate>Acme</NoTranslate> there') as { children: { children: { type: string }[] }[] };
+
+      expect(tree.children[0].children.map(child => child.type)).toStrictEqual(['text', 'html', 'text']);
+    });
+  });
+
   describe('safeMode', () => {
     const EXPRESSION_FEATURES: MdxishFeature[] = ['jsxComment', 'mdxExpressionLenient', 'mdxjsEsm'];
 

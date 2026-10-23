@@ -23,9 +23,7 @@ export const isPascalCase = (tag: string): boolean => /^[A-Z]/.test(tag);
  * signal to decide eligibility.
  */
 export const hasExpressionAttr = (attributes: MdxAttributes): boolean =>
-  attributes.some(
-    attr => attr.type === 'mdxJsxAttribute' && typeof attr.value === 'object' && attr.value !== null,
-  );
+  attributes.some(attr => attr.type === 'mdxJsxAttribute' && typeof attr.value === 'object' && attr.value !== null);
 
 /**
  * Factory for the `mdxJsxTextElement` node shape. `position` is optional

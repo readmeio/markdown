@@ -9,7 +9,7 @@ import type {
 } from 'mdast-util-mdx-jsx';
 import type { Point, Position } from 'unist';
 
-import { decodeHTMLStrict } from 'entities';
+import { decodeHTMLStrict } from 'entities/decode';
 import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
@@ -238,6 +238,8 @@ export const isMDXElement = (node: Node): node is MdxJsxFlowElement | MdxJsxText
 export const isMDXEsm = (node: Node): node is MdxjsEsm => {
   return node.type === 'mdxjsEsm';
 };
+
+export const isText = (node: Node): node is Text => node.type === 'text';
 
 /**
  * Takes an HTML string and formats it for display in the editor. Removes leading/trailing newlines

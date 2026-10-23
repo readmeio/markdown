@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import useRestartAnimatedImages from '../../hooks/useRestartAnimatedImages';
 import Icon from '../Icon';
+import { noTranslateTagsToSpans } from '../NoTranslate';
 
 import './style.scss';
 
@@ -23,18 +24,22 @@ const Tabs = ({ children }: TabsProps) => {
     <div className="TabGroup">
       <header>
         <nav className="TabGroup-nav">
-          {tabs.map((tab, index: number) => (
-            <button
-              key={tab.key}
-              className={`TabGroup-tab${activeTab === index ? '_active' : ''}`}
-              onClick={() => setActiveTab(index)}
-            >
-              {tab.props.icon && (
-                <Icon className="TabGroup-icon" icon={tab.props.icon} iconColor={tab.props.iconColor} />
-              )}
-              {tab.props.title}
-            </button>
-          ))}
+          {tabs.map((tab, index: number) => {
+            const normalizedTitle = noTranslateTagsToSpans(tab.props.title);
+
+            return (
+              <button
+                key={tab.key}
+                className={`TabGroup-tab${activeTab === index ? '_active' : ''}`}
+                onClick={() => setActiveTab(index)}
+              >
+                {tab.props.icon && (
+                  <Icon className="TabGroup-icon" icon={tab.props.icon} iconColor={tab.props.iconColor} />
+                )}
+                {normalizedTitle}
+              </button>
+            );
+          })}
         </nav>
       </header>
       <section>

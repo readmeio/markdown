@@ -1,6 +1,8 @@
 import type { Node, TableCell, Text } from 'mdast';
 import type { MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
+import { isText } from '../../../utils';
+
 /** `<br />` is the only line break a GFM pipe cell can carry, since cells are single-line. */
 const createLineBreak = (): MdxJsxTextElement => ({
   type: 'mdxJsxTextElement',
@@ -10,8 +12,6 @@ const createLineBreak = (): MdxJsxTextElement => ({
 });
 
 const createText = (value: string): Text => ({ type: 'text', value });
-
-const isText = (node: Node): node is Text => node.type === 'text';
 
 export const hasChildren = (node: Node): node is Node & { children: Node[] } => 'children' in node;
 

@@ -4,7 +4,7 @@ import type { ListItem } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 import type { Handler, Handlers } from 'mdast-util-to-hast';
 
-import { decodeHTMLStrict } from 'entities';
+import { decodeHTMLStrict } from 'entities/decode';
 import { defaultHandlers } from 'remark-rehype';
 
 import { NodeTypes } from '../../enums';
