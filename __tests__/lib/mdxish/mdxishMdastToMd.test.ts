@@ -2395,6 +2395,90 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     });
   });
 
+  describe('NoTranslate round trip', () => {
+    const docs = [
+      'Hello <NoTranslate>Acme **Cloud**</NoTranslate> world\n',
+      '<NoTranslate>Acme</NoTranslate> is great\n',
+      '<NoTranslate>Acme</NoTranslate>\n',
+      '<NoTranslate></NoTranslate>\n**after**\n',
+      '<NoTranslate><Anchor target="_blank" href="https://example.com">Acme</Anchor></NoTranslate> after\n',
+      '<Anchor target="_blank" href="https://example.com"><NoTranslate>Acme</NoTranslate></Anchor> after\n',
+      '<NoTranslate>a <NoTranslate>b</NoTranslate> c</NoTranslate> after\n',
+      'Hello <NoTranslate>a <NoTranslate>**b**</NoTranslate> c</NoTranslate> end\n',
+      'Use<NoTranslate> Acme </NoTranslate>now\n',
+      'Use<NoTranslate> </NoTranslate>now\n',
+      '<NoTranslate>Acme\nCloud</NoTranslate> after\n',
+      '<NoTranslate>\\*literal\\*</NoTranslate> after\n',
+      'Use <NoTranslate>[Acme](https://example.com), `acme run`, _Acme_, {user.name} and :joy:</NoTranslate> today\n',
+      '| a                                   |\n| ----------------------------------- |\n| <NoTranslate>**Acme**</NoTranslate> |\n',
+      '| a                                        |\n| ---------------------------------------- |\n| Before <NoTranslate></NoTranslate> after |\n',
+      'Use <NoTranslate>{/* internal note */}</NoTranslate> now.\n',
+      'Use <NoTranslate><Badge label="Acme" /></NoTranslate> today\n',
+      '| a                                          |\n| ------------------------------------------ |\n| Use <NoTranslate>`a\\|b`</NoTranslate> now. |\n',
+      '| a                                          |\n| ------------------------------------------ |\n| Use <NoTranslate>`a\\\\b`</NoTranslate> now. |\n',
+      'Hello <NoTranslate>{/* note */}\nkept</NoTranslate> after\n',
+      'Hello <NoTranslate><Badge label="Acme" />\nkept</NoTranslate> after\n',
+    ];
+
+    it.each([false, true])('round-trips byte for byte with newEditorTypes %s', newEditorTypes => {
+      docs.forEach(doc => {
+        expect(roundTripMdxish(doc, { newEditorTypes })).toBe(doc);
+      });
+    });
+
+    it('keeps the escaped pipe in a cell code span of any promoted inline component', () => {
+      const doc =
+        '| a                                           |\n| ------------------------------------------- |\n| Use <Anchor href={"x"}>`a\\|b`</Anchor> now. |\n';
+
+      expect(roundTripMdxish(doc)).toBe(doc);
+      expect(roundTripMdxish(doc, { newEditorTypes: true })).toContain('`a|b`');
+    });
+  });
+
+  describe('block NoTranslate round trip', () => {
+    const saved = '<NoTranslate>\n  Para one **bold**\n\n  - item\n</NoTranslate>\n\nafter\n';
+
+    it.each([false, true])('writes a NoTranslate spread over paragraphs as a block with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish('<NoTranslate>one\n\ntwo</NoTranslate>\n', { newEditorTypes })).toBe('<NoTranslate>\n  one\n\n  two\n</NoTranslate>\n');
+    });
+
+    it.each([false, true])('writes a block NoTranslate as a block with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish('<NoTranslate>\nPara one **bold**\n\n- item\n</NoTranslate>\n\nafter', { newEditorTypes })).toBe(saved);
+    });
+
+    it.each([false, true])('round-trips a saved block NoTranslate byte for byte with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish(saved, { newEditorTypes })).toBe(saved);
+    });
+
+    it.each([false, true])('keeps the block after an empty block NoTranslate with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish('<NoTranslate>\n</NoTranslate>\n\n# Heading\n', { newEditorTypes })).toBe('<NoTranslate>\n\n</NoTranslate>\n\n# Heading\n');
+    });
+
+    describe.each([
+      ['an expression', '<NoTranslate>\n{"</NoTranslate>"}</NoTranslate>\n', '<NoTranslate>\n  {"</NoTranslate>"}\n</NoTranslate>\n'],
+      ['an inline NoTranslate', '<NoTranslate>\n<NoTranslate>inner</NoTranslate></NoTranslate>\n', '<NoTranslate>\n  <NoTranslate>inner</NoTranslate>\n</NoTranslate>\n'],
+      [
+        'an inline NoTranslate opened on an earlier line',
+        '<NoTranslate>\nkept <NoTranslate>inner\nstill</NoTranslate></NoTranslate>\n',
+        '<NoTranslate>\n  kept <NoTranslate>inner\n  still</NoTranslate>\n</NoTranslate>\n',
+      ],
+    ])('with a closer inside %s on the last line', (_label, doc, expected) => {
+      it.each([false, true])('ends the block at its own closer with newEditorTypes %s', newEditorTypes => {
+        expect(roundTripMdxish(doc, { newEditorTypes })).toBe(expected);
+      });
+    });
+
+    describe.each([
+      ['a blockquote', '> <NoTranslate>\n> first\n> </NoTranslate> later\n', '> <NoTranslate>\n>   first\n> </NoTranslate>\n>\n> later\n'],
+      ['a list item', '- <NoTranslate>\n  first\n  </NoTranslate> later\n', '- <NoTranslate>\n    first\n  </NoTranslate>\n  later\n'],
+      ['trailing spaces', '<NoTranslate>\nfirst\n</NoTranslate>   \n', '<NoTranslate>\n  first\n</NoTranslate>\n'],
+    ])('in %s', (_label, doc, expected) => {
+      it.each([false, true])('ends the block at its closer with newEditorTypes %s', newEditorTypes => {
+        expect(roundTripMdxish(doc, { newEditorTypes })).toBe(expected);
+      });
+    });
+  });
+
   describe('mdxish dialect', () => {
     it('serializes a legacy callout in JSX form, like the editor serializer', () => {
       const result = roundTripMdxish('> 📘 Nota\n>\n> El cuerpo.\n');

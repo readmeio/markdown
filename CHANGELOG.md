@@ -1,6 +1,30 @@
 Changelog
 ===
 
+## Version 15.12.0
+### ✨ New & Improved
+
+* **mermaid:** extract mermaid and add pan and zoom controls ([#1647](https://github.com/readmeio/markdown/issues/1647)) ([4253abd](https://github.com/readmeio/markdown/commit/4253abdcce80e3296b0b5ab96938269241eb1300))
+* **contexts:** move copyButtons into a shared render config context ([#1654](https://github.com/readmeio/markdown/issues/1654)) ([ad67380](https://github.com/readmeio/markdown/commit/ad67380346bb3355dce207295c6e84289c36d84d)), closes [#1647](https://github.com/readmeio/markdown/issues/1647)
+
+## Version 15.11.0
+### ✨ New & Improved
+
+* **mdxish:** add a micromark tokenizer for the <NoTranslate> tag ([#1651](https://github.com/readmeio/markdown/issues/1651)) ([9713447](https://github.com/readmeio/markdown/commit/97134470c70e9362a4f5cfca24b98bc7301fc061)), closes [#1645](https://github.com/readmeio/markdown/issues/1645) [#1652](https://github.com/readmeio/markdown/issues/1652) [#1645](https://github.com/readmeio/markdown/issues/1645)
+* **mdxish:** add inline <NoTranslate> do-not-translate tag ([#1645](https://github.com/readmeio/markdown/issues/1645)) ([374d0b5](https://github.com/readmeio/markdown/commit/374d0b50d0b5c9c8320e93f990587ae24d955d0a)), closes [#1651](https://github.com/readmeio/markdown/issues/1651) [#1652](https://github.com/readmeio/markdown/issues/1652)
+* **mdxish:** parse, render and save the <NoTranslate> tag ([#1652](https://github.com/readmeio/markdown/issues/1652)) ([fbb9223](https://github.com/readmeio/markdown/commit/fbb9223c7e9fc5ac88f678902a3a622f84e79cca)), closes [#1651](https://github.com/readmeio/markdown/issues/1651) [#1645](https://github.com/readmeio/markdown/issues/1645)
+
+## Version 15.10.1
+### 🛠 Fixes & Updates
+
+* **cards:** scroll a fixed-column grid inside itself instead of widening the page ([#1648](https://github.com/readmeio/markdown/issues/1648)) ([46a6fa2](https://github.com/readmeio/markdown/commit/46a6fa2a62848e4ca47a385f20050abe43e10db9)), closes [readmeio/readme#21752](https://github.com/readmeio/readme/issues/21752)
+* stop an empty list line rendering as a doubled bullet in view mode ([#1660](https://github.com/readmeio/markdown/issues/1660)) ([b5aaf71](https://github.com/readmeio/markdown/commit/b5aaf71fa008edec7ced4063d8d8a6f6b51ad375))
+
+## Version 15.10.0
+### ✨ New & Improved
+
+* **mdxish:** RM-18626 support custom heading anchors with {[#id](https://github.com/readmeio/markdown/issues/id)} ([#1640](https://github.com/readmeio/markdown/issues/1640)) ([acac14f](https://github.com/readmeio/markdown/commit/acac14f1e6ba372d728c9407ac713441460af2a9)), closes [readmeio/ai#1309](https://github.com/readmeio/ai/issues/1309)
+
 ## Version 15.9.4
 ### 🛠 Fixes & Updates
 
