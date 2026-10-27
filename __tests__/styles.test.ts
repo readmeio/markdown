@@ -21,6 +21,7 @@ describe('stylesheet build', () => {
     });
 
     expect(css).toContain('img.img-align-right');
-    expect(css.charCodeAt(0)).not.toBe(0xfeff);
+    expect(css).not.toContain('﻿');
+    expect(css).not.toMatch(/@charset/i);
   }, 30_000);
 });
