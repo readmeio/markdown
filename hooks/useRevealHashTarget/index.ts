@@ -2,9 +2,8 @@ import type { MutableRefObject } from 'react';
 
 import { useEffect } from 'react';
 
-/** The element the URL hash names, or `null` when there is none or the hash isn't a valid id. */
-function getHashTarget() {
-  const { hash } = window.location;
+/** Finds the element a `#hash` points to. */
+function getHashTarget(hash: string) {
   // ReadMe's admin hash router rewrites an anchor hash with its root `/`: `#heading` becomes `#/heading`
   const id = hash.startsWith('#/') ? hash.slice(2) : hash.slice(1);
   if (!id) return null;
@@ -19,19 +18,14 @@ function getHashTarget() {
   }
 }
 
-/**
- * Activates the panel holding the URL hash's target, on mount and on every hash change.
- *
- * Inactive panels are `hidden`, so neither the browser's `#fragment` scroll nor a
- * `scrollIntoView()` can reach a heading inside one until its panel is shown.
- */
+/** Opens the tab that holds the URL hash target, since a hidden panel can't be scrolled to. */
 export default function useRevealHashTarget(
   panelRefs: MutableRefObject<(HTMLElement | null)[]>,
   reveal: (index: number) => void,
 ) {
   useEffect(() => {
-    const revealHashTarget = () => {
-      const target = getHashTarget();
+    const revealHashTarget = (hash: string) => {
+      const target = getHashTarget(hash);
       if (!target) return;
 
       const index = panelRefs.current.findIndex(panel => panel?.contains(target));
@@ -42,8 +36,19 @@ export default function useRevealHashTarget(
       window.requestAnimationFrame(() => target.scrollIntoView());
     };
 
-    revealHashTarget();
-    window.addEventListener('hashchange', revealHashTarget);
-    return () => window.removeEventListener('hashchange', revealHashTarget);
+    const onHashChange = () => revealHashTarget(window.location.hash);
+    // A link to the hash already in the URL fires no `hashchange`, so reveal on the click too
+    const onClick = (event: MouseEvent) => {
+      const link = event.target instanceof Element ? event.target.closest('a[href^="#"]') : null;
+      if (link) revealHashTarget(link.getAttribute('href') ?? '');
+    };
+
+    onHashChange();
+    window.addEventListener('hashchange', onHashChange);
+    document.addEventListener('click', onClick);
+    return () => {
+      window.removeEventListener('hashchange', onHashChange);
+      document.removeEventListener('click', onClick);
+    };
   }, [panelRefs, reveal]);
 }

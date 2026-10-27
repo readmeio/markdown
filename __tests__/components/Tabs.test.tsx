@@ -190,6 +190,8 @@ Hello
     // CX-4083: a hash pointing into an inactive tab couldn't scroll because the panel is `hidden`
     describe('when the URL hash targets a heading inside a tab', () => {
       const md = `
+[Jump to transactions](#seeded-transaction-queries)
+
 <Tabs>
   <Tab title="Accounts">Accounts content</Tab>
   <Tab title="Transactions">
@@ -243,6 +245,21 @@ Query content
           window.dispatchEvent(new HashChangeEvent('hashchange'));
         });
 
+        expect(panels[0]).not.toBeVisible();
+        expect(panels[1]).toBeVisible();
+      });
+
+      it('activates the tab holding it when a link to the current hash is clicked', () => {
+        window.location.hash = '#seeded-transaction-queries';
+        const Component = renderContent(md);
+        const { container, getByRole, getByText } = render(<Component />);
+        const panels = container.querySelectorAll('.TabGroup section > div');
+
+        fireEvent.click(getByRole('button', { name: 'Accounts' }));
+        expect(panels[1]).not.toBeVisible();
+
+        // The hash doesn't change, so only the click can reveal the tab
+        fireEvent.click(getByText('Jump to transactions'));
         expect(panels[0]).not.toBeVisible();
         expect(panels[1]).toBeVisible();
       });
