@@ -135,6 +135,8 @@ standard.
 - 🔴 **Heavy browser deps are lazy-loaded.** A statically-imported ~124kb lightbox library ships
   on every markdown render — split it out and lazy-load like mermaid (#1571); mermaid's
   laziness is guarded by `verify-lazy-mermaid.cjs` and the `'import mermaid'` webpack external.
+  gemoji's full catalog belongs only in `lib/owlmoji-details.ts` (`./owlmoji-details`); the main entry
+  imports just `nameToEmoji`, guarded by `scripts/gemoji-catalog-guard-plugin.js`.
   bundlewatch budgets (main.js ≤ 1MB, main.node.js ≤ 990KB, render-diff ≤ 185KB) are enforced on
   every push.
 - 🟡 **Module-scope invariants** — regexes, Sets, processors, extension arrays built once, not
@@ -148,8 +150,8 @@ standard.
 - 🔴 **Breaking engine changes ship with the consumer-side PR ready** — an engine-first merge
   can crash the editor (#1470); coordinate monorepo/editor landing order.
 - 🔴 **Deep-import paths and `exports` subpaths are public API** — `files` ships raw `styles/`
-  and `components/`; `./render-diff` and `./render-fixture` have downstream consumers. Renames
-  and moves there are breaking changes.
+  and `components/`; `./render-diff`, `./render-fixture` and `./owlmoji-details` have downstream
+  consumers. Renames and moves there are breaking changes.
 - 🔴 **Pin parser-pipeline deps whose bumps change AST shape** — `micromark-util-subtokenize`
   pinned to 2.0.4 with a comment because the newer version rewraps list items (#1578); any
   micromark/remark/rehype bump needs a behavior audit.
