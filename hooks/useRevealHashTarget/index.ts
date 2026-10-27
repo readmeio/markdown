@@ -39,6 +39,8 @@ export default function useRevealHashTarget(
     const onHashChange = () => revealHashTarget(window.location.hash);
     // A link to the hash already in the URL fires no `hashchange`, so reveal on the click too
     const onClick = (event: MouseEvent) => {
+      // Leave cancelled clicks and ones that open a new tab or window alone
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
       const link = event.target instanceof Element ? event.target.closest('a[href^="#"]') : null;
       if (link) revealHashTarget(link.getAttribute('href') ?? '');
     };

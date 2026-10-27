@@ -264,6 +264,16 @@ Query content
         expect(panels[1]).toBeVisible();
       });
 
+      it('leaves the tab alone when a link is cmd-clicked to open elsewhere', () => {
+        const Component = renderContent(md);
+        const { container, getByText } = render(<Component />);
+        const panels = container.querySelectorAll('.TabGroup section > div');
+
+        fireEvent.click(getByText('Jump to transactions'), { metaKey: true });
+        expect(panels[0]).toBeVisible();
+        expect(panels[1]).not.toBeVisible();
+      });
+
       it('leaves the first tab active when the hash targets nothing inside the tabs', () => {
         window.location.hash = '#somewhere-else';
         const Component = renderContent(md);
