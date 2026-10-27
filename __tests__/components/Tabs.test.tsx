@@ -2,7 +2,7 @@ import type { Element } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
 
 import '@testing-library/jest-dom';
-import { fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import React from 'react';
 
 import Tabs, { Tab } from '../../components/Tabs';
@@ -185,6 +185,77 @@ Hello
 `;
       const Component = renderContent(md);
       expect(() => render(<Component />)).not.toThrow();
+    });
+
+    // CX-4083: a hash pointing into an inactive tab couldn't scroll because the panel is `hidden`
+    describe('when the URL hash targets a heading inside a tab', () => {
+      const md = `
+<Tabs>
+  <Tab title="Accounts">Accounts content</Tab>
+  <Tab title="Transactions">
+
+### Seeded transaction queries
+
+Query content
+
+  </Tab>
+</Tabs>
+`;
+
+      let scrollIntoView: ReturnType<typeof vi.fn>;
+
+      beforeEach(() => {
+        scrollIntoView = vi.fn();
+        Element.prototype.scrollIntoView = scrollIntoView;
+        vi.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
+          cb(0);
+          return 0;
+        });
+      });
+
+      afterEach(() => {
+        window.location.hash = '';
+        vi.restoreAllMocks();
+      });
+
+      it.each([
+        ['an anchor hash', '#seeded-transaction-queries'],
+        ['a hash router-prefixed hash', '#/seeded-transaction-queries'],
+      ])('activates the tab holding it on load with %s', (_, hash) => {
+        window.location.hash = hash;
+        const Component = renderContent(md);
+        const { container } = render(<Component />);
+
+        const panels = container.querySelectorAll('.TabGroup section > div');
+        expect(panels[0]).not.toBeVisible();
+        expect(panels[1]).toBeVisible();
+        expect(scrollIntoView).toHaveBeenCalledWith();
+      });
+
+      it('activates the tab holding it on hash change', () => {
+        const Component = renderContent(md);
+        const { container } = render(<Component />);
+        const panels = container.querySelectorAll('.TabGroup section > div');
+        expect(panels[1]).not.toBeVisible();
+
+        act(() => {
+          window.location.hash = '#seeded-transaction-queries';
+          window.dispatchEvent(new HashChangeEvent('hashchange'));
+        });
+
+        expect(panels[0]).not.toBeVisible();
+        expect(panels[1]).toBeVisible();
+      });
+
+      it('leaves the first tab active when the hash targets nothing inside the tabs', () => {
+        window.location.hash = '#somewhere-else';
+        const Component = renderContent(md);
+        const { container } = render(<Component />);
+
+        const panels = container.querySelectorAll('.TabGroup section > div');
+        expect(panels[0]).toBeVisible();
+        expect(scrollIntoView).not.toHaveBeenCalled();
+      });
     });
   });
 
