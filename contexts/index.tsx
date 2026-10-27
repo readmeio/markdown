@@ -1,14 +1,14 @@
 import type {  RunOpts } from '../lib/run';
 
 import { VariablesContext } from '@readme/variable';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import BaseUrlContext from './BaseUrl';
-import CodeOptsContext from './CodeOpts';
 import GlossaryContext from './GlossaryTerms';
+import RenderConfigContext, { type RenderConfig } from './RenderConfig';
 import ThemeContext from './Theme';
 
-type Props = Pick<RunOpts, 'baseUrl' | 'copyButtons' | 'terms' | 'theme' | 'variables'> & React.PropsWithChildren;
+type Props = Pick<RunOpts, 'baseUrl' | 'terms' | 'theme' | 'variables'> & React.PropsWithChildren & RenderConfig;
 
 const compose = (
   children: React.ReactNode,
@@ -19,8 +19,26 @@ const compose = (
   }, children);
 };
 
-const Contexts = ({ children, terms = [], variables = { user: {}, defaults: [] }, baseUrl = '/', theme, copyButtons }: Props) => {
-  return compose(children, [GlossaryContext, terms], [VariablesContext, variables], [BaseUrlContext, baseUrl], [ThemeContext, theme], [CodeOptsContext, copyButtons]);
+const Contexts = ({
+  children,
+  terms = [],
+  variables = { user: {}, defaults: [] },
+  baseUrl = '/',
+  theme,
+  copyButtons,
+  mermaidControls,
+}: Props) => {
+  // Stable value so unchanged flags don't trigger context re-renders (and re-highlighting) in consumers
+  const renderConfig = useMemo(() => ({ copyButtons, mermaidControls }), [copyButtons, mermaidControls]);
+
+  return compose(
+    children,
+    [GlossaryContext, terms],
+    [VariablesContext, variables],
+    [BaseUrlContext, baseUrl],
+    [ThemeContext, theme],
+    [RenderConfigContext, renderConfig],
+  );
 };
 
 export default Contexts;
