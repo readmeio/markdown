@@ -1,7 +1,9 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 
 import { tailwindPrefix } from '../../utils/consts';
 import { tailwindCompiler } from '../../utils/tailwind-compiler';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 const traverse = (node: Node, callback: (element: Node) => void) => {
   callback(node);
@@ -19,10 +21,8 @@ interface Props {
 }
 
 const TailwindStyle = ({ children, darkModeDataAttribute, darkModeRootSelector }: Props) => {
-  const [stylesheet, setStylesheet] = useState('');
   const classesSet = useRef(new Set<string>());
   const ref = useRef<HTMLStyleElement>(null);
-  const [classes, setClasses] = useState<string[]>([]);
 
   const addClasses = useCallback((element: Node) => {
     if (!(element instanceof HTMLElement)) return;
@@ -33,44 +33,27 @@ const TailwindStyle = ({ children, darkModeDataAttribute, darkModeRootSelector }
   }, []);
 
   /*
-   * @note: regenerate stylesheet
+   * @note: a layout effect writes the sheet before the content first paints, so its utilities don't transition in
    */
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const run = async () => {
-      if (classes.length === 0) {
-        setStylesheet('');
-        return;
-      }
+      if (classesSet.current.size === 0) return;
 
-      const sheet = await tailwindCompiler(classes, {
+      const sheet = await tailwindCompiler(Array.from(classesSet.current), {
         prefix: `.${tailwindPrefix}`,
         darkModeDataAttribute,
         darkModeRootSelector,
       });
       /* @note: don't insert an empty stylesheet */
-      if (sheet.css.match(/^@layer utilities;/m)) return;
+      if (sheet.css.match(/^@layer utilities;/m) || !ref.current) return;
 
-      setStylesheet(sheet.css);
+      ref.current.textContent = sheet.css;
     };
 
-    run();
-  }, [classes, darkModeDataAttribute, darkModeRootSelector]);
-
-  /*
-   * @note: execute once on load
-   */
-  useEffect(() => {
     if (!ref.current) return;
 
     ref.current.parentElement.querySelectorAll(`.${tailwindPrefix}`).forEach(child => traverse(child, addClasses));
-    setClasses(Array.from(classesSet.current));
-  }, [addClasses]);
-
-  /*
-   * @note: observe for changes
-   */
-  useEffect(() => {
-    if (!ref.current) return;
+    run();
 
     const observer = new MutationObserver((records: MutationRecord[]) => {
       let shouldUpdate = false;
@@ -106,7 +89,7 @@ const TailwindStyle = ({ children, darkModeDataAttribute, darkModeRootSelector }
       });
 
       if (shouldUpdate) {
-        setClasses(Array.from(classesSet.current));
+        run();
       }
     });
 
@@ -119,13 +102,11 @@ const TailwindStyle = ({ children, darkModeDataAttribute, darkModeRootSelector }
 
     // eslint-disable-next-line consistent-return
     return () => observer.disconnect();
-  }, [addClasses]);
+  }, [addClasses, darkModeDataAttribute, darkModeRootSelector]);
 
   return (
     <>
-      <style ref={ref} data-tailwind-stylesheet>
-        {stylesheet}
-      </style>
+      <style ref={ref} data-tailwind-stylesheet />
       {children}
     </>
   );

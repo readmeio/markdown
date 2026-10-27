@@ -2,7 +2,7 @@
 import type { CompileContext, Extension as FromMarkdownExtension, Handle } from 'mdast-util-from-markdown';
 import type { Code, Construct, Effects, Extension, State, TokenizeContext } from 'micromark-util-types';
 
-import { decodeHTML } from 'entities';
+import { decodeHTML } from 'entities/decode';
 import { asciiAlphanumeric, asciiDigit, asciiHexDigit } from 'micromark-util-character';
 import { codes } from 'micromark-util-symbol';
 
