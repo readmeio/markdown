@@ -187,18 +187,17 @@ Hello
       expect(() => render(<Component />)).not.toThrow();
     });
 
-    // CX-4083: a hash pointing into an inactive tab couldn't scroll because the panel is `hidden`
     describe('when the URL hash targets a heading inside a tab', () => {
       const md = `
-[Jump to transactions](#seeded-transaction-queries)
+[Jump to the heading](#second-tab-heading)
 
 <Tabs>
-  <Tab title="Accounts">Accounts content</Tab>
-  <Tab title="Transactions">
+  <Tab title="First">First content</Tab>
+  <Tab title="Second">
 
-### Seeded transaction queries
+### Second tab heading
 
-Query content
+Second content
 
   </Tab>
 </Tabs>
@@ -221,8 +220,8 @@ Query content
       });
 
       it.each([
-        ['an anchor hash', '#seeded-transaction-queries'],
-        ['a hash router-prefixed hash', '#/seeded-transaction-queries'],
+        ['an anchor hash', '#second-tab-heading'],
+        ['a hash router-prefixed hash', '#/second-tab-heading'],
       ])('activates the tab holding it on load with %s', (_, hash) => {
         window.location.hash = hash;
         const Component = renderContent(md);
@@ -241,7 +240,7 @@ Query content
         expect(panels[1]).not.toBeVisible();
 
         act(() => {
-          window.location.hash = '#seeded-transaction-queries';
+          window.location.hash = '#second-tab-heading';
           window.dispatchEvent(new HashChangeEvent('hashchange'));
         });
 
@@ -250,16 +249,16 @@ Query content
       });
 
       it('activates the tab holding it when a link to the current hash is clicked', () => {
-        window.location.hash = '#seeded-transaction-queries';
+        window.location.hash = '#second-tab-heading';
         const Component = renderContent(md);
         const { container, getByRole, getByText } = render(<Component />);
         const panels = container.querySelectorAll('.TabGroup section > div');
 
-        fireEvent.click(getByRole('button', { name: 'Accounts' }));
+        fireEvent.click(getByRole('button', { name: 'First' }));
         expect(panels[1]).not.toBeVisible();
 
         // The hash doesn't change, so only the click can reveal the tab
-        fireEvent.click(getByText('Jump to transactions'));
+        fireEvent.click(getByText('Jump to the heading'));
         expect(panels[0]).not.toBeVisible();
         expect(panels[1]).toBeVisible();
       });
@@ -269,7 +268,7 @@ Query content
         const { container, getByText } = render(<Component />);
         const panels = container.querySelectorAll('.TabGroup section > div');
 
-        fireEvent.click(getByText('Jump to transactions'), { metaKey: true });
+        fireEvent.click(getByText('Jump to the heading'), { metaKey: true });
         expect(panels[0]).toBeVisible();
         expect(panels[1]).not.toBeVisible();
       });
