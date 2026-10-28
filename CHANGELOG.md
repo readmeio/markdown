@@ -1,6 +1,38 @@
 Changelog
 ===
 
+## Version 16.0.0
+### ⚠ BREAKING CHANGES
+
+* **owlmoji:** CHANGE: `Owlmoji.owlmoji` is removed from the main entry.
+Import the catalog with `import { owlmojiDetails } from
+'@readme/markdown/owlmoji-details'`.
+
+## 🧪 QA tips
+
+<!-- Unique code decisions, code walkthroughs, how to test them -->
+
+- [ ] `npm run build:verify` passes, including the new owlmoji guard (it
+fails against the base bundle).
+- [ ] `:joy:` still renders as 😂 and `:owlbert:` as its image, covered
+by `__tests__/parsers/gemoji.test.ts` and
+`__tests__/lib/owlmoji.test.ts`.
+- [ ] Consumer side (readme monorepo PR to follow): `ui/Owlmoji`,
+`ui/EmojiPicker` and the MdxishEditor `EmojiMenu` switch from
+`Owlmoji.owlmoji` to `owlmojiDetails`.
+
+## 📸 Screenshot or Loom
+
+<!-- all PRs should have a Loom or screenshot! -->
+
+N/A, bundling change only.
+
+* **owlmoji:** keep gemoji's catalog out of the main browser bundle ([#1664](https://github.com/readmeio/markdown/issues/1664)) ([185bb66](https://github.com/readmeio/markdown/commit/185bb6681dce040f32e16132d693ec8aa26b0d80))
+
+### 🛠 Fixes & Updates
+
+* **TailwindStyle:** apply the stylesheet before first paint ([#1661](https://github.com/readmeio/markdown/issues/1661)) ([0ae0382](https://github.com/readmeio/markdown/commit/0ae0382e83bcce4e16872174a378e9f3cbaa5b28))
+
 ## Version 15.12.0
 ### ✨ New & Improved
 
