@@ -41,8 +41,12 @@ export default function useRevealHashTarget(
     const onClick = (event: MouseEvent) => {
       // Leave cancelled clicks and ones that open a new tab or window alone
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
-      const link = event.target instanceof Element ? event.target.closest('a[href^="#"]') : null;
-      if (link) revealHashTarget(link.getAttribute('href') ?? '');
+      const link = event.target instanceof Element ? event.target.closest('a') : null;
+      // `#slug`, `doc:page#slug` (rendered as `/docs/page#slug`) and full URLs all count when they point at this page
+      const { origin, pathname, search } = window.location;
+      if (link?.hash && link.origin === origin && link.pathname === pathname && link.search === search) {
+        revealHashTarget(link.hash);
+      }
     };
 
     onHashChange();

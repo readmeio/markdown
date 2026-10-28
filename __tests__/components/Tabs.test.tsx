@@ -263,6 +263,46 @@ Second content
         expect(panels[1]).toBeVisible();
       });
 
+      describe('when the link points at the current page by path', () => {
+        // jsdom can't follow a path link, so cancel it after the hook's `document` listener has run
+        const cancelNavigation = (event: MouseEvent) => event.preventDefault();
+
+        beforeEach(() => {
+          window.history.replaceState(null, '', '/docs/this-page#second-tab-heading');
+          window.addEventListener('click', cancelNavigation);
+        });
+
+        afterEach(() => {
+          window.removeEventListener('click', cancelNavigation);
+          window.history.replaceState(null, '', '/');
+        });
+
+        it.each([
+          ['a doc link', 'doc:this-page#second-tab-heading'],
+          ['a path link', '/docs/this-page#second-tab-heading'],
+          ['a full url', `${window.location.origin}/docs/this-page#second-tab-heading`],
+        ])('activates the tab holding it when %s to the current hash is clicked', (_, href) => {
+          const Component = renderContent(`[Path link](${href})\n\n${md}`);
+          const { container, getByRole, getByText } = render(<Component />);
+          const panels = container.querySelectorAll('.TabGroup section > div');
+
+          fireEvent.click(getByRole('button', { name: 'First' }));
+          fireEvent.click(getByText('Path link'));
+          expect(panels[1]).toBeVisible();
+        });
+
+        it('leaves the tab alone when the link points at another page', () => {
+          const Component = renderContent(`[Path link](/docs/other-page#second-tab-heading)\n\n${md}`);
+          const { container, getByRole, getByText } = render(<Component />);
+          const panels = container.querySelectorAll('.TabGroup section > div');
+
+          fireEvent.click(getByRole('button', { name: 'First' }));
+          fireEvent.click(getByText('Path link'));
+          expect(panels[0]).toBeVisible();
+          expect(panels[1]).not.toBeVisible();
+        });
+      });
+
       it('leaves the tab alone when a link is cmd-clicked to open elsewhere', () => {
         const Component = renderContent(md);
         const { container, getByText } = render(<Component />);
