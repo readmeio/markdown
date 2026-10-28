@@ -14,12 +14,17 @@ import { visitParents } from 'unist-util-visit-parents';
 import { NodeTypes } from '../../../../enums';
 import { mdxishExpressionFromMarkdown } from '../../../../lib/mdast-util/mdx-expression';
 import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
-import { createValueToSourceMapper, getAttrs, isMDXElement } from '../../../utils';
+import { getAttrs, isMDXElement } from '../../../utils';
 import calloutTransformer from '../../callouts';
 import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
-import { type MarkdownFragment, mapReparsedPositionsToDocument } from '../parse-markdown-fragment';
+import {
+  createNodeValueToDocumentMapper,
+  getDocumentSource,
+  type MarkdownFragment,
+  mapReparsedPositionsToDocument,
+} from '../parse-markdown-fragment';
 
 import { escapeCrossingEmphasis } from './escape-crossing-emphasis';
 import { escapeStrayLessThan } from './escape-stray-less-than';
@@ -96,7 +101,7 @@ const tableRepairs: ((html: string) => RepairResult)[] = [
 const parseTableNode = (
   processor: typeof tableNodeProcessor,
   node: Html,
-  source: string | undefined,
+  documentSource: string,
   repair?: { layers: Insert[][]; originalSource: string },
 ): Root | undefined => {
   let parsed: Root;
@@ -114,15 +119,13 @@ const parseTableNode = (
   }
 
   // The subparser produces positions relative to `node.value`; map them into
-  // the outer source so consumers can slice it.
-  const toSourcePoint = createValueToSourceMapper(node.position, repair?.originalSource ?? node.value, source);
-  if (!toSourcePoint) return parsed;
+  // the document so consumers can slice it.
+  const value = repair?.originalSource ?? node.value;
+  const toDocumentPosition = createNodeValueToDocumentMapper({ position: node.position, value }, documentSource);
+  if (!toDocumentPosition) return parsed;
   visit(parsed as Node, child => {
     if (!child.position) return;
-    child.position = {
-      start: toSourcePoint(child.position.start.offset ?? 0),
-      end: toSourcePoint(child.position.end.offset ?? 0),
-    };
+    child.position = toDocumentPosition(child.position.start.offset ?? 0, child.position.end.offset ?? 0);
   });
   return parsed;
 };
@@ -367,7 +370,7 @@ const processTableNode = (
  * once the accumulated result parses. Each layer's inserts are relative to the
  * string that repair received, so they stay ordered for position remapping.
  */
-const repairAndReparse = (node: Html, source: string | undefined): Root | undefined => {
+const repairAndReparse = (node: Html, source: string): Root | undefined => {
   let repairedValue = node.value;
   const layers: Insert[][] = [];
   let parsed: Root | undefined;
@@ -429,7 +432,7 @@ const replaceTableHtml = (node: Html, index: number, parent: Parent, source: str
  * is kept as a JSX <Table> element so that remarkRehype can properly handle the flow content.
  */
 const mdxishTables: Plugin<[], Root> = () => (tree, file) => {
-  const documentSource = String(file?.value ?? '');
+  const documentSource = getDocumentSource(file);
 
   // Pre-pass: lift `<table>`s wrapped in a raw HTML block out into their own
   // html nodes so the main pass below treats them like top-level tables.

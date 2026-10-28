@@ -12,7 +12,7 @@ import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
 import { findQuotedAttributeValue } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { getAttrs, isMDXElement } from '../../utils';
 
-import { type MarkdownFragment, reparseMarkdownFragment } from './parse-markdown-fragment';
+import { getDocumentSource, type MarkdownFragment, reparseMarkdownFragment } from './parse-markdown-fragment';
 import { getCellWidth, hasOnlyWidthAttributes } from './tables/cell-width';
 import { tableTags, unwrapSoleParagraph } from './tables/utils';
 
@@ -765,7 +765,7 @@ const COMPONENT_MAP: Record<string, ComponentTransformer> = {
  * This is controlled by the `newEditorTypes` flag to maintain backwards compatibility.
  */
 const mdxishJsxToMdast: Plugin<[], Parent> = () => (tree, file) => {
-  const documentSource = String(file?.value ?? '');
+  const documentSource = getDocumentSource(file);
 
   // Block JSX components (Image, Callout, Embed, Recipe)
   visit(tree, 'mdxJsxFlowElement', (node: MdxJsxFlowElement, index, parent: Parent | undefined) => {

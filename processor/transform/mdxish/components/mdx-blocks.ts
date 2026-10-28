@@ -4,9 +4,13 @@ import type { Plugin } from 'unified';
 
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS, INLINE_ONLY_PARENT_TYPES } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
-import { createValueToSourceMapper } from '../../../utils';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
-import { type MarkdownFragment, reparseMarkdownFragment } from '../parse-markdown-fragment';
+import {
+  createNodeValueToDocumentMapper,
+  getDocumentSource,
+  type MarkdownFragment,
+  reparseMarkdownFragment,
+} from '../parse-markdown-fragment';
 import { tableTags } from '../tables/utils';
 import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 
@@ -139,9 +143,9 @@ const positionEndingAtConsumed = (
   consumedLength: number,
   documentSource: string,
 ): Node['position'] => {
-  const toSourcePoint = createValueToSourceMapper(nodePosition, value, documentSource);
-  if (!nodePosition || !toSourcePoint) return nodePosition;
-  return { start: nodePosition.start, end: toSourcePoint(consumedLength) };
+  const toDocumentPosition = createNodeValueToDocumentMapper({ position: nodePosition, value }, documentSource);
+  if (!nodePosition || !toDocumentPosition) return nodePosition;
+  return { start: nodePosition.start, end: toDocumentPosition(0, consumedLength).end };
 };
 
 const createComponentNode = ({
@@ -357,7 +361,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, documentSource:
 const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> =
   (opts = {}) =>
   (tree, file) => {
-    return promoteComponentBlocks(tree, !!opts.safeMode, String(file?.value ?? ''));
+    return promoteComponentBlocks(tree, !!opts.safeMode, getDocumentSource(file));
   };
 
 export default mdxishMdxComponentBlocks;

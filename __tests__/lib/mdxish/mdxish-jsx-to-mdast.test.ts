@@ -62,7 +62,7 @@ describe('widthFromStyleString', () => {
 describe('mdxish-jsx-to-mdast transformer', () => {
   const processWithNewTypes = (md: string): Root => {
     const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-    return processor.runSync(processor.parse(parserReadyContent)) as Root;
+    return processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
   };
 
   describe('with newEditorTypes enabled', () => {
@@ -1429,7 +1429,7 @@ Some callout content
   describe('with newEditorTypes disabled (default)', () => {
     const processWithoutNewTypes = (md: string): Root => {
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
-      return processor.runSync(processor.parse(parserReadyContent)) as Root;
+      return processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
     };
 
     it('should leave Image as mdxJsxFlowElement', () => {

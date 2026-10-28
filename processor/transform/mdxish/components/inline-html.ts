@@ -5,7 +5,12 @@ import { visit } from 'unist-util-visit';
 
 import { INLINE_COMPONENT_TAGS, INLINE_ONLY_PARENT_TYPES } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
-import { type FragmentParseOptions, type MarkdownFragment, reparseMarkdownFragment } from '../parse-markdown-fragment';
+import {
+  type FragmentParseOptions,
+  getDocumentSource,
+  type MarkdownFragment,
+  reparseMarkdownFragment,
+} from '../parse-markdown-fragment';
 
 import { hasExpressionAttr, isPascalCase, toMdxJsxTextElement } from './utils';
 
@@ -136,7 +141,7 @@ const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> = (opts
   visit(tree, 'footnoteDefinition', (def: FootnoteDefinition) => {
     footnotes.push(def.identifier.toUpperCase());
   });
-  const documentSource = String(file?.value ?? '');
+  const documentSource = getDocumentSource(file);
   const fragmentOptions: FragmentParseOptions = { documentSource, footnotes, phrasing: true, safeMode };
 
   promoteHtmlIn(tree, child => promoteInlineHtml(child, parseOpts, fragmentOptions));

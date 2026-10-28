@@ -1,5 +1,6 @@
 import type { Node, RootContent } from 'mdast';
 import type { Point, Position } from 'unist';
+import type { VFile } from 'vfile';
 
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -9,11 +10,17 @@ import { visit } from 'unist-util-visit';
 import { footnoteLabels } from '../../../lib/micromark/footnote-labels';
 import { FEATURES, mdxishExtensions } from '../../../lib/micromark/mdxish-extensions';
 
+/** A node whose `value` is text from the document, e.g. an html node; its position indexes into the document. */
+interface ValueNode {
+  position?: Position;
+  value: string;
+}
+
 export interface MarkdownFragment {
   /** Where `rawText` starts in `parentNode.value`. */
   offsetInParentNode: number;
-  /** The node the fragment was cut from; its position indexes into the document. */
-  parentNode: { position?: Position; value: string };
+  /** The node the fragment was cut from. */
+  parentNode: ValueNode;
   /** The fragment as it appears in `parentNode.value`. */
   rawText: string;
 }
@@ -178,17 +185,28 @@ const createDerivedToDocumentMapper = (derivedText: string, documentSource: stri
   };
 };
 
-/** Where `fragment.rawText` sits in the document; the parent's whole range when that can't be pinned down. */
-const findFragmentRange = (fragment: MarkdownFragment, documentSource: string): DocumentRange | undefined => {
-  const { parentNode, offsetInParentNode, rawText } = fragment;
-  const parentRange = toDocumentRange(parentNode.position);
-  if (!parentRange) return undefined;
+/**
+ * Maps a `from`–`to` range of `node.value` onto the document; the node's whole range when either
+ * end's line isn't found there. Null when the node has no position to map onto.
+ */
+export const createNodeValueToDocumentMapper = (node: ValueNode, documentSource: string) => {
+  const nodeRange = toDocumentRange(node.position);
+  if (!nodeRange) return null;
+  const toDocumentPoint = createDerivedToDocumentMapper(node.value, documentSource, nodeRange);
 
-  const toDocumentPoint = createDerivedToDocumentMapper(parentNode.value, documentSource, parentRange);
-  const start = toDocumentPoint(offsetInParentNode);
-  const end = toDocumentPoint(offsetInParentNode + rawText.length);
-  return toDocumentRange(start && end ? { start, end } : undefined) ?? parentRange;
+  return (from: number, to: number): Position => {
+    const start = toDocumentPoint(from);
+    const end = toDocumentPoint(to);
+    return start && end ? { start, end } : { start: { ...nodeRange.start }, end: { ...nodeRange.end } };
+  };
 };
+
+/** Where `fragment.rawText` sits in the document; the parent's whole range when that can't be pinned down. */
+const findFragmentRange = ({ parentNode, offsetInParentNode, rawText }: MarkdownFragment, documentSource: string) =>
+  createNodeValueToDocumentMapper(parentNode, documentSource)?.(
+    offsetInParentNode,
+    offsetInParentNode + rawText.length,
+  );
 
 /**
  * Moves the positions of nodes parsed from `textToParse` (the fragment's raw text after any
@@ -201,20 +219,17 @@ export const mapReparsedPositionsToDocument = (
   textToParse: string,
   documentSource: string,
 ) => {
-  const fragmentRange = findFragmentRange(fragment, documentSource);
-  const toDocumentPoint = fragmentRange && createDerivedToDocumentMapper(textToParse, documentSource, fragmentRange);
+  const reparsedText = { position: findFragmentRange(fragment, documentSource), value: textToParse };
+  const toDocumentPosition = createNodeValueToDocumentMapper(reparsedText, documentSource);
 
   reparsedNodes.forEach(reparsedNode =>
     visit(reparsedNode, node => {
       if (!node.position) return;
-      if (!fragmentRange || !toDocumentPoint) {
+      if (!toDocumentPosition) {
         delete node.position;
         return;
       }
-      const start = toDocumentPoint(node.position.start.offset ?? 0);
-      const end = toDocumentPoint(node.position.end.offset ?? 0);
-      node.position =
-        start && end ? { start, end } : { start: { ...fragmentRange.start }, end: { ...fragmentRange.end } };
+      node.position = toDocumentPosition(node.position.start.offset ?? 0, node.position.end.offset ?? 0);
     }),
   );
 };
@@ -231,4 +246,17 @@ export const reparseMarkdownFragment = (
   const { children } = getComponentBodyProcessor(processorOptions).parse(textToParse);
   mapReparsedPositionsToDocument(children, fragment, textToParse, documentSource);
   return children;
+};
+
+/**
+ * The page a transformer maps re-parsed positions onto. Without it every re-parsed node falls
+ * back to its parent's whole range, so warn: the caller ran the processor without the source.
+ */
+export const getDocumentSource = (file: VFile): string => {
+  if (file.value === undefined) {
+    // eslint-disable-next-line no-console
+    console.warn("[mdxish] The VFile has no source, so re-parsed nodes get their parent's range. Pass it to `run()`.");
+    return '';
+  }
+  return String(file.value);
 };

@@ -22,7 +22,7 @@ const parse = (md: string): Root => {
     .use(mdxishMdxComponentBlocks)
     .use(mdxishInlineMdxHtmlBlocks);
   const tree = processor.parse(md);
-  processor.runSync(tree);
+  processor.runSync(tree, md);
   return tree as Root;
 };
 
