@@ -145,6 +145,7 @@ Body with **markdown** support.
 
       const icon = container.querySelector('.callout-icon');
       expect(icon?.tagName).toBe('SPAN');
+      expect(icon).toHaveClass('Icon-emoji');
       expect(icon).toHaveTextContent('📘');
       expect(icon).not.toHaveClass('callout-icon_fa');
     });

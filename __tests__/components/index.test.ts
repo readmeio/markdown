@@ -31,7 +31,7 @@ describe('Components', () => {
     ({ container } = render(React.createElement(component)));
 
     expect(container.innerHTML).toMatchInlineSnapshot(
-      '"<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p class="callout-heading empty"></p><p>Callout with no title.</p></blockquote>"',
+      '"<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon Icon-emoji">🚧</span><p class="callout-heading empty"></p><p>Callout with no title.</p></blockquote>"',
     );
 
     cleanup();

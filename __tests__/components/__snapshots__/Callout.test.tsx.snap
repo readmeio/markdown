@@ -7,7 +7,7 @@ exports[`Callout > mdx: renders a callout with icon and body 1`] = `
     theme="📘"
   >
     <span
-      class="callout-icon"
+      class="callout-icon Icon-emoji"
     >
       📘
     </span>
@@ -25,7 +25,7 @@ exports[`Callout > mdx: renders the markdown inside the callout body 1`] = `
     theme="📘"
   >
     <span
-      class="callout-icon"
+      class="callout-icon Icon-emoji"
     >
       📘
     </span>
@@ -73,7 +73,7 @@ exports[`Callout > mdxish: renders a callout with icon and body 1`] = `
     theme="📘"
   >
     <span
-      class="callout-icon"
+      class="callout-icon Icon-emoji"
     >
       📘
     </span>
@@ -91,7 +91,7 @@ exports[`Callout > mdxish: renders the markdown inside the callout body 1`] = `
     theme="📘"
   >
     <span
-      class="callout-icon"
+      class="callout-icon Icon-emoji"
     >
       📘
     </span>
