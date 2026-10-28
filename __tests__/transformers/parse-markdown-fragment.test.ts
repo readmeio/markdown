@@ -2,8 +2,11 @@ import type { Node, RootContent } from 'mdast';
 import type { Point } from 'unist';
 
 import { visit } from 'unist-util-visit';
+import { VFile } from 'vfile';
 
 import {
+  createNodeValueToDocumentMapper,
+  getDocumentSource,
   type MarkdownFragment,
   reparseMarkdownFragment,
 } from '../../processor/transform/mdxish/parse-markdown-fragment';
@@ -173,5 +176,71 @@ describe('reparseMarkdownFragment', () => {
       ['strong', undefined],
       ['text', undefined],
     ]);
+  });
+});
+
+// CX-4028
+describe('createNodeValueToDocumentMapper', () => {
+  /** A node whose `value` spans `doc` from where its first line appears to the end. */
+  const nodeIn = (doc: string, value: string) => {
+    const start = doc.indexOf(value.split('\n')[0]);
+    return { position: { start: pointAt(doc, start), end: pointAt(doc, doc.length) }, value };
+  };
+
+  /** What the mapped range of `value`'s `from`–`to` slices out of `doc`. */
+  const mappedSlice = (doc: string, value: string, from: number, to: number) => {
+    const { start, end } = createNodeValueToDocumentMapper(nodeIn(doc, value), doc)!(from, to);
+    return doc.slice(start.offset, end.offset);
+  };
+
+  it('returns null without a position', () => {
+    expect(createNodeValueToDocumentMapper({ value: 'a' }, 'a')).toBeNull();
+  });
+
+  it('shifts a verbatim value by its start point', () => {
+    const doc = 'Hello\n<x>\n  <y>';
+    const value = '<x>\n  <y>';
+    const toDocumentPosition = createNodeValueToDocumentMapper(nodeIn(doc, value), doc)!;
+
+    expect(toDocumentPosition(value.indexOf('<y>'), value.length)).toStrictEqual({
+      start: { line: 3, column: 3, offset: 12 },
+      end: { line: 3, column: 6, offset: 15 },
+    });
+  });
+
+  it('adds back the prefix a container stripped from each continuation line', () => {
+    const doc = '> <x>\n>   <y>\n><z>';
+    const value = '<x>\n  <y>\n<z>';
+
+    expect(mappedSlice(doc, value, value.indexOf('<y>'), value.length)).toBe('<y>\n><z>');
+    expect(mappedSlice(doc, value, 0, value.indexOf('\n'))).toBe('<x>');
+  });
+
+  it('aligns a line whose prefix tab was expanded to spaces', () => {
+    const doc = '> <x>\n>\t<y>';
+    const value = '<x>\n  <y>';
+
+    expect(mappedSlice(doc, value, value.indexOf('<y>'), value.length)).toBe('<y>');
+  });
+
+  it("falls back to the node's range when a line is not in the document", () => {
+    const doc = '> <x>\n> <nope>';
+    const value = '<x>\n<y>';
+
+    expect(mappedSlice(doc, value, value.indexOf('<y>'), value.length)).toBe(doc.slice(2));
+  });
+});
+
+describe('getDocumentSource', () => {
+  it('returns the source the VFile holds', () => {
+    expect(getDocumentSource(new VFile({ value: '# Hi' }))).toBe('# Hi');
+  });
+
+  it('warns when the VFile has no source', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    expect(getDocumentSource(new VFile())).toBe('');
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
   });
 });

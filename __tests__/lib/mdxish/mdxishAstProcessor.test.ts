@@ -18,7 +18,7 @@ describe('mdxishAstProcessor', () => {
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
       // IMPORTANT: Must call runSync() to execute transformers (e.g., evaluateExpression).
       // This is why the test couldn't catch the regression in RM-15705.
-      const mdast = processor.runSync(processor.parse(parserReadyContent));
+      const mdast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent);
       // The mdast should still have mdxTextExpression nodes - evaluation happens in mdxish()
       const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
       expect(hasMdxExpression).toBe(true);
@@ -27,7 +27,7 @@ describe('mdxishAstProcessor', () => {
     it('should preserve attribute expressions as mdxJsxAttributeValueExpression nodes', () => {
       const md = '<Component attr={1+1} />';
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
-      const mdast = processor.runSync(processor.parse(parserReadyContent));
+      const mdast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent);
 
       expect(mdast).toMatchObject({
         type: 'root',
@@ -56,7 +56,7 @@ describe('mdxishAstProcessor', () => {
       const md =
         '<button className="pill" style={{ backgroundColor: "#ffc107" }}>PrPr</button> ***service-explorer***: Message brokers are now surfaced as entities.';
       const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-      const mdast = processor.runSync(processor.parse(parserReadyContent));
+      const mdast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent);
 
       expect(mdast).toMatchObject({
         type: 'root',
@@ -78,7 +78,7 @@ describe('mdxishAstProcessor', () => {
       const md =
         '<Component attr={1+1}>PrPr</Component> ***service-explorer***: Message brokers are now surfaced as entities.';
       const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-      const mdast = processor.runSync(processor.parse(parserReadyContent));
+      const mdast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent);
 
       // Offset 38 is the end of `</Component>`; the trailing text is a separate sibling.
       expect(mdast).toMatchObject({
@@ -426,7 +426,7 @@ describe('mdxishAstProcessor', () => {
     const { processor, parserReadyContent } = mdxishAstProcessor(md);
     // Need to run the processor to apply transformers
     const parsedAst = processor.parse(parserReadyContent);
-    const ast = processor.runSync(parsedAst) as Root;
+    const ast = processor.runSync(parsedAst, parserReadyContent) as Root;
 
     expect(ast.type).toBe('root');
     expect(ast.children).toHaveLength(1);
@@ -537,7 +537,7 @@ describe('mdxishAstProcessor', () => {
 </Table>`;
 
       const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-      const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+      const ast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
 
       const tableNode = ast.children[0] as Table;
       expect(tableNode.type).toBe('table');
@@ -559,11 +559,11 @@ describe('mdxishAstProcessor', () => {
 </Table>`;
 
       const { processor: withEditor, parserReadyContent: src1 } = mdxishAstProcessor(md, { newEditorTypes: true });
-      const withEditorAst = withEditor.runSync(withEditor.parse(src1)) as Root;
+      const withEditorAst = withEditor.runSync(withEditor.parse(src1), src1) as Root;
       expect(withEditorAst.children[0].type).toBe('table');
 
       const { processor: withoutEditor, parserReadyContent: src2 } = mdxishAstProcessor(md);
-      const withoutEditorAst = withoutEditor.runSync(withoutEditor.parse(src2)) as Root;
+      const withoutEditorAst = withoutEditor.runSync(withoutEditor.parse(src2), src2) as Root;
       expect(withoutEditorAst.children[0].type).toBe('table');
     });
 
@@ -600,7 +600,7 @@ describe('mdxishAstProcessor', () => {
       expect(markdown).toContain('align={[null,"center",null]}');
 
       const { processor, parserReadyContent } = mdxishAstProcessor(markdown, { newEditorTypes: true });
-      const parsed = processor.runSync(processor.parse(parserReadyContent)) as Root;
+      const parsed = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
 
       const tableNode = parsed.children[0] as Table;
       expect(tableNode.type).toBe('table');
@@ -610,7 +610,7 @@ describe('mdxishAstProcessor', () => {
     describe('column widths', () => {
       const parse = (md: string): Table => {
         const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-        const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+        const ast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
         return ast.children[0] as Table;
       };
 
@@ -693,7 +693,7 @@ describe('mdxishAstProcessor', () => {
       it('keeps widths when safe mode leaves attribute expressions unevaluated', () => {
         const md = jsxTable('<th style={{ width: "30%" }}>Name</th>\n<th>Description</th>');
         const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true, safeMode: true });
-        const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+        const ast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
 
         expect((ast.children[0] as Table).data?.widths).toStrictEqual(['30%', null]);
       });
@@ -763,7 +763,7 @@ ${headers}
       it('leaves lowercase tables with widths as JSX on the render path, so the attribute still renders', () => {
         const md = lowercase('      <th style="width: 30%">Name</th>\n      <th>Description</th>');
         const { processor, parserReadyContent } = mdxishAstProcessor(md);
-        const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+        const ast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
 
         expect(ast.children[0].type).toBe('mdxJsxFlowElement');
       });
@@ -837,7 +837,7 @@ ${headers}
 </Table>`;
 
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
-      const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+      const ast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
 
       expect(ast.children[0].type).not.toBe('table');
     });
@@ -853,7 +853,7 @@ Content here
       expect(out).not.toMatch(/^>\s*📘\s+Content here/);
 
       const second = mdxishAstProcessor(out, { newEditorTypes: true });
-      const tree2 = second.processor.runSync(second.processor.parse(second.parserReadyContent)) as Root;
+      const tree2 = second.processor.runSync(second.processor.parse(second.parserReadyContent), second.parserReadyContent) as Root;
       const callout = tree2.children[0] as {
         children: { type: string }[];
         data?: { hProperties?: { empty?: boolean } };

@@ -15,12 +15,12 @@ const htmlNode = (value: string, start?: { column: number; line: number; offset:
 
 const astProcessor = (md: string): Root => {
   const { processor, parserReadyContent } = mdxishAstProcessor(md);
-  return processor.runSync(processor.parse(parserReadyContent)) as Root;
+  return processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
 };
 
 const astAndSource = (md: string): { parserReadyContent: string; tree: Root } => {
   const { processor, parserReadyContent } = mdxishAstProcessor(md);
-  const tree = processor.runSync(processor.parse(parserReadyContent)) as Root;
+  const tree = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
   return { tree, parserReadyContent };
 };
 
@@ -1899,30 +1899,32 @@ ${cell}
   describe('splitHtmlWithNestedTables', () => {
     const lowercaseTable = '<table><tr><td>x</td></tr></table>';
     const uppercaseTable = '<Table><tr><td>x</td></tr></Table>';
+    // A node with no position, whose value is the whole document.
+    const splitStandalone = (value: string) => splitHtmlWithNestedTables(htmlNode(value), value);
     
     it('returns null for a top-level lowercase <table>', () => {
-      expect(splitHtmlWithNestedTables(htmlNode(lowercaseTable))).toBeNull();
+      expect(splitStandalone(lowercaseTable)).toBeNull();
     });
 
     it('returns null for a top-level <Table> component', () => {
-      expect(splitHtmlWithNestedTables(htmlNode(uppercaseTable))).toBeNull();
+      expect(splitStandalone(uppercaseTable)).toBeNull();
     });
 
     it('returns null when the block holds no table at all', () => {
-      expect(splitHtmlWithNestedTables(htmlNode('<div>no table here</div>'))).toBeNull();
+      expect(splitStandalone('<div>no table here</div>')).toBeNull();
     });
 
     it.each(['<tablewrapper>', '<TableOfContents>'])('splits a node beginning with the non-table tag %s', (prefixTag) => {
       const closeTag = `</${prefixTag.slice(1, -1)}>`;
       const value = `${prefixTag}${lowercaseTable}${closeTag}`;
-      const parts = splitHtmlWithNestedTables(htmlNode(value));
+      const parts = splitStandalone(value);
 
       expect(parts?.map(p => p.value)).toStrictEqual([prefixTag, lowercaseTable, closeTag]);
     });
 
     it.each([lowercaseTable, uppercaseTable])('splits a <div>-wrapped %s into wrapper-open, table, wrapper-close parts', (table) => {
       const value = `<div>\n${table}\n</div>`;
-      const parts = splitHtmlWithNestedTables(htmlNode(value));
+      const parts = splitStandalone(value);
 
       expect(parts).toStrictEqual([
         { type: 'html', value: '<div>\n' },
@@ -1933,7 +1935,7 @@ ${cell}
 
     it.each([lowercaseTable, uppercaseTable])('lifts every table when the wrapper holds more than one', (table) => {
       const value = `<div>\n${table}\n${table}\n</div>`;
-      const parts = splitHtmlWithNestedTables(htmlNode(value));
+      const parts = splitStandalone(value);
 
       expect(parts?.map(p => p.value)).toStrictEqual([
         '<div>\n',
@@ -1946,17 +1948,23 @@ ${cell}
 
     it('does not match a <table> masked inside a fenced code block', () => {
       const value = '<div>\n\n```html\n<table><td>x</td></table>\n```\n\n</div>';
-      expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+      expect(splitStandalone(value)).toBeNull();
     });
 
     it('leaves an implicitly-closed table whole so trailing content is not dropped', () => {
       const value = '<div>\n<table><tr><td>x</td></tr>\n**important trailing content**\n</div>';
-      expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+      expect(splitStandalone(value)).toBeNull();
     });
 
     it('carries source positions onto each split part', () => {
       const value = '<div>\n<table><tr><td>x</td></tr></table>\n</div>';
-      const parts = splitHtmlWithNestedTables(htmlNode(value, { line: 3, column: 1, offset: 20 }));
+      const source = `Some intro text\n...\n${value}`;
+      const node: Html = {
+        type: 'html',
+        value,
+        position: { start: { line: 3, column: 1, offset: 20 }, end: { line: 5, column: 7, offset: source.length } },
+      };
+      const parts = splitHtmlWithNestedTables(node, source);
 
       const tablePart = parts?.find(p => p.value.startsWith('<table'));
       // `<table>` sits on line 4, offset 6 into the value → offset 26 in the document.
@@ -1982,20 +1990,20 @@ ${cell}
     describe('when surrounded by HTMLBlock (protected)', () => {
       it('does not split a table inside a closed <HTMLBlock>', () => {
         const value = '<HTMLBlock>\n<table><tr><td>x</td></tr></table>\n</HTMLBlock>';
-        expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+        expect(splitStandalone(value)).toBeNull();
       });
 
       it('leaves a <table> inside an unclosed <HTMLBlock> untouched', () => {
-        expect(splitHtmlWithNestedTables(htmlNode('<HTMLBlock>\n<table><tr><td>x</td></tr></table>'))).toBeNull();
+        expect(splitStandalone('<HTMLBlock>\n<table><tr><td>x</td></tr></table>')).toBeNull();
       });
 
       it('suppresses a later well-formed <table> once an unclosed <HTMLBlock> is open', () => {
         const value = '<div><HTMLBlock>oops</div>\n<table><tr><td>real</td></tr></table>';
-        expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+        expect(splitStandalone(value)).toBeNull();
       });
 
       it('does not protect a table after a self-closing <HTMLBlock/>', () => {
-        const parts = splitHtmlWithNestedTables(htmlNode('<div><HTMLBlock/><table><tr><td>x</td></tr></table></div>'));
+        const parts = splitStandalone('<div><HTMLBlock/><table><tr><td>x</td></tr></table></div>');
     
         expect(parts).not.toBeNull();
         expect(parts).toStrictEqual([
