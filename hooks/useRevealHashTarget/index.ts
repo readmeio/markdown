@@ -39,8 +39,9 @@ export default function useRevealHashTarget(
     const onHashChange = () => revealHashTarget(window.location.hash);
     // A link to the hash already in the URL fires no `hashchange`, so reveal on the click too
     const onClick = (event: MouseEvent) => {
-      // Leave cancelled clicks and ones that open a new tab or window alone
-      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
+      // Leave clicks that open a new tab or window alone. A cancelled click still counts, since routers
+      // cancel same-page links to navigate themselves, which fires no `hashchange` either
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
       const link = event.target instanceof Element ? event.target.closest('a') : null;
       // `#slug`, `doc:page#slug` (rendered as `/docs/page#slug`) and full URLs all count when they point at this page
       const { origin, pathname, search } = window.location;

@@ -264,16 +264,16 @@ Second content
       });
 
       describe('when the link points at the current page by path', () => {
-        // jsdom can't follow a path link, so cancel it after the hook's `document` listener has run
+        // Cancel below `document`, the way a router does on its root, which also keeps jsdom from following the link
         const cancelNavigation = (event: MouseEvent) => event.preventDefault();
 
         beforeEach(() => {
           window.history.replaceState(null, '', '/docs/this-page#second-tab-heading');
-          window.addEventListener('click', cancelNavigation);
+          document.body.addEventListener('click', cancelNavigation);
         });
 
         afterEach(() => {
-          window.removeEventListener('click', cancelNavigation);
+          document.body.removeEventListener('click', cancelNavigation);
           window.history.replaceState(null, '', '/');
         });
 
