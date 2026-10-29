@@ -63,7 +63,16 @@ const getConfig = ({ target }) => ({
       },
       {
         test: /\.scss$/,
-        use: [ExtractCSS.loader, 'css-loader', 'sass-loader'],
+        use: [
+          ExtractCSS.loader,
+          'css-loader',
+          {
+            loader: 'sass-loader',
+            // Compressed output with non-ASCII (e.g. Font Awesome glyphs) gets a BOM that lands mid-bundle
+            // and breaks the selector after it (RM-19250).
+            options: { sassOptions: { charset: false } },
+          },
+        ],
       },
       {
         test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
