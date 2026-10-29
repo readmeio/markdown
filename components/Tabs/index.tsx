@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import useRestartAnimatedImages from '../../hooks/useRestartAnimatedImages';
+import useRevealHashTarget from '../../hooks/useRevealHashTarget';
 import Icon from '../Icon';
 import { noTranslateTagsToSpans } from '../NoTranslate';
 
@@ -17,6 +18,7 @@ interface TabsProps {
 const Tabs = ({ children }: TabsProps) => {
   const [activeTab, setActiveTab] = useState(0);
   const panelRefs = useRestartAnimatedImages(activeTab);
+  useRevealHashTarget(panelRefs, setActiveTab);
   // React passes `children` as a single element when there's only one child, so normalize.
   const tabs = React.Children.toArray(children) as React.ReactElement[];
 
