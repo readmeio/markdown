@@ -10,7 +10,7 @@ import { removePosition } from 'unist-util-remove-position';
 import { mdast } from '../../index';
 import { mdxish } from '../../lib/mdxish';
 import calloutTransformer from '../../processor/transform/callouts';
-import { findAllElementsByTagName, findElementByTagName } from '../helpers';
+import { collectNodes, findAllElementsByTagName, findElementByTagName, parseMdxishWithSlices } from '../helpers';
 
 const mdxishMdast = (md: string) => {
   const processor = unified().use(remarkParse).use(remarkGfm).use(calloutTransformer, { isMdxish: true });
@@ -811,6 +811,20 @@ describe('callouts transformer', () => {
         expect(callouts[0].properties).toMatchObject({ icon: '📘' });
         expect(callouts[1].properties).toMatchObject({ icon: '❗️', theme: 'error' });
       });
+    });
+  });
+
+  describe('positions', () => {
+    it.each([
+      ['a plain title', '> 📘 Title text\n>\n> Body', 'Title text'],
+      ['a markdown heading title', '> 🚧 ## Heading title\n>\n> Body', 'Heading title'],
+      ['an emoji with a variation selector', '> ⚠️ Warning title\n>\n> Body', 'Warning title'],
+      ['an indented callout', '- item\n\n  > 👍 Nested title\n  >\n  > Body', 'Nested title'],
+    ])('places the title text of %s after the icon', (_name, md, title) => {
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+      const [heading] = collectNodes<Heading>(tree, 'heading');
+
+      expect(sliceOf(heading.children[0])).toBe(title);
     });
   });
 });

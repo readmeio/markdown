@@ -23,6 +23,7 @@ Follow these unless there's a clear reason not to.
 
 - **Never fork the pipeline by consumer.** The `newEditorTypes` flag (editor-vs-renderer branching) is tech debt — both should share one AST. Don't add consumer-conditional plugins/branches; fix the shared node shape instead.
 - **The engine owns its transforms; consumers don't pre-process.** No app-side normalization the pipeline should do itself (e.g. resolving `<<var>>` before mdxish).
+- **Positions are page offsets.** Any sub-parser (re-parsing a body, caption, cell…) must map its nodes back onto the page via `parse-markdown-fragment.ts`. See "Node positions and sub-parsers" in @.claude/context/MDXish/Processor Overview.md.
 - **Parse with tokenizers/AST, not string hacks.** Prefer micromark tokenizers and real MDAST/HAST/ESTree nodes over regexing source, sentinel swaps, or extract-then-restore workarounds. Walk an AST instead of regexing serialized JSON/HTML, and emit the correct node type rather than re-encoding to another syntax.
 - **Match legacy / `mdx-js` behavior; change minimally.** Reference the `v6` branch parsers for parity, call out unrelated changes, and avoid adding special-case behaviors.
 - **Keep functions small.** Avoid oversized functions; bias toward breaking logic into smaller, single-purpose helpers.

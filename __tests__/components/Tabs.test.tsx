@@ -381,7 +381,7 @@ Second content
   describe('roundtrip (mdxish)', () => {
     const roundtrip = (md: string) => {
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
-      const mdast = processor.runSync(processor.parse(parserReadyContent)) as MdastRoot;
+      const mdast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as MdastRoot;
       return mdxishMdastToMd(mdast);
     };
 

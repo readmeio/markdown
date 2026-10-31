@@ -234,6 +234,20 @@ The reverse direction: serializes an MDAST back into a markdown string (used by 
 - `mdxJsxStringify` — registers the `mdast-util-mdx-jsx` toMarkdown extension so JSX nodes serialize.
 - `remarkStringify` is configured with `bullet: '-'`, `emphasis: '_'`, and an `unsafe` rule that escapes literal `{`/`}` in phrasing so they don't re-parse as (often unterminated) MDX expressions on the next round trip.
 
+## Node positions and sub-parsers
+
+> **See**: @processor/transform/mdxish/parse-markdown-fragment.ts
+
+Every node's `position` is an offset into the page (`parserReadyContent`). The editor slices the page by these offsets to keep untouched markdown byte-for-byte and to anchor comments, so a position pointing anywhere else silently corrupts saves.
+
+Some content is parsed a second time on its own: component bodies, inline components, Image captions, table cells and magic blocks. A fresh `unified()` parse gives offsets into that snippet, not the page. Nothing fails when this happens: rendering looks right and only the editor goes wrong. So any code that re-parses must map positions back itself:
+
+- **Markdown cut from the page** (a component body, a caption): parse it with `reparseMarkdownFragment`, which returns children already positioned in the page.
+- **Text your own processor parses** (e.g. a table's cell re-parse): run its output through `mapReparsedPositionsToDocument`.
+- **Text not written verbatim in the page** (e.g. JSON inside a magic block): give the new nodes the parent's whole range.
+
+Never insert sub-parsed nodes with their own positions. `__tests__/regression/positions.test.ts` checks every regression fixture for nodes that fall outside their parent or the document.
+
 ## Custom Tokenizers (micromark extensions)
 
 Most of MDXish's flavored syntax is recognized at **parse time** by custom micromark tokenizers rather than reconstructed from strings afterwards. micromark is the low-level scanner unified/remark runs first: it walks the source character by character and emits *tokens*, which remark then assembles into the MDAST. Teaching it a new token makes a construct a first-class node from the start and safe from being fragmented by other constructs. This is why the pipeline favors tokenizers over string preprocessing.
@@ -254,7 +268,7 @@ A tokenizer registers itself under one or more **constructs**, keyed by the char
 
 A construct may set `concrete: true` to keep container markers (`>` for blockquotes, `-`/`*` for list items) from interrupting it mid-body. Registration **order matters**: micromark tries the last-registered extension first, so the pipeline splices or prepends constructs to win the race for a shared trigger character — e.g. `jsxComment` is prepended so it claims `{/* … */}` before other `{`-openers, and the MDX expression extension is registered *text-only* (`mdxExpressionLenient()`, no flow construct) so a line-leading `{` can't hijack a block that owns it.
 
-The pipeline also **disables** one core CommonMark construct: `disableIndentedCode` (@processor/utils.ts) turns off indented code blocks, matching MDX (`micromark-extension-mdx-md`). Content indented 4+ columns parses as ordinary markdown/HTML at any depth, and code requires an explicit fence (CX-3739). Both the main parser and the component-body re-parser (`getInlineMdProcessor`) register it.
+The pipeline also **disables** one core CommonMark construct: `disableIndentedCode` (@processor/utils.ts) turns off indented code blocks, matching MDX (`micromark-extension-mdx-md`). Content indented 4+ columns parses as ordinary markdown/HTML at any depth, and code requires an explicit fence (CX-3739). Both the main parser and the component-body re-parser (`reparseMarkdownFragment`) register it.
 
 ### Example: magic blocks
 

@@ -1,6 +1,6 @@
 import type { Html } from 'mdast';
 
-import { createValueToSourceMapper } from '../../../utils';
+import { createNodeValueToDocumentMapper } from '../parse-markdown-fragment';
 
 import { walkTags } from './tag-walker';
 
@@ -56,10 +56,10 @@ const findTableRanges = (html: string): { end: number; start: number }[] => {
  * The surrounding raw HTML (the wrapper's open/close tags) would be re-nested
  * around the parsed tables by rehype-raw.
  *
- * Returns null when there is no wrapped table to extract. `source` is the string the node's
- * positions index into, so the parts' positions survive stripped container prefixes.
+ * Returns null when there is no wrapped table to extract. `documentSource` is the page the
+ * node's positions index into, so the parts' positions survive stripped container prefixes.
  */
-export const splitHtmlWithNestedTables = (node: Html, source?: string): Html[] | null => {
+export const splitHtmlWithNestedTables = (node: Html, documentSource: string): Html[] | null => {
   const { value } = node;
   // This is a top-level table, so we don't need to split it
   if (TOP_LEVEL_TABLE_TAG_RE.test(value)) return null;
@@ -70,11 +70,11 @@ export const splitHtmlWithNestedTables = (node: Html, source?: string): Html[] |
   const ranges = findTableRanges(value);
   if (ranges.length === 0) return null;
 
-  const toSourcePoint = createValueToSourceMapper(node.position, value, source);
+  const toDocumentPosition = createNodeValueToDocumentMapper(node, documentSource);
   const sliceToHtml = (from: number, to: number): Html => ({
     type: 'html',
     value: value.slice(from, to),
-    ...(toSourcePoint && { position: { start: toSourcePoint(from), end: toSourcePoint(to) } }),
+    ...(toDocumentPosition && { position: toDocumentPosition(from, to) }),
   });
 
   const parts: Html[] = [];
