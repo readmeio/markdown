@@ -218,6 +218,7 @@ describe('extension registration is centralised (CX-3708)', () => {
       'lib/stripComments.ts',
       'processor/transform/mdxish/components/utils.ts',
       'processor/transform/mdxish/magic-blocks/magic-block-transformer.ts',
+      'processor/transform/mdxish/parse-markdown-fragment.ts',
       'processor/transform/mdxish/tables/mdxish-tables.ts',
     ]);
   });
