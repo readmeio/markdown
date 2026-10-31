@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 16.1.0
+### ✨ New & Improved
+
+* **tabs:** support anchors inside tabs ([#1668](https://github.com/readmeio/markdown/issues/1668)) ([3e14638](https://github.com/readmeio/markdown/commit/3e14638bab7b8c4dea6a749ee862bff80641df97))
+
+### 🛠 Fixes & Updates
+
+* **styles:** stop sass emitting a BOM that breaks the img-align-right selector ([#1667](https://github.com/readmeio/markdown/issues/1667)) ([018e1a8](https://github.com/readmeio/markdown/commit/018e1a85872676a3fcee6dd14cf265faa905c32b))
+
 ## Version 16.0.0
 ### ⚠ BREAKING CHANGES
 
