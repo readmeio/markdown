@@ -5,7 +5,7 @@ import type { Heading, Paragraph, Root, RootContent, Table, TableCell } from 'md
 import { NodeTypes } from '../../../enums';
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 import { normalizeWidth, widthFromStyleString } from '../../../processor/transform/mdxish/tables/cell-width';
-import { resolvedSlicesUnder } from '../../helpers';
+import { sourceSlicesUnder } from '../../helpers';
 
 describe('normalizeWidth', () => {
   it.each([
@@ -62,7 +62,7 @@ describe('widthFromStyleString', () => {
 describe('mdxish-jsx-to-mdast transformer', () => {
   const processWithNewTypes = (md: string): Root => {
     const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-    return processor.runSync(processor.parse(parserReadyContent)) as Root;
+    return processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
   };
 
   describe('with newEditorTypes enabled', () => {
@@ -226,25 +226,46 @@ describe('mdxish-jsx-to-mdast transformer', () => {
 
         it('resolves caption children against the caption at the top level', () => {
           const md = 'Hello world\n\n<Image src="https://x.com/a.png" caption="A **bold** cap" />';
-          expect(resolvedSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual(captionSlices('A **bold** cap'));
+          expect(sourceSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual(captionSlices('A **bold** cap'));
         });
 
         it('resolves caption children inside a component body', () => {
           const md = ['Hello world', '', '<Accordion title="A">', '  <Image src="https://x.com/a.png" caption="A **bold** cap" />', '</Accordion>'].join('\n'); // prettier-ignore
-          expect(resolvedSlicesUnder(md, isImageBlock)).toStrictEqual([
+          expect(sourceSlicesUnder(md, isImageBlock)).toStrictEqual([
             ['image-block', '  <Image src="https://x.com/a.png" caption="A **bold** cap" />'],
             ...captionSlices('A **bold** cap'),
           ]);
         });
 
-        // Entities are decoded before the re-parse, so slices index the decoded caption.
-        it('resolves against the decoded caption when it holds entities', () => {
-          const md = '<Image src="https://x.com/a.png" caption="&#x22;A&#x22; **b**" />';
-          expect(resolvedSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual([
-            ['paragraph', '"A" **b**'],
-            ['text', '"A" '],
-            ['strong', '**b**'],
-            ['text', 'b'],
+        // Only the `caption` attribute itself: not `data-caption`, nor `caption=` inside another value.
+        it.each([
+          ['a `data-caption` attribute', 'data-caption="wrong"'],
+          ['`caption=` inside another attribute', 'alt="the caption=\'wrong\' here"'],
+        ])('resolves the caption past %s', (_, otherAttribute) => {
+          const md = `<Image src="https://x.com/a.png" ${otherAttribute} caption="A **bold** cap" />`;
+          expect(sourceSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual(captionSlices('A **bold** cap'));
+        });
+
+        // RM-18923: captions went through the strict MDX parser, so a stray `<` threw and
+        // took down the whole editor parse.
+        it.each([
+          ['a <b', [['paragraph', 'a <b'], ['text', 'a <b']]],
+          ['a **b** <x', [['paragraph', 'a **b** <x'], ['text', 'a '], ['strong', '**b**'], ['text', 'b'], ['text', ' <x']]],
+        ])('parses a caption holding a stray `<` (%s)', (caption, slices) => {
+          const md = `<Image src="https://x.com/a.png" caption="${caption}" />`;
+          expect(sourceSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual(slices);
+        }); // prettier-ignore
+
+        // Entities are decoded before the re-parse, so the line isn't verbatim in the
+        // document and every node takes the caption's whole range.
+        it('falls back to the caption range when it holds entities', () => {
+          const caption = '&#x22;A&#x22; **b**';
+          const md = `<Image src="https://x.com/a.png" caption="${caption}" />`;
+          expect(sourceSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual([
+            ['paragraph', caption],
+            ['text', caption],
+            ['strong', caption],
+            ['text', caption],
           ]);
         });
       });
@@ -520,8 +541,28 @@ Body content
             ['text', 'b'],
           ],
         ],
+        [
+          'a NoTranslate in a heading',
+          '## Hello <NoTranslate>Acme __Cloud__</NoTranslate>',
+          [
+            [NodeTypes.noTranslate, '<NoTranslate>Acme __Cloud__</NoTranslate>'],
+            ['text', 'Acme '],
+            ['strong', '__Cloud__'],
+            ['text', 'Cloud'],
+          ],
+        ],
+        [
+          'a NoTranslate in a table cell',
+          '| Name |\n| --- |\n| <NoTranslate>Acme *Cloud*</NoTranslate> |',
+          [
+            [NodeTypes.noTranslate, '<NoTranslate>Acme *Cloud*</NoTranslate>'],
+            ['text', 'Acme '],
+            ['emphasis', '*Cloud*'],
+            ['text', 'Cloud'],
+          ],
+        ],
       ])('should slice every node under a NoTranslate with %s to its own source', (_label, md, slices) => {
-        expect(resolvedSlicesUnder(md, node => node.type === NodeTypes.noTranslate)).toStrictEqual(slices);
+        expect(sourceSlicesUnder(md, node => node.type === NodeTypes.noTranslate)).toStrictEqual(slices);
       });
     });
 
@@ -1388,7 +1429,7 @@ Some callout content
   describe('with newEditorTypes disabled (default)', () => {
     const processWithoutNewTypes = (md: string): Root => {
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
-      return processor.runSync(processor.parse(parserReadyContent)) as Root;
+      return processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
     };
 
     it('should leave Image as mdxJsxFlowElement', () => {

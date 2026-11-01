@@ -99,7 +99,8 @@ describe('evaluateExpressions', () => {
       const fromTag = findElementByTagName(mdxish('<Callout theme="info">yes</Callout>'), 'Callout');
 
       expect(fromExpression).toMatchObject({ tagName: 'Callout', properties: { theme: 'info' } });
-      expect(fromExpression?.children).toStrictEqual(fromTag?.children);
+      // An expression's output is re-parsed on its own, so only its positions differ.
+      expect(fromExpression).toStrictEqualExceptPosition(fromTag);
     });
 
     it('should parse markdown in the children of a component inside an expression', () => {
@@ -227,7 +228,7 @@ describe('evaluateExpressions', () => {
       const tag = mdxish('<Tabs>\n<Tab title="One">\na\n</Tab>\n</Tabs>');
 
       expect(expression.children.filter(child => child.type === 'element')).toMatchObject([{ tagName: 'Tabs' }]);
-      expect(findElementByTagName(expression, 'Tabs')).toStrictEqual(findElementByTagName(tag, 'Tabs'));
+      expect(findElementByTagName(expression, 'Tabs')).toStrictEqualExceptPosition(findElementByTagName(tag, 'Tabs'));
     });
 
     it('should keep an inline result in its paragraph', () => {

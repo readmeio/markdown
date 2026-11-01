@@ -1,7 +1,7 @@
 import type { Element, Text } from 'hast';
 
 import { mdxish } from '../../../lib';
-import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
+import { findAllElementsByTagName, findElementByTagName, sourceSlicesUnder } from '../../helpers';
 
 /** Concatenated text of a subtree, for asserting what stayed literal vs. evaluated. */
 const textOf = (node: Element): string =>
@@ -243,6 +243,19 @@ describe('variablesTextTransformer', () => {
       const tree = mdxish('```\n{user.name}\n```');
       const variable = findElementByTagName(tree, 'variable');
       expect(variable).toBeNull();
+    });
+  });
+
+  // RM-18923: the variable replaced its expression without keeping its position.
+  describe('positions', () => {
+    it.each([
+      ['top-level text', 'Hi {user.name} there'],
+      ['a component body', '<Callout icon="📘" theme="info">\n  Hi {user.name}\n</Callout>'],
+      ['an Image caption', '<Image src="https://x.com/a.png" caption="Hi {user.name}" />'],
+    ])('keeps the source range of a variable in %s', (_, md) => {
+      expect(sourceSlicesUnder(md, ({ type }) => type === 'readme-variable')).toStrictEqual([
+        ['readme-variable', '{user.name}'],
+      ]);
     });
   });
 });

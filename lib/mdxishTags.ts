@@ -22,7 +22,7 @@ const tags = (doc: string) => {
     .use(mdxishTables);
   const tree = processor.parse(doc);
 
-  visit(processor.runSync(tree), isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {
+  visit(processor.runSync(tree, doc), isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (node.name?.match(/^[A-Z]/)) {
       set.add(node.name);
     }
