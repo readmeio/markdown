@@ -5,7 +5,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import mdxishInlineComponents from '../../processor/transform/mdxish/components/inline-mdx-blocks';
-import { collectNodes } from '../helpers';
+import { collectNodes, sourceSlicesUnder } from '../helpers';
 
 /**
  * Helper to parse markdown and apply only the mdxishInlineComponents plugin.
@@ -593,5 +593,30 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
+  });
+
+  // RM-18923: the merged element had no position, so spans crossing a glossary term lost it.
+  describe('positions', () => {
+    it.each([
+      ['at the top level', 'Text <Glossary>term</Glossary> after'],
+      [
+        'inside a component body',
+        '<Callout icon="📘" theme="info">\n  Text <Glossary>term</Glossary> after\n</Callout>',
+      ],
+    ])('spans the whole Glossary element %s', (_, md) => {
+      expect(sourceSlicesUnder(md, ({ type }) => type === 'mdxJsxTextElement')).toStrictEqual([
+        ['Glossary', '<Glossary>term</Glossary>'],
+        ['text', 'term'],
+      ]);
+    });
+
+    it('spans an Anchor with markdown children', () => {
+      expect(sourceSlicesUnder('Text <Anchor href="/x">see **this**</Anchor> after', ({ type }) => type === 'readme-anchor')).toStrictEqual([
+        ['readme-anchor', '<Anchor href="/x">see **this**</Anchor>'],
+        ['text', 'see '],
+        ['strong', '**this**'],
+        ['text', 'this'],
+      ]);
+    }); // prettier-ignore
   });
 });
