@@ -79,7 +79,8 @@ const foo = () => {
 \`}</HTMLBlock>`;
 
       const tree = mdxish(markdown);
-      expect(htmlBlockPayloads(tree)).toStrictEqual([`<pre><code>
+      expect(htmlBlockPayloads(tree)).toStrictEqual([
+        `<pre><code>
 const foo = () => {
   const bar = {
     baz: 'blammo'
@@ -87,7 +88,8 @@ const foo = () => {
 
   return bar
 }
-</code></pre>`]);
+</code></pre>`,
+      ]);
     });
 
     it('handles standalone multiline HTMLBlock with surrounding paragraphs', () => {
@@ -201,7 +203,6 @@ there`;
     });
 
     it('handles template literal with variables', () => {
-      // eslint-disable-next-line quotes
       const tree = mdxish(`<HTMLBlock>{\`<code>const x = \${variable}</code>\`}</HTMLBlock>`);
       // eslint-disable-next-line no-template-curly-in-string
       expect(htmlBlockPayloads(tree)).toStrictEqual(['<code>const x = ${variable}</code>']);
@@ -344,7 +345,9 @@ there`;
 
       // Newlines (including the blank line) inside the content must survive the
       // table re-parse and not fragment the HTMLBlock.
-      expect(htmlBlockPayloads(tree)).toStrictEqual(['<div style="color: red;">\n<p>Hello</p>\n\n<p>World</p>\n</div>']);
+      expect(htmlBlockPayloads(tree)).toStrictEqual([
+        '<div style="color: red;">\n<p>Hello</p>\n\n<p>World</p>\n</div>',
+      ]);
     });
 
     it('still renders markdown in a sibling text cell', () => {

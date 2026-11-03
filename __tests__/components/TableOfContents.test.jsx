@@ -2,6 +2,8 @@ import { render, act } from '@testing-library/react';
 import React from 'react';
 
 import TableOfContents from '../../components/TableOfContents';
+// `reactProcessor` and `reactTOC` are legacy names this entry no longer exports.
+// oxlint-disable-next-line import/named
 import { utils, reactProcessor, reactTOC } from '../../index';
 
 const { GlossaryContext, VariablesContext } = utils;
@@ -88,7 +90,9 @@ describe('Table of Contents', () => {
         constructor(callback) {
           observerCallback = callback;
         }
-        observe(el) { observedElements.push(el); }
+        observe(el) {
+          observedElements.push(el);
+        }
         disconnect() {}
       };
 
@@ -135,9 +139,7 @@ describe('Table of Contents', () => {
 
       // Simulate the first heading entering the viewport
       act(() => {
-        observerCallback([
-          { target: document.getElementById('heading-1'), isIntersecting: true },
-        ]);
+        observerCallback([{ target: document.getElementById('heading-1'), isIntersecting: true }]);
       });
 
       const links = container.querySelectorAll('a');
@@ -181,9 +183,7 @@ describe('Table of Contents', () => {
 
       // Observer fires with heading-1 visible — should update since click lock is released
       act(() => {
-        observerCallback([
-          { target: document.getElementById('heading-1'), isIntersecting: true },
-        ]);
+        observerCallback([{ target: document.getElementById('heading-1'), isIntersecting: true }]);
       });
 
       const firstLink = [...links].find(a => a.getAttribute('href') === '#heading-1');
@@ -342,9 +342,7 @@ describe('Table of Contents', () => {
 
       // Simulate a heading entering the viewport
       act(() => {
-        observerCallback([
-          { target: document.getElementById('heading-1'), isIntersecting: true },
-        ]);
+        observerCallback([{ target: document.getElementById('heading-1'), isIntersecting: true }]);
       });
 
       const links = container.querySelectorAll('a');

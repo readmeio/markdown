@@ -1,8 +1,7 @@
-
 import { mdast } from '../../../lib';
 
 describe('convert anchor tag', () => {
-    it('converts anchor tag to link node', () => {
+  it('converts anchor tag to link node', () => {
     const mdx = `
 <Anchor href="https://readme.com">ReadMe</Anchor>
     `;
@@ -15,4 +14,4 @@ describe('convert anchor tag', () => {
 
     expect(mdast(mdx)).toMatchSnapshot();
   });
-})
+});

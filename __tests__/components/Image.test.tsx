@@ -25,12 +25,7 @@ describe('Image', () => {
 
   it('should render as a figure/figcaption if it has a caption', () => {
     const { container } = render(
-      <Image
-        align="center"
-        caption="A pizza bro"
-        lazy={true}
-        src="https://files.readme.io/b8674d6-pizzabro.jpg"
-      />
+      <Image align="center" caption="A pizza bro" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" />,
     );
 
     expect(container.querySelector('figure')).toMatchInlineSnapshot(`
@@ -69,7 +64,7 @@ describe('Image', () => {
         caption="a long caption that would otherwise widen the figure past the image"
         lazy={true}
         src="https://files.readme.io/b8674d6-pizzabro.jpg"
-      />
+      />,
     );
 
     const figure = container.querySelector('figure');
@@ -109,12 +104,7 @@ describe('Image', () => {
 
   it('should hoist a percentage width onto a left-aligned captioned figure', () => {
     const { container } = render(
-      <Image
-        align="left"
-        caption="caption"
-        src="https://files.readme.io/b8674d6-pizzabro.jpg"
-        width="50%"
-      />,
+      <Image align="left" caption="caption" src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />,
     );
 
     expect(container.querySelector('figure')).toHaveAttribute('style', 'width: 50%;');
@@ -136,7 +126,7 @@ describe('Image', () => {
 
   it('should wrap in an img-frame div when framed', () => {
     const { container } = render(
-      <Image align="left" framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" />
+      <Image align="left" framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" />,
     );
 
     expect(container.querySelector('.img-frame')).toMatchInlineSnapshot(`
@@ -169,7 +159,7 @@ describe('Image', () => {
 
   it('should hoist percentage width onto a left-aligned framed wrapper', () => {
     const { container } = render(
-      <Image align="left" framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />
+      <Image align="left" framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />,
     );
 
     const frame = container.querySelector('.img-frame');
@@ -178,7 +168,7 @@ describe('Image', () => {
 
   it('should hoist percentage width onto a right-aligned framed wrapper', () => {
     const { container } = render(
-      <Image align="right" framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />
+      <Image align="right" framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />,
     );
 
     const frame = container.querySelector('.img-frame');
@@ -187,7 +177,7 @@ describe('Image', () => {
 
   it('should leave a center-aligned framed wrapper full width (no hoisted percentage width)', () => {
     const { container } = render(
-      <Image align="center" framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />
+      <Image align="center" framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />,
     );
 
     const frame = container.querySelector('.img-frame');
@@ -196,7 +186,7 @@ describe('Image', () => {
 
   it('should leave a default-aligned framed wrapper full width (no hoisted percentage width)', () => {
     const { container } = render(
-      <Image framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />
+      <Image framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />,
     );
 
     const frame = container.querySelector('.img-frame');
@@ -206,12 +196,7 @@ describe('Image', () => {
 
   it('should wrap in an img-frame figure with a sibling figcaption when framed with a caption', () => {
     const { container } = render(
-      <Image
-        caption="Framed pizza bro"
-        framed="true"
-        lazy={true}
-        src="https://files.readme.io/b8674d6-pizzabro.jpg"
-      />
+      <Image caption="Framed pizza bro" framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" />,
     );
 
     expect(container.querySelector('.img-frame')).toMatchInlineSnapshot(`
@@ -277,23 +262,19 @@ describe('Image', () => {
     expect(() => render(<Content />)).not.toThrow();
 
     const captured = captureMdxishProps(md, 'img');
-    expect(typeof captured.style).toBe('object');
+    expect(captured.style).toBeTypeOf('object');
     expect(captured.style).toMatchObject({ color: 'red' });
   });
 
   it('should forward style to the inner <img>', () => {
-    render(
-      <Image src="https://files.readme.io/b8674d6-pizzabro.jpg" style={{ width: '120px', height: '28px' }} />,
-    );
+    render(<Image src="https://files.readme.io/b8674d6-pizzabro.jpg" style={{ width: '120px', height: '28px' }} />);
 
     const img = screen.getByRole('img');
     expect(img).toHaveStyle({ width: '120px', height: '28px' });
   });
 
   it('should use style.width and style.height as fallback when width/height props are missing', () => {
-    render(
-      <Image src="https://files.readme.io/b8674d6-pizzabro.jpg" style={{ width: '120px', height: '28px' }} />,
-    );
+    render(<Image src="https://files.readme.io/b8674d6-pizzabro.jpg" style={{ width: '120px', height: '28px' }} />);
 
     const img = screen.getByRole('img');
     expect(img).toHaveAttribute('width', '120px');
@@ -353,7 +334,11 @@ describe('Image', () => {
 
   it('should forward style to the inner <img> on the captioned branch', () => {
     const { container } = render(
-      <Image caption="A pizza bro" src="https://files.readme.io/b8674d6-pizzabro.jpg" style={{ filter: 'blur(2px)' }} />,
+      <Image
+        caption="A pizza bro"
+        src="https://files.readme.io/b8674d6-pizzabro.jpg"
+        style={{ filter: 'blur(2px)' }}
+      />,
     );
 
     const img = container.querySelector('figure img');

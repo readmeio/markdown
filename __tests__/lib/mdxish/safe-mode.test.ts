@@ -5,8 +5,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { mix } from '../../../lib';
 import * as utils from '../../../processor/utils';
 
-
-vi.mock('../../../processor/utils', async importOriginal => {
+vi.mock(import('../../../processor/utils'), async importOriginal => {
   const actual = (await importOriginal()) as Record<string, unknown> & { evaluate: (source: string) => unknown };
   return {
     ...actual,

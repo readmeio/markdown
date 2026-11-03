@@ -7,7 +7,7 @@ import { mdxish } from '../../lib';
 import { mdastV6Wrapper } from '../helpers';
 
 function findAllHeadings(tree: Root): { id: string }[] {
-  const headings: { id: string; }[] = [];
+  const headings: { id: string }[] = [];
   visit(tree, 'element', (node: Element) => {
     if (/^h[1-6]$/.test(node.tagName) && node.properties?.id) {
       headings.push({ id: String(node.properties.id) });
@@ -16,8 +16,8 @@ function findAllHeadings(tree: Root): { id: string }[] {
   return headings;
 }
 
-function findAllHeadingsInMdast(tree: Root): { id: string; }[] {
-  const headings: { id: string; }[] = [];
+function findAllHeadingsInMdast(tree: Root): { id: string }[] {
+  const headings: { id: string }[] = [];
   visit(tree, 'heading', (node: Heading) => {
     if (node.data?.hProperties?.id) {
       headings.push({ id: String(node.data.hProperties.id) });

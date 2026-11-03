@@ -11,18 +11,7 @@ export interface RepairResult {
   value: string;
 }
 
-
-export const tableTags = new Set([
-  'thead',
-  'tbody',
-  'tfoot',
-  'caption',
-  'colgroup',
-  'col',
-  'tr',
-  'th',
-  'td',
-]);
+export const tableTags = new Set(['thead', 'tbody', 'tfoot', 'caption', 'colgroup', 'col', 'tr', 'th', 'td']);
 
 /**
  * Replaces every paragraph node with its inline children. Used where paragraphs
@@ -73,4 +62,3 @@ export const applyInserts = (html: string, inserts: Insert[]): RepairResult => {
   });
   return { value: out + html.slice(cursor), inserts: sorted };
 };
-

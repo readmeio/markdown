@@ -43,7 +43,6 @@ const run = (string: string, _opts: RunOpts = {}) => {
 
   const tocsByTag: Record<string, RMDXModule['toc']> = {};
   const exportedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { default: Content, toc, Toc, ...rest } = mod;
     memo[tag] = Content;
     tocsByTag[tag] = toc;
@@ -68,7 +67,6 @@ const run = (string: string, _opts: RunOpts = {}) => {
     } as RunOptions) as RMDXModule;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { Toc: _Toc, toc, default: Content, stylesheet, ...exports } = exec(string);
 
   let Toc: React.FC | undefined;

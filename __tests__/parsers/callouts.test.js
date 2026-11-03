@@ -78,9 +78,7 @@ describe('Parse RDMD Callouts', () => {
 
     const tree = mdast(text);
     // Title
-    expect(tree.children[0].children[0].children[0].value).toBe(
-      'Undocumented Behavior',
-    );
+    expect(tree.children[0].children[0].children[0].value).toBe('Undocumented Behavior');
     // Body
     expect(tree.children[0].children[1].children[0].value).toBe(
       'Lorem ipsum dolor  sit amet consectetur adipisicing elit.',

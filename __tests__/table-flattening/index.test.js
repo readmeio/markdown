@@ -1,3 +1,5 @@
+// `astToPlainText` is a legacy name this entry no longer exports. The suite is skipped.
+// oxlint-disable-next-line import/named
 import { astToPlainText, hast } from '../../index';
 
 describe.skip('astToPlainText with tables', () => {

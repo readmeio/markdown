@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 
 import { normalizeYouTubeUrlToEmbedUrl } from './normalizeYouTubeUrl';
@@ -70,19 +68,19 @@ const Embed = ({
   };
 
   // Fall back to a direct iframe for URL-derivable embed types when html is missing.
-  const renderTypeAsIframe =
-    !html && !explicitOptOut && url && typeOfEmbed && IFRAME_DERIVABLE_TYPES.has(typeOfEmbed);
+  const renderTypeAsIframe = !html && !explicitOptOut && url && typeOfEmbed && IFRAME_DERIVABLE_TYPES.has(typeOfEmbed);
 
   if (iframe || renderTypeAsIframe) {
     const src = normalizeYouTubeUrlToEmbedUrl(url);
     return <iframe {...spreadAttrs} src={src} style={iframeStyle} title={title} />;
   }
 
-  if (!providerUrl && url)
+  if (!providerUrl && url) {
     providerUrl = new URL(url).hostname
       .split(/(?:www)?\./)
       .filter(i => i)
       .join('.');
+  }
 
   if (!providerName) providerName = providerUrl;
 

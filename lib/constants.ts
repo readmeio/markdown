@@ -13,15 +13,7 @@ export const componentNamePattern = /^[A-Z][A-Za-z0-9_]*$/;
  *
  * @see https://github.com/syntax-tree/mdast#flowcontent
  */
-export const FLOW_TYPES = new Set([
-  'blockquote',
-  'code',
-  'heading',
-  'html',
-  'list',
-  'table',
-  'thematicBreak',
-]);
+export const FLOW_TYPES = new Set(['blockquote', 'code', 'heading', 'html', 'list', 'table', 'thematicBreak']);
 
 /**
  * MDAST parent types whose children are restricted to inline content. A block-level
@@ -85,18 +77,13 @@ export const GENERIC_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>([
  * on purpose — claiming it yields the same `html` node, and the transforms skip it
  * by name via {@link GENERIC_MDX_COMPONENT_EXCLUDED_TAGS}.
  */
-export const TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>([
-  'Table',
-  ...INLINE_COMPONENT_TAGS,
-]);
+export const TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>(['Table', ...INLINE_COMPONENT_TAGS]);
 
 /**
  * Lowercased variant of {@link INLINE_COMPONENT_TAGS} for consumers that
  * run after rehype (where hast `tagName` is normalized to lowercase).
  */
-export const INLINE_COMPONENT_TAGS_LOWER = new Set(
-  [...INLINE_COMPONENT_TAGS].map(t => t.toLowerCase()),
-);
+export const INLINE_COMPONENT_TAGS_LOWER = new Set([...INLINE_COMPONENT_TAGS].map(t => t.toLowerCase()));
 
 /** Raw markup props injected with `dangerouslySetInnerHTML` by HTMLBlock and Embed; never interpolate reader values. */
 export const RAW_HTML_PROP_NAMES = new Set(['html']);

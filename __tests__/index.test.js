@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react';
 import React, { createElement } from 'react';
 
 import BaseUrlContext from '../contexts/BaseUrl';
+// `html` and `astToPlainText` are legacy names this entry no longer exports. The suite still calls them.
+// oxlint-disable-next-line import/named
 import { run, compile, utils, html as _html, mdast, hast as _hast, plain, mdx, mix, astToPlainText } from '../index';
 import { options } from '../options';
 import { tableFlattening } from '../processor/plugin/table-flattening';
@@ -9,9 +11,9 @@ import { tableFlattening } from '../processor/plugin/table-flattening';
 import { execute } from './helpers';
 
 test.skip('it should have the proper utils exports', () => {
-  expect(typeof utils.BaseUrlContext).toBe('object');
-  expect(typeof utils.GlossaryContext).toBe('object');
-  expect(typeof utils.VariablesContext).toBe('object');
+  expect(utils.BaseUrlContext).toBeTypeOf('object');
+  expect(utils.GlossaryContext).toBeTypeOf('object');
+  expect(utils.VariablesContext).toBeTypeOf('object');
 
   expect(options).toStrictEqual({
     alwaysThrow: false,

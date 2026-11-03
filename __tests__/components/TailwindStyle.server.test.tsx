@@ -1,7 +1,6 @@
 // @vitest-environment node
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-
 import { describe, expect, it, vi } from 'vitest';
 
 import TailwindStyle from '../../components/TailwindStyle';
@@ -9,7 +8,7 @@ import { tailwindPrefix } from '../../utils/consts';
 import { tailwindCompiler } from '../../utils/tailwind-compiler';
 import { silenceConsole } from '../helpers';
 
-vi.mock('../../utils/tailwind-compiler', () => ({
+vi.mock(import('../../utils/tailwind-compiler'), () => ({
   tailwindCompiler: vi.fn(),
 }));
 

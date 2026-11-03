@@ -30,9 +30,7 @@ describe('Embed', () => {
     });
 
     it('renders an iframe when iframe is true', () => {
-      const { container } = render(
-        <Embed iframe title="Demo" url="https://example.com/embed" />,
-      );
+      const { container } = render(<Embed iframe title="Demo" url="https://example.com/embed" />);
 
       const iframe = container.querySelector('iframe');
       expect(iframe).toHaveAttribute('src', 'https://example.com/embed');
@@ -41,9 +39,7 @@ describe('Embed', () => {
     });
 
     it('normalizes a YouTube URL in the iframe path even without typeOfEmbed="youtube"', () => {
-      const { container } = render(
-        <Embed iframe title="Demo" url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />,
-      );
+      const { container } = render(<Embed iframe title="Demo" url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />);
 
       expect(container.querySelector('iframe')).toHaveAttribute('src', 'https://www.youtube.com/embed/dQw4w9WgXcQ');
     });
@@ -57,17 +53,13 @@ describe('Embed', () => {
     });
 
     it('leaves a non-YouTube URL untouched in the iframe path', () => {
-      const { container } = render(
-        <Embed iframe title="Demo" url="https://example.com/watch?v=dQw4w9WgXcQ" />,
-      );
+      const { container } = render(<Embed iframe title="Demo" url="https://example.com/watch?v=dQw4w9WgXcQ" />);
 
       expect(container.querySelector('iframe')).toHaveAttribute('src', 'https://example.com/watch?v=dQw4w9WgXcQ');
     });
 
     it('renders an iframe for iframe-derivable embed types without html', () => {
-      const { container } = render(
-        <Embed title="" typeOfEmbed="pdf" url="https://example.com/doc.pdf" />,
-      );
+      const { container } = render(<Embed title="" typeOfEmbed="pdf" url="https://example.com/doc.pdf" />);
 
       expect(container.querySelector('iframe')).toHaveAttribute('src', 'https://example.com/doc.pdf');
     });
@@ -81,18 +73,14 @@ describe('Embed', () => {
     });
 
     it('renders a fallback view link when the title is @embed', () => {
-      const { container } = render(
-        <Embed title="@embed" url="https://gist.github.com/foo/abc123" />,
-      );
+      const { container } = render(<Embed title="@embed" url="https://gist.github.com/foo/abc123" />);
 
       expect(container.querySelector('.embed-body-url')).toHaveTextContent('https://gist.github.com/foo/abc123');
       expect(container.querySelector('.embed-title')).toBeNull();
     });
 
     it('renders a link for non-iframe-derivable embed types', () => {
-      const { container } = render(
-        <Embed title="" typeOfEmbed="github" url="https://gist.github.com/foo/abc123" />,
-      );
+      const { container } = render(<Embed title="" typeOfEmbed="github" url="https://gist.github.com/foo/abc123" />);
 
       expect(container.querySelector('a.embed-link')).toHaveAttribute('href', 'https://gist.github.com/foo/abc123');
       expect(container.querySelector('iframe')).toBeNull();
@@ -139,11 +127,15 @@ describe('Embed', () => {
         ['watch URL', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'https://www.youtube.com/embed/dQw4w9WgXcQ'],
         ['youtu.be short link', 'https://youtu.be/dQw4w9WgXcQ', 'https://www.youtube.com/embed/dQw4w9WgXcQ'],
         ['shorts URL', 'https://www.youtube.com/shorts/dQw4w9WgXcQ', 'https://www.youtube.com/embed/dQw4w9WgXcQ'],
-        ['already-embeddable URL', 'https://www.youtube.com/embed/dQw4w9WgXcQ', 'https://www.youtube.com/embed/dQw4w9WgXcQ'],
+        [
+          'already-embeddable URL',
+          'https://www.youtube.com/embed/dQw4w9WgXcQ',
+          'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        ],
       ])('converts a %s', (_label, url, expected) => {
         expect(normalizeYouTubeUrlToEmbedUrl(url)).toBe(expected);
       });
-    
+
       it.each([
         ['non-URL input', 'not a url'],
         ['YouTube URL with no video id', 'https://www.youtube.com/feed/subscriptions'],
@@ -151,11 +143,11 @@ describe('Embed', () => {
       ])('returns the %s unchanged', (_label, url) => {
         expect(normalizeYouTubeUrlToEmbedUrl(url)).toBe(url);
       });
-    
+
       describe('timestamps', () => {
         const watch = (timestamp: string) => `https://www.youtube.com/watch?v=dQw4w9WgXcQ&${timestamp}`;
         const embed = (start: string) => `https://www.youtube.com/embed/dQw4w9WgXcQ?start=${start}`;
-    
+
         it.each([
           ['plain seconds via t', watch('t=90'), embed('90')],
           ['hours, minutes, and seconds via t', watch('t=1h2m3s'), embed('3723')],
@@ -163,11 +155,11 @@ describe('Embed', () => {
         ])('carries %s', (_label, url, expected) => {
           expect(normalizeYouTubeUrlToEmbedUrl(url)).toBe(expected);
         });
-    
+
         it('prefers start over t when both are present', () => {
           expect(normalizeYouTubeUrlToEmbedUrl(watch('start=42&t=596s'))).toBe(embed('42'));
         });
-    
+
         it.each([
           ['a zero timestamp', watch('t=0s')],
           ['a non-numeric timestamp', watch('t=abc')],

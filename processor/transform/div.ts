@@ -20,7 +20,6 @@ const divTransformer = (): Transform => tree => {
       // Check if the div is a tutorial-tile in disguise
       case NodeTypes.tutorialTile:
         {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { hName, hProperties, ...rest } = node.data;
           const tile = {
             ...rest,

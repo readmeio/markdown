@@ -286,7 +286,6 @@ const calloutTransformer = ({ isMdxish = false } = {}) => {
         }
         return SKIP;
       }
-      return undefined;
     });
   };
   return (tree: Root) => {
