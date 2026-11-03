@@ -92,7 +92,16 @@ const embedHandler: Handler = (state, node) => {
  */
 const listItemHandler: Handler = (state, node, parent) => {
   const item = node as ListItem;
-  const result = defaultHandlers.listItem(state, item, parent);
+  // A tight item unwraps its text from `<p>`, so a block after it (a callout, a code block)
+  // loses the paragraph margin that spaces it. Wrap the text like the editor does
+  const hasTextAndBlock =
+    item.children.some(child => child.type === 'paragraph') &&
+    item.children.some(child => child.type !== 'paragraph' && child.type !== 'list');
+  const result = defaultHandlers.listItem(
+    state,
+    item,
+    hasTextAndBlock && parent?.type === 'list' ? { ...parent, spread: true } : parent,
+  );
   const first = item.children[0];
   if (!first || first.type === 'paragraph') return result;
 

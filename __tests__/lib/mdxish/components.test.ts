@@ -510,7 +510,9 @@ Final plain paragraph at end of file.`;
               type: 'element',
               tagName: 'li',
               children: [
-                { type: 'text', value: 'three\n' },
+                { type: 'text', value: '\n' },
+                { type: 'element', tagName: 'p', children: [{ type: 'text', value: 'three' }] },
+                { type: 'text', value: '\n' },
                 {
                   type: 'element',
                   tagName: 'Callout',
@@ -536,7 +538,9 @@ Final plain paragraph at end of file.`;
       const md = '- one\n<ExampleComponent header="h">\n**bold** body\n</ExampleComponent>';
       const tree = mdxish(md, { components: exampleComponents });
       expect(findElementByTagName(tree, 'li')?.children).toMatchObject([
-        { type: 'text', value: 'one\n' },
+        { type: 'text', value: '\n' },
+        { type: 'element', tagName: 'p', children: [{ type: 'text', value: 'one' }] },
+        { type: 'text', value: '\n' },
         {
           type: 'element',
           tagName: 'ExampleComponent',
@@ -619,7 +623,9 @@ Final plain paragraph at end of file.`;
     ])('keeps a multi-line attribute expression together with %s', (_, md) => {
       const tree = mdxish(md, { components: exampleComponents });
       expect(findElementByTagName(tree, 'li')?.children).toMatchObject([
-        { type: 'text', value: 'two\n' },
+        { type: 'text', value: '\n' },
+        { type: 'element', tagName: 'p', children: [{ type: 'text', value: 'two' }] },
+        { type: 'text', value: '\n' },
         { type: 'element', tagName: 'ExampleComponent', properties: { body: 'Test content\n' }, children: [] },
         { type: 'text', value: '\n' },
       ]);
@@ -633,7 +639,9 @@ Final plain paragraph at end of file.`;
       expect(findAllElementsByTagName(tree, 'li')).toMatchObject([
         {
           children: [
-            { type: 'text', value: 'one\n' },
+            { type: 'text', value: '\n' },
+            { type: 'element', tagName: 'p', children: [{ type: 'text', value: 'one' }] },
+            { type: 'text', value: '\n' },
             { type: 'element', tagName: 'ExampleComponent', properties: { body: 'x' }, children: [] },
             { type: 'text', value: '\n' },
           ],

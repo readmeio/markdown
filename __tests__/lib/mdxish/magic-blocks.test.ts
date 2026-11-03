@@ -2265,10 +2265,9 @@ asdasdasd
                     type: 'element',
                     tagName: 'li',
                     children: [
-                      {
-                        type: 'text',
-                        value: 'Baz\n',
-                      },
+                      { type: 'text', value: '\n' },
+                      { type: 'element', tagName: 'p', children: [{ type: 'text', value: 'Baz' }] },
+                      { type: 'text', value: '\n' },
                       {
                         type: 'element',
                         tagName: 'img',
