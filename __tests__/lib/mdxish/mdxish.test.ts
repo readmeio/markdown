@@ -717,4 +717,11 @@ describe('mdxish tight list item with text and a block', () => {
   it('keeps text followed only by a sublist unwrapped', () => {
     expect(itemChildren('- text\n  - nested')).toStrictEqual(['ul']);
   });
+
+  it.each([
+    ['a link definition', '- [ref]: /url\n  text\n- next'],
+    ['an HTML comment', '- text\n  <!-- note -->\n- next'],
+  ])('keeps text next to %s unwrapped', (_, md) => {
+    expect(itemChildren(md)).toStrictEqual([]);
+  });
 });

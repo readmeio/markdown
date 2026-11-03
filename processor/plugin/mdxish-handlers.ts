@@ -83,6 +83,24 @@ const embedHandler: Handler = (state, node) => {
 };
 
 /**
+ * Whether a list item child renders as a block that needs space above it.
+ *
+ * Takes a child other than a paragraph or a sublist and returns false for nodes that render
+ * nothing visible: link and footnote definitions, and HTML comments.
+ */
+const rendersBlock = (child: ListItem['children'][number]) => {
+  switch (child.type) {
+    case 'definition':
+    case 'footnoteDefinition':
+      return false;
+    case 'html':
+      return !/^<!--[\s\S]*-->$/.test(child.value.trim());
+    default:
+      return true;
+  }
+};
+
+/**
  * Renders a list item whose marker sits alone on its line with that line kept empty.
  *
  * `-` over an indented block (a sublist, a code block) parses to the same mdast as the
@@ -96,7 +114,7 @@ const listItemHandler: Handler = (state, node, parent) => {
   // loses the paragraph margin that spaces it. Wrap the text like the editor does
   const hasTextAndBlock =
     item.children.some(child => child.type === 'paragraph') &&
-    item.children.some(child => child.type !== 'paragraph' && child.type !== 'list');
+    item.children.some(child => child.type !== 'paragraph' && child.type !== 'list' && rendersBlock(child));
   const result = defaultHandlers.listItem(
     state,
     item,
