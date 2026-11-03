@@ -26,8 +26,8 @@
       }
     }
 
-    // Browsers center th by default, so match body cells; align styles are inline and still win
-    th {
+    // Browsers center th by default, so match body cells; an align attribute or inline style still wins
+    th:not([align]) {
       text-align: inherit;
     }
 
