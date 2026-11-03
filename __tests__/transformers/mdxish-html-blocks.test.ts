@@ -1,5 +1,5 @@
 import { mdxish } from '../../lib';
-import { findElementByTagName, resolvedSlicesUnder } from '../helpers';
+import { findElementByTagName, sourceSlicesUnder } from '../helpers';
 
 describe('mdxish html blocks transformer', () => {
   describe('attribute extraction', () => {
@@ -138,21 +138,21 @@ second
 
     it('resolves a standalone <HTMLBlock> (raw html shape)', () => {
       const md = ['Hello world', '', '<Accordion title="A">', '  <HTMLBlock>{`', '  <p>hi</p>', '  `}</HTMLBlock>', '</Accordion>'].join('\n'); // prettier-ignore
-      expect(resolvedSlicesUnder(md, isHtmlBlock)).toStrictEqual([
+      expect(sourceSlicesUnder(md, isHtmlBlock)).toStrictEqual([
         ['html-block', ['  <HTMLBlock>{`', '  <p>hi</p>', '  `}</HTMLBlock>'].join('\n')],
       ]);
     });
 
     it('resolves an <HTMLBlock> embedded in a single-line raw <div>', () => {
       const md = ['Hello world', '', '<Tabs>', '  <Tab title="T">', '    <div><HTMLBlock>{`<p>hi</p>`}</HTMLBlock></div>', '  </Tab>', '</Tabs>'].join('\n'); // prettier-ignore
-      expect(resolvedSlicesUnder(md, isHtmlBlock)).toStrictEqual([
+      expect(sourceSlicesUnder(md, isHtmlBlock)).toStrictEqual([
         ['html-block', '  <div><HTMLBlock>{`<p>hi</p>`}</HTMLBlock></div>'],
       ]);
     });
 
     it('resolves an <HTMLBlock> in a table cell (JSX element shape)', () => {
       const md = ['Hello world', '', '<Accordion title="A">', '  <Table>', '    <thead>', '      <tr>', '        <th><HTMLBlock>{`<p>hi</p>`}</HTMLBlock></th>', '      </tr>', '    </thead>', '  </Table>', '</Accordion>'].join('\n'); // prettier-ignore
-      expect(resolvedSlicesUnder(md, isHtmlBlock)).toStrictEqual([
+      expect(sourceSlicesUnder(md, isHtmlBlock)).toStrictEqual([
         ['html-block', '<HTMLBlock>{`<p>hi</p>`}</HTMLBlock>'],
       ]);
     });

@@ -6,7 +6,7 @@ import { collectNodes } from '../../helpers';
 
 const parse = (doc: string): Root => {
   const { parserReadyContent, processor } = mdxishAstProcessor(doc);
-  return processor.runSync(processor.parse(parserReadyContent)) as Root;
+  return processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
 };
 
 const headingIds = (doc: string) => {

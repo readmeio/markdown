@@ -150,7 +150,7 @@ export const FEATURES = {
   document: [...BLOCK_CLAIMS, ...INLINE, ...EXPRESSIONS, 'emptyTaskListItem', 'headingId'],
 
   /**
-   * `components/utils.ts` — re-parses a component body, which should tokenize
+   * `parse-markdown-fragment.ts` — re-parses a component body, which should tokenize
    * like the document around it: when the two drifted a `<Table>` in a
    * `<Callout>` lost every row (CX-3705).
    */

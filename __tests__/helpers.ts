@@ -93,26 +93,13 @@ export const parseMdxishWithSource = (
 export const parseMdxish = (doc: string, opts: MdxishOpts = {}): MdastRoot =>
   parseMdxishWithSource(doc, opts).tree;
 
-/**
- * Parses markdown and returns a `sliceOf` that resolves each node's coordinate space the
- * way a consumer must: a node's offsets index into the nearest `data.reparseSource` on
- * itself or an ancestor, falling back to the post-preprocess document source.
- */
-export const parseMdxishWithResolvedSources = (doc: string, opts: MdxishOpts = {}) => {
+/** Parses markdown and returns a `sliceOf` reading each node's text from the document by its position. */
+export const parseMdxishWithSlices = (doc: string, opts: MdxishOpts = {}) => {
   const { source, tree } = parseMdxishWithSource(doc, opts);
-  const sourceByNode = new Map<Node, string>();
-
-  const resolve = (node: Node, inherited: string) => {
-    const resolved = node.data?.reparseSource ?? inherited;
-    sourceByNode.set(node, resolved);
-    if ('children' in node) (node.children as Node[]).forEach(child => resolve(child, resolved));
-  };
-  resolve(tree, source);
-
   return {
     tree,
     sliceOf: (node: Node): string | undefined =>
-      sourceByNode.get(node)?.slice(node.position?.start.offset, node.position?.end.offset),
+      node.position && source.slice(node.position.start.offset, node.position.end.offset),
   };
 };
 
@@ -143,14 +130,14 @@ export const collectNodes = <T extends Node = Node>(
 
 /**
  * `[label, slice]` for the first node matching `test` and every positioned node under it, sliced
- * the way a consumer must (see `parseMdxishWithResolvedSources`). Labels are the JSX name or type.
+ * from the document. Labels are the JSX name or type.
  */
-export const resolvedSlicesUnder = (
+export const sourceSlicesUnder = (
   doc: string,
   test: (node: Node) => boolean,
   opts: MdxishOpts = { newEditorTypes: true },
 ): [string, string | undefined][] => {
-  const { tree, sliceOf } = parseMdxishWithResolvedSources(doc, opts);
+  const { tree, sliceOf } = parseMdxishWithSlices(doc, opts);
   const [match] = collectNodes(tree, test);
   const slices: [string, string | undefined][] = [];
   if (!match) return slices;
