@@ -255,6 +255,7 @@ describe('Cards', () => {
       expect(container.querySelector('.CardsGrid')).toBeInTheDocument();
       const cards = container.querySelectorAll('.Card');
       expect(cards).toHaveLength(2);
+      expect(cards[0]).not.toContainElement(cards[1]);
       expect(container).toMatchSnapshot();
     });
   });

@@ -1,4 +1,4 @@
-import type { Node, Parent, RootContent } from 'mdast';
+import type { Html, Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
@@ -13,6 +13,7 @@ import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 import {
   containsMarkdownConstruct,
   findBalancedClosingTagIndex,
+  findComponentSiblingSpans,
   getInlineMdProcessor,
   hasExpressionAttr,
   isMarkdownPromotableHtmlTag,
@@ -190,7 +191,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
   const promoted = new WeakSet<Node>();
 
   const processChildNode = (parent: Parent, index: number) => {
-    const node = parent.children[index];
+    let node = parent.children[index];
     if (!node) return;
     // Descend into container nodes (lists, blockquotes, …) so their html children
     // are reached — unless the subtree was already promoted upstream.
@@ -199,12 +200,41 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     }
 
     // Only html nodes can be an unparsed MDX component.
-    const value = (node as { value?: string }).value;
+    let value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
 
-    const trimmed = value.trim();
-    const parsed = parseTag(trimmed, parseOpts);
+    let trimmed = value.trim();
+    let parsed = parseTag(trimmed, parseOpts);
     if (!parsed) return;
+
+    if (isPascalCase(parsed.tag) && !parsed.selfClosing && !GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(parsed.tag)) {
+      const siblings = findComponentSiblingSpans(parsed.contentAfterTag, parsed.tag);
+      if (siblings.length) {
+        const contentStart = value.length - value.trimStart().length + trimmed.length - parsed.contentAfterTag.length;
+        const toSourcePoint = createValueToSourceMapper(node.position, value, source);
+        const replacements = siblings.flatMap((sibling, siblingIndex) => {
+          const start = siblingIndex ? contentStart + sibling.start : 0;
+          const end = contentStart + sibling.end;
+          const component = {
+            ...node,
+            type: 'html',
+            value: value.slice(start, end),
+            position: toSourcePoint ? { start: toSourcePoint(start), end: toSourcePoint(end) } : undefined,
+          } satisfies Html;
+          const gap = value.slice(end, siblings[siblingIndex + 1] ? contentStart + siblings[siblingIndex + 1].start : value.length);
+          const gapNodes = gap.trim() ? parseMdChildren(gap, safeMode) : [];
+          gapNodes.forEach(gapNode => promoted.add(gapNode));
+          return [component, ...gapNodes];
+        });
+        replaceInheritingReparseSource(parent, index, replacements);
+        [node] = replacements;
+        if (node.type !== 'html') return;
+        value = node.value;
+        trimmed = value.trim();
+        parsed = parseTag(trimmed, parseOpts);
+        if (!parsed) return;
+      }
+    }
 
     const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
 

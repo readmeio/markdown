@@ -313,22 +313,22 @@ exports[`Cards > given various card structures > mdxish: should parse when the c
         </div>
         <p>
           Content
-          <div
-            class="Card Card_card"
-          >
-            <div
-              class="Card-content"
-            >
-              <div
-                class="Card-title"
-              >
-                Second
-              </div>
-              <p>
-                More
-              </p>
-            </div>
-          </div>
+        </p>
+      </div>
+    </div>
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          Second
+        </div>
+        <p>
+          More
         </p>
       </div>
     </div>
