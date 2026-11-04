@@ -57,6 +57,9 @@ describe('extractScripts', () => {
 
   it('peels a chain of tags that each appear only after the previous script is removed', () => {
     const html = `${'<scrip'.repeat(40)}<script></script>${'t></script>'.repeat(40)}<p>keep</p>`;
-    expect(extractScripts(html)).toStrictEqual({ html: '<p>keep</p>', scripts: new Array(41).fill('') });
+    expect(extractScripts(html)).toStrictEqual({
+      html: '<p>keep</p>',
+      scripts: Array.from({ length: 41 }, () => ''),
+    });
   });
 });
