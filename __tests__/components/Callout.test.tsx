@@ -3,7 +3,6 @@ import type { Element } from 'hast';
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-
 import { expect } from 'vitest';
 
 import Callout from '../../components/Callout';
@@ -96,8 +95,10 @@ This should be **strong** text, *italic* text, and a ~strikethrough~ text.
   });
 
   describe('given various callout structures', () => {
-    it.each(renderingEngines)('%s: should parse where there is space after the opening tag and before the closing tag', (_label, renderContent) => {
-      const mdWithSpaces = `<Callout theme="info" icon="📘">
+    it.each(renderingEngines)(
+      '%s: should parse where there is space after the opening tag and before the closing tag',
+      (_label, renderContent) => {
+        const mdWithSpaces = `<Callout theme="info" icon="📘">
 
 
 ## Heading here
@@ -107,19 +108,20 @@ Body with **markdown** support.
 
 
 </Callout>`;
-      const mdWithoutSpaces = `<Callout theme="info" icon="📘">
+        const mdWithoutSpaces = `<Callout theme="info" icon="📘">
 ## Heading here
 
 Body with **markdown** support.
 </Callout>`;
 
-      const ContentWithSpaces = renderContent(mdWithSpaces);
-      const { container: containerWithSpaces } = render(<ContentWithSpaces />);
-      const ContentWithoutSpaces = renderContent(mdWithoutSpaces);
-      const { container: containerWithoutSpaces } = render(<ContentWithoutSpaces />);
+        const ContentWithSpaces = renderContent(mdWithSpaces);
+        const { container: containerWithSpaces } = render(<ContentWithSpaces />);
+        const ContentWithoutSpaces = renderContent(mdWithoutSpaces);
+        const { container: containerWithoutSpaces } = render(<ContentWithoutSpaces />);
 
-      expect(containerWithSpaces.innerHTML).toBe(containerWithoutSpaces.innerHTML);
-    });
+        expect(containerWithSpaces.innerHTML).toBe(containerWithoutSpaces.innerHTML);
+      },
+    );
   });
 
   it('mdxish: <Callout style="..."> renders without crashing and receives style as an object', () => {
@@ -130,7 +132,7 @@ Body with **markdown** support.
     expect(() => render(<Content />)).not.toThrow();
 
     const captured = captureMdxishProps(md, 'Callout');
-    expect(typeof captured.style).toBe('object');
+    expect(captured.style).toBeTypeOf('object');
     expect(captured.style).toMatchObject({ color: 'red' });
   });
 

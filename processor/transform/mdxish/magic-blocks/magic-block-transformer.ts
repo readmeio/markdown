@@ -1,3 +1,4 @@
+import type { MagicBlockNode } from '../../../../lib/mdast-util/magic-block/types';
 /**
  * Unified plugin that transforms `magicBlock` MDAST nodes into final nodes.
  *
@@ -18,7 +19,6 @@ import type {
   RecipeJson,
   MagicBlockTransformerOptions,
 } from './types';
-import type { MagicBlockNode } from '../../../../lib/mdast-util/magic-block/types';
 import type { Root as HastRoot, Text as HastText, Element as HastElement, ElementContent } from 'hast';
 import type { Root as MdastRoot, RootContent, Parent, Paragraph, PhrasingContent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
@@ -260,8 +260,7 @@ const collapseHtmlBlockNewlines = (html: string, hardBreaks: boolean): string =>
   html.replace(hardBreaks ? NEWLINE_WITH_WHITESPACE_RE : BLANK_LINE_RE, '<br>');
 
 /** Escape a leading (possibly indented) `-`/`*`/`+` so cells don't become bullet lists. */
-const escapeLeadingListMarkers = (text: string): string =>
-  text.replace(/^([ \t]*)([-*+])(?=[ \t]|$)/gm, '$1\\$2');
+const escapeLeadingListMarkers = (text: string): string => text.replace(/^([ \t]*)([-*+])(?=[ \t]|$)/gm, '$1\\$2');
 
 /**
  * CommonMark doesn't process markdown inside HTML blocks -
@@ -292,11 +291,12 @@ const parseTableCell = (text: string, hardBreaks: boolean): MdastNode[] => {
     }
   });
 
-  const result = tree.children.length > 1
-    ? (tree.children as MdastNode[])
-    : tree.children.flatMap(n =>
-        n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
-      );
+  const result =
+    tree.children.length > 1
+      ? (tree.children as MdastNode[])
+      : tree.children.flatMap(n =>
+          n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
+        );
 
   return result;
 };
@@ -544,7 +544,11 @@ function transformMagicBlock(
 
       return [
         wrapPinnedBlocks(
-          { align: paramsJson.align ?? new Array(cols).fill('left'), children: tableChildren, type: 'table' },
+          {
+            align: paramsJson.align ?? Array.from({ length: cols }, () => 'left'),
+            children: tableChildren,
+            type: 'table',
+          },
           data,
         ),
       ];
@@ -738,8 +742,15 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
       const parentSiblingsAfter = parentParagraph.children.slice(nodePosition + 1);
 
       // Remove split-edge whitespace so lifted blocks do not render with extra blank lines.
-      while (parentSiblingsBefore.length > 0 && isWhitespacePhrasing(parentSiblingsBefore[parentSiblingsBefore.length - 1])) parentSiblingsBefore.pop();
-      while (parentSiblingsAfter.length > 0 && isWhitespacePhrasing(parentSiblingsAfter[0])) parentSiblingsAfter.shift();
+      while (
+        parentSiblingsBefore.length > 0 &&
+        isWhitespacePhrasing(parentSiblingsBefore[parentSiblingsBefore.length - 1])
+      ) {
+        parentSiblingsBefore.pop();
+      }
+      while (parentSiblingsAfter.length > 0 && isWhitespacePhrasing(parentSiblingsAfter[0])) {
+        parentSiblingsAfter.shift();
+      }
 
       const splitOffContentFromParent: RootContent[] = [...blockNodes];
       if (parentSiblingsAfter.length > 0) {

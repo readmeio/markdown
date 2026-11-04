@@ -120,9 +120,7 @@ const evaluateExports: Plugin<[Options?], Root> = (opts?: Options) => (tree: Roo
   });
 
   // Remove the mdxjsEsm nodes from the tree
-  nodesToRemove
-    .sort((a, b) => b.index - a.index)
-    .forEach(({ index, parent }) => parent.children.splice(index, 1));
+  nodesToRemove.sort((a, b) => b.index - a.index).forEach(({ index, parent }) => parent.children.splice(index, 1));
 
   if (!exportNames.length) return tree;
 
@@ -140,10 +138,10 @@ const evaluateExports: Plugin<[Options?], Root> = (opts?: Options) => (tree: Roo
 
     // Evaluate and build on the expression source
     // Use react to compile JSX codes
-    const evaluatedExports = evaluate(
-      `(() => { ${source}\nreturn { ${exportNames.join(', ')} }; })()`,
-      { React, ...importValues },
-    ) as Record<string, unknown>;
+    const evaluatedExports = evaluate(`(() => { ${source}\nreturn { ${exportNames.join(', ')} }; })()`, {
+      React,
+      ...importValues,
+    }) as Record<string, unknown>;
 
     Object.assign(scope, evaluatedExports);
   } catch (error) {

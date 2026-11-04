@@ -129,8 +129,14 @@ describe('mdxExpressionLenient tokenizer', () => {
       ['a parenthesized branch', conditional],
       ['a tag at column zero', '{true ? (\n<Callout theme="info">Yes</Callout>\n) : null}'],
       ['a body at column zero', '{true ? (\n<Callout theme="info">\nYes\n</Callout>\n) : null}'],
-      ['a deeply indented body', '{true ? (\n        <Callout theme="info">\n                Yes\n        </Callout>\n) : null}'],
-      ['an unevenly indented body', '{true ? (\n  <Callout theme="info">\n           Yes\n      More\n  </Callout>\n) : null}'],
+      [
+        'a deeply indented body',
+        '{true ? (\n        <Callout theme="info">\n                Yes\n        </Callout>\n) : null}',
+      ],
+      [
+        'an unevenly indented body',
+        '{true ? (\n  <Callout theme="info">\n           Yes\n      More\n  </Callout>\n) : null}',
+      ],
       ['a callback returning a tag', '{[1].map(i => (\n  <Callout theme="info" key={i}>Yes</Callout>\n))}'],
       ['nested components', '{true ? (\n  <Tabs>\n    <Tab title="One">Yes</Tab>\n  </Tabs>\n) : null}'],
     ])('evaluates %s without leaking the expression syntax', (_name, doc) => {
@@ -148,7 +154,9 @@ describe('mdxExpressionLenient tokenizer', () => {
     });
 
     it('wraps a literal fallback in a paragraph rather than leaving bare text at the root', () => {
-      const html = mix(['Before', '', '{nope ? (', '  <Callout theme="info">x</Callout>', ') : null}', '', 'After'].join('\n'));
+      const html = mix(
+        ['Before', '', '{nope ? (', '  <Callout theme="info">x</Callout>', ') : null}', '', 'After'].join('\n'),
+      );
 
       expect(html).toContain('<p>Before</p>');
       expect(html).toContain('<p>After</p>');
@@ -193,7 +201,10 @@ describe('mdxExpressionLenient tokenizer', () => {
 
     it.each([
       ['a JSX branch', '{true ? (\n  <Callout theme="info">\n    Yes\n\n  </Callout>\n) : null}'],
-      ['a callback body', '{[1].map(n => {\n  const label = "Yes";\n\n  return <Callout theme="info" key={n}>{label}</Callout>;\n})}'],
+      [
+        'a callback body',
+        '{[1].map(n => {\n  const label = "Yes";\n\n  return <Callout theme="info" key={n}>{label}</Callout>;\n})}',
+      ],
     ])('keeps a blank line inside %s as part of the run', (_name, doc) => {
       expect(flowExpressions(doc)).toHaveLength(1);
       expect(mix(doc)).toBe('<Callout theme="info"><p>Yes</p></Callout>');

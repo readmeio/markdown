@@ -71,7 +71,6 @@ const Image = (Props: ImageProps) => {
 
   const handleKeyDown = ({ key, metaKey: cmd }: React.KeyboardEvent<HTMLImageElement>) => {
     const cmdKey = cmd ? 'cmd+' : '';
-    // eslint-disable-next-line no-param-reassign
     key = `${cmdKey}${key.toLowerCase()}`;
 
     switch (key) {
@@ -173,10 +172,7 @@ const Image = (Props: ImageProps) => {
     // Mirrors the framed pattern: left/right captioned figures float and shrink
     // to fit so a long caption doesn't widen the float past the image.
     const isFloating = (align === 'left' || align === 'right') && !noWrap;
-    const figureClass = [
-      (align === 'left' || align === 'right') && `img-figure-${align}`,
-      noWrap && 'img-no-wrap',
-    ]
+    const figureClass = [(align === 'left' || align === 'right') && `img-figure-${align}`, noWrap && 'img-no-wrap']
       .filter(Boolean)
       .join(' ');
     const figureStyle: React.CSSProperties | undefined =

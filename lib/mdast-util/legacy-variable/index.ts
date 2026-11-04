@@ -55,9 +55,7 @@ function exitlegacyVariable(this: CompileContext, token: Parameters<Handle>[0]):
   }
 
   const variableName =
-    serialized.startsWith('<<') && serialized.endsWith('>>')
-      ? serialized.slice(2, -2)
-      : ctx?.value ?? '';
+    serialized.startsWith('<<') && serialized.endsWith('>>') ? serialized.slice(2, -2) : (ctx?.value ?? '');
 
   const nodePosition: Position = {
     start: {

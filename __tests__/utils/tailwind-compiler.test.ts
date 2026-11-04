@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 // unit-test the `@custom-variant dark (...)` string this file builds without
 // depending on a full real compile.
 const compileSpy = vi.fn().mockReturnValue({ build: () => '' });
-vi.mock('tailwindcss', () => ({ compile: (...args: unknown[]) => compileSpy(...args) }));
+vi.mock(import('tailwindcss'), () => ({ compile: (...args: unknown[]) => compileSpy(...args) }));
 
 // eslint-disable-next-line import/first
 import { tailwindCompiler } from '../../utils/tailwind-compiler';

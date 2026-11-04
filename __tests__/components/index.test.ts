@@ -111,18 +111,18 @@ describe('Components', () => {
     // After clicking, the open lightbox is portaled to document.body
     fireEvent.click(img);
     expect(box).toHaveClass('closed');
-    expect(document.body.querySelector('.lightbox.open')).toBeTruthy();
+    expect(document.body.querySelector('.lightbox.open')).not.toBeNull();
 
     fireEvent.keyDown(img, { key: 'Enter' });
-    expect(document.body.querySelector('.lightbox.open')).toBeTruthy();
+    expect(document.body.querySelector('.lightbox.open')).not.toBeNull();
 
     fireEvent.keyDown(img, { key: 'Escape' });
-    expect(document.body.querySelector('.lightbox.open')).toBeFalsy();
+    expect(document.body.querySelector('.lightbox.open')).toBeNull();
 
     fireEvent.keyDown(img, { key: ' ' });
-    expect(document.body.querySelector('.lightbox.open')).toBeTruthy();
+    expect(document.body.querySelector('.lightbox.open')).not.toBeNull();
 
     fireEvent.keyDown(img, { key: '.', metaKey: true });
-    expect(document.body.querySelector('.lightbox.open')).toBeFalsy();
+    expect(document.body.querySelector('.lightbox.open')).toBeNull();
   });
 });

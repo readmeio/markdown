@@ -19,13 +19,13 @@ const processor = unified()
     // A comment is a `comment` node, not an element, so it goes in
     // `nodeHandlers` rather than `handlers`.
     handlers: {
-      iframe: () => undefined,
-      noscript: () => undefined,
-      script: () => undefined,
-      style: () => undefined,
-      template: () => undefined,
+      iframe: () => {},
+      noscript: () => {},
+      script: () => {},
+      style: () => {},
+      template: () => {},
     },
-    nodeHandlers: { comment: () => undefined },
+    nodeHandlers: { comment: () => {} },
   })
   .use(remarkGfm)
   .use(remarkStringify, { bullet: '-', emphasis: '_', fences: true });

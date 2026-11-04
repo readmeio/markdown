@@ -165,7 +165,9 @@ describe.each(['mdxish', 'mdx'] as const)('markdown nested in HTML (%s engine)',
     const details = container.querySelector('details');
     expect(details).not.toBeNull();
     expect(details!.querySelector('summary')?.textContent).toContain('Authorization request');
-    expect(within(details!).getByRole('heading', { level: 3, name: /Authorization request/, hidden: true })).toBeInTheDocument();
+    expect(
+      within(details!).getByRole('heading', { level: 3, name: /Authorization request/, hidden: true }),
+    ).toBeInTheDocument();
 
     const code = details!.querySelector('pre code');
     expect(code).not.toBeNull();

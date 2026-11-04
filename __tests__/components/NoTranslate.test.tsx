@@ -104,7 +104,11 @@ describe('NoTranslate', () => {
           '<NoTranslate>- one\n- two\n</NoTranslate>\n\nafter',
           '<div class="readme-no-translate" translate="no"><ul><li>one</li><li>two</li></ul></div>',
         ],
-        ['a paragraph', '<NoTranslate>one\n  </NoTranslate>\n\nafter', '<div class="readme-no-translate" translate="no"><p>one</p></div>'],
+        [
+          'a paragraph',
+          '<NoTranslate>one\n  </NoTranslate>\n\nafter',
+          '<div class="readme-no-translate" translate="no"><p>one</p></div>',
+        ],
         [
           'a list closing on its last line',
           '<NoTranslate>- one\n- two</NoTranslate>  \n\nafter',
@@ -134,7 +138,10 @@ describe('NoTranslate', () => {
     });
 
     it.each(editorModes)('newEditorTypes %s: keeps lists and inline NoTranslate inside', newEditorTypes => {
-      const container = renderDoc('<NoTranslate>\n- one <NoTranslate>two</NoTranslate>\n- three\n</NoTranslate>', newEditorTypes);
+      const container = renderDoc(
+        '<NoTranslate>\n- one <NoTranslate>two</NoTranslate>\n- three\n</NoTranslate>',
+        newEditorTypes,
+      );
 
       expect(container.querySelectorAll('div[translate="no"] > ul > li')).toHaveLength(2);
       expect(container.querySelector('li span[translate="no"]')?.textContent).toBe('two');
@@ -147,7 +154,10 @@ describe('NoTranslate', () => {
     });
 
     it.each(editorModes)('newEditorTypes %s: stays inline when text follows the opener', newEditorTypes => {
-      const container = renderDoc('<NoTranslate>Acme</NoTranslate>\n\n<NoTranslate>Acme\nCloud</NoTranslate> after', newEditorTypes);
+      const container = renderDoc(
+        '<NoTranslate>Acme</NoTranslate>\n\n<NoTranslate>Acme\nCloud</NoTranslate> after',
+        newEditorTypes,
+      );
 
       expect(container.querySelector('div')).toBeNull();
       expect(container.querySelectorAll('span[translate="no"]')).toHaveLength(2);
@@ -161,9 +171,18 @@ describe('NoTranslate', () => {
 
     describe.each([
       ['an expression', '<NoTranslate>\n{"</NoTranslate>"}\n\nstill protected\n</NoTranslate>\n\nafter'],
-      ['a fenced code block', '<NoTranslate>\n````\n```\n</NoTranslate>\n```\n````\n\nstill protected\n</NoTranslate>\n\nafter'],
-      ['an inline NoTranslate closing on the last line', '<NoTranslate>\nkept <NoTranslate>inner\nstill protected</NoTranslate></NoTranslate>\n\nafter'],
-      ['a string on the closing line', '<NoTranslate>\nstill protected {"</NoTranslate><NoTranslate>"}</NoTranslate>\n\nafter'],
+      [
+        'a fenced code block',
+        '<NoTranslate>\n````\n```\n</NoTranslate>\n```\n````\n\nstill protected\n</NoTranslate>\n\nafter',
+      ],
+      [
+        'an inline NoTranslate closing on the last line',
+        '<NoTranslate>\nkept <NoTranslate>inner\nstill protected</NoTranslate></NoTranslate>\n\nafter',
+      ],
+      [
+        'a string on the closing line',
+        '<NoTranslate>\nstill protected {"</NoTranslate><NoTranslate>"}</NoTranslate>\n\nafter',
+      ],
       ['inline code on the closing line', '<NoTranslate>\nstill protected `</NoTranslate>`</NoTranslate>\n\nafter'],
     ])('with a closing tag inside %s', (_label, md) => {
       it.each(editorModes)('newEditorTypes %s: keeps the block whole after a save', newEditorTypes => {
@@ -237,8 +256,16 @@ describe('NoTranslate', () => {
   describe('in a title prop', () => {
     const cases = [
       ['an Accordion', '<Accordion title="Use <NoTranslate>Acme</NoTranslate> now">\nbody\n</Accordion>', 'summary'],
-      ['a Card', '<Cards columns={1}>\n  <Card title="Use <NoTranslate>Acme</NoTranslate> now">body</Card>\n</Cards>', '.Card-title'],
-      ['a Tab', '<Tabs>\n  <Tab title="Use <NoTranslate>Acme</NoTranslate> now">\n    body\n  </Tab>\n</Tabs>', 'button'],
+      [
+        'a Card',
+        '<Cards columns={1}>\n  <Card title="Use <NoTranslate>Acme</NoTranslate> now">body</Card>\n</Cards>',
+        '.Card-title',
+      ],
+      [
+        'a Tab',
+        '<Tabs>\n  <Tab title="Use <NoTranslate>Acme</NoTranslate> now">\n    body\n  </Tab>\n</Tabs>',
+        'button',
+      ],
     ] as const;
 
     it.each(cases)('mdxish renders the NoTranslate in %s as a span', (_label, md, selector) => {
@@ -286,7 +313,11 @@ describe('NoTranslate', () => {
   describe.each([
     ['spaces inside the tags', 'Use<NoTranslate> Acme </NoTranslate>now', 'Use<span translate="no"> Acme </span>now'],
     ['a body of only a space', 'Use<NoTranslate> </NoTranslate>now', 'Use<span translate="no"> </span>now'],
-    ['a nested NoTranslate', '<NoTranslate>a <NoTranslate>b</NoTranslate> c</NoTranslate>', '<span translate="no">a <span translate="no">b</span> c</span>'],
+    [
+      'a nested NoTranslate',
+      '<NoTranslate>a <NoTranslate>b</NoTranslate> c</NoTranslate>',
+      '<span translate="no">a <span translate="no">b</span> c</span>',
+    ],
     [
       'markdown inside a nested NoTranslate',
       'Hello <NoTranslate>a <NoTranslate>**b**</NoTranslate> c</NoTranslate> end',
@@ -358,7 +389,9 @@ describe('NoTranslate', () => {
         node => node.type === NodeTypes.noTranslate || node.type === 'mdxJsxTextElement',
       );
 
-      expect(noTranslate.children).toStrictEqual([expect.objectContaining({ type: 'html', value: '<Badge label="Acme" />' })]);
+      expect(noTranslate.children).toStrictEqual([
+        expect.objectContaining({ type: 'html', value: '<Badge label="Acme" />' }),
+      ]);
     });
   });
 

@@ -321,13 +321,17 @@ describe('gemoji transformer', () => {
     it('should not render emojis in an image title (raw attribute, not parsed)', () => {
       const md =
         '[block:image]{"images":[{"image":["https://example.com/img.png","title :grin::grin:","alt text"]}]}[/block]';
-      expect(mix(md)).toMatchInlineSnapshot('"<img src="https://example.com/img.png" alt="alt text" title="title :grin::grin:">"');
+      expect(mix(md)).toMatchInlineSnapshot(
+        '"<img src="https://example.com/img.png" alt="alt text" title="title :grin::grin:">"',
+      );
     });
 
     it('should render consecutive emojis in an image caption', () => {
       const md =
         '[block:image]{"images":[{"image":["https://example.com/img.png","","alt text"],"caption":"caption :grin::grin:"}]}[/block]';
-      expect(mix(md)).toMatchInlineSnapshot('"<figure><img src="https://example.com/img.png" alt="alt text" title=""><figcaption><p>caption 😁😁</p></figcaption></figure>"');
+      expect(mix(md)).toMatchInlineSnapshot(
+        '"<figure><img src="https://example.com/img.png" alt="alt text" title=""><figcaption><p>caption 😁😁</p></figcaption></figure>"',
+      );
     });
 
     it('should render consecutive emojis in an api-header title', () => {

@@ -449,8 +449,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
     });
 
     it('should work alongside regular markdown links', () => {
-      const markdown =
-        'A [markdown link](https://a.com) and <Anchor href="https://b.com">component link</Anchor>';
+      const markdown = 'A [markdown link](https://a.com) and <Anchor href="https://b.com">component link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
       const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
@@ -567,8 +566,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
     });
 
     it('should handle deeply nested markdown around Anchor', () => {
-      const markdown =
-        '***<Anchor href="https://example.com">bold italic link</Anchor>***';
+      const markdown = '***<Anchor href="https://example.com">bold italic link</Anchor>***';
       const tree = parseWithPlugin(markdown);
 
       const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');

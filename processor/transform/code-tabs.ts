@@ -13,7 +13,7 @@ const codeTabsTransformer =
     visit(tree, 'code', (node: Code) => {
       const { lang, meta, value } = node;
       node.data = {
-         // Ensure positions are passed through
+        // Ensure positions are passed through
         ...node.data,
         hProperties: { lang, meta, value, copyButtons },
       };

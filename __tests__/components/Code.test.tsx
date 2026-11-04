@@ -59,7 +59,7 @@ const x = 1;
     expect(() => render(<Content />)).not.toThrow();
 
     const captured = captureMdxishProps(md, 'code');
-    expect(typeof captured.style).toBe('object');
+    expect(captured.style).toBeTypeOf('object');
     expect(captured.style).toMatchObject({ color: 'red' });
   });
 });

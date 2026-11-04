@@ -1,6 +1,6 @@
+import type { Anchor, Callout, NoTranslate, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
 import type { MagicBlockEmbed, MagicBlockImage } from './magic-blocks/types';
 import type { FigureNode } from './types';
-import type { Anchor, Callout, NoTranslate, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
 import type { Html, Node, Paragraph, Parent, PhrasingContent, RootContent, Table, TableCell, TableRow } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
@@ -215,11 +215,7 @@ function reassembleHtmlFigures(tree: Parent) {
       const nextNode = children[i + 1];
       const imageNode = nextNode ? findImageInNode(nextNode) : undefined;
 
-      if (
-        node.type === 'html' &&
-        FIGURE_OPEN_REGEX.test((node as Html).value.trim()) &&
-        imageNode
-      ) {
+      if (node.type === 'html' && FIGURE_OPEN_REGEX.test((node as Html).value.trim()) && imageNode) {
         const { captionText, endIndex, foundClose } = scanForFigcaptionAndClose(children, i + 2);
 
         if (foundClose) {
@@ -404,10 +400,7 @@ const transformCallout = (jsx: MdxJsxFlowElement): Callout => {
   const hasHeadingFirst = jsxChildren[0]?.type === 'heading';
   const children = hasHeadingFirst
     ? jsxChildren
-    : ([
-        { type: 'paragraph', children: [{ type: 'text', value: '' }] },
-        ...jsxChildren,
-      ] as Callout['children']);
+    : ([{ type: 'paragraph', children: [{ type: 'text', value: '' }] }, ...jsxChildren] as Callout['children']);
 
   return {
     type: NodeTypes.callout,
@@ -591,9 +584,7 @@ const wrapBareCellsInRow = (node: Node): void => {
     if (section.name !== 'thead' && section.name !== 'tbody') return;
 
     const children = section.children as Node[];
-    const hasRow = children.some(
-      c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr',
-    );
+    const hasRow = children.some(c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr');
     if (hasRow) return;
 
     const unwrapped = children.flatMap(c => {

@@ -85,8 +85,6 @@ export const stripCommentsTransformer = () => {
           }
         }
       }
-
-      return undefined;
     });
   };
 };

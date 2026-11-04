@@ -185,7 +185,9 @@ describe('variablesTextTransformer', () => {
     });
 
     it('resolves every {user.*} in a deep tree of mixed tags', () => {
-      const tree = mdxish('<div class="card"><h2>{user.name}</h2><p>text {user.email}</p><ul><li>{user.name}</li></ul></div>');
+      const tree = mdxish(
+        '<div class="card"><h2>{user.name}</h2><p>text {user.email}</p><ul><li>{user.name}</li></ul></div>',
+      );
       expect(findAllElementsByTagName(tree, 'variable')).toHaveLength(3);
     });
 
@@ -225,10 +227,7 @@ describe('variablesTextTransformer', () => {
     it('resolves both references when a body holds two', () => {
       const tree = mdxish('<div>{user.name} and {user.email}</div>');
 
-      expect(findAllElementsByTagName(tree, 'variable').map(v => v.properties?.name)).toStrictEqual([
-        'name',
-        'email',
-      ]);
+      expect(findAllElementsByTagName(tree, 'variable').map(v => v.properties?.name)).toStrictEqual(['name', 'email']);
     });
 
     it.each(['{1 + 1}', '{ color: red }'])('leaves %s inside a <div> literal', expression => {

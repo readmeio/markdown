@@ -216,8 +216,7 @@ export function formatHtmlForMdxish(html: string, openingTagIndent = 0): string 
   // which is invalid javascript and will cause error
   cleaned = cleaned.replace(
     /(<(pre|code)\b[^>]*>)([\s\S]*?)(<\/\2>)/gi,
-    (_m, open: string, _tag: string, inner: string, close: string) =>
-      open + inner.replace(/\\n/g, '\n') + close,
+    (_m, open: string, _tag: string, inner: string, close: string) => open + inner.replace(/\\n/g, '\n') + close,
   );
 
   // Unescape backticks: \` -> ` (users escape backticks in template literals)
@@ -252,7 +251,6 @@ export const formatHTML = (html: string): string => {
   // Remove leading/trailing backticks if present, since they're used to keep the HTML
   // from being parsed prematurely
   if (html.startsWith('`') && html.endsWith('`')) {
-    // eslint-disable-next-line no-param-reassign
     html = html.slice(1, -1);
   }
   // Removes the leading/trailing newlines
@@ -348,7 +346,6 @@ export const toAttributes = (object: Record<string, unknown>, keys: string[] = [
 export const hasNamedExport = (tree: HastRoot | MdastRoot, name: string): boolean => {
   let hasExport = false;
 
-  // eslint-disable-next-line consistent-return
   visit(tree, 'mdxjsEsm', node => {
     if (
       'declaration' in node.data.estree.body[0] &&

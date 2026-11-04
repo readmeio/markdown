@@ -322,7 +322,10 @@ end"`);
   });
 
   it('keeps a JSX comment shown in a code span inside a NoTranslate in mdxish mode', async () => {
-    const output = await stripComments('Hello <NoTranslate>Use `{/* example */}` and {/* hidden */}</NoTranslate> world', { mdxish: true });
+    const output = await stripComments(
+      'Hello <NoTranslate>Use `{/* example */}` and {/* hidden */}</NoTranslate> world',
+      { mdxish: true },
+    );
     expect(output).toContain('`{/* example */}`');
     expect(output).not.toContain('hidden');
   });
@@ -382,7 +385,10 @@ end"`);
       { name: 'a template literal attribute with interpolation', input: '<Card label={`Hello ${user.name}`} />' },
       { name: 'a spread attribute', input: '<Card {...props} title="Hi" />' },
       { name: 'a boolean shorthand attribute', input: '<Card disabled title="Hi" />' },
-      { name: 'an inline component surrounded by markdown', input: 'See the *shiny* <Anchor href={url}>link</Anchor> for **more**.' },
+      {
+        name: 'an inline component surrounded by markdown',
+        input: 'See the *shiny* <Anchor href={url}>link</Anchor> for **more**.',
+      },
       {
         name: 'a component nested inside a <div>',
         input: `<div>
@@ -595,11 +601,21 @@ end"`);
       ['mid-paragraph', 'A\n<!-- c -->\nB', undefined, 'A\n\nB'],
       // block structures
       ['blockquote', '> Text\n> <!-- c -->\n> More', undefined, '> Text\n>\n> More'],
-      ['nested blockquote', '> Outer\n> > Inner <!-- c -->\n> > More', undefined, '> Outer\n>\n> > Inner&#x20;\n> > More'],
+      [
+        'nested blockquote',
+        '> Outer\n> > Inner <!-- c -->\n> > More',
+        undefined,
+        '> Outer\n>\n> > Inner&#x20;\n> > More',
+      ],
       ['ordered list trailing space', '1. A <!-- c -->\n2. B', undefined, '1. A&#x20;\n2. B'],
       ['unordered list trailing space', '- A <!-- c -->\n- B', undefined, '* A&#x20;\n* B'],
       ['between list items', '- Item 1\n<!-- c -->\n- Item 2', undefined, '* Item 1\n\n- Item 2'],
-      ['table cells', '| H1 | H2 |\n| :- | :- |\n| <!-- c --> | data |', undefined, '| H1 | H2   |\n| :- | :--- |\n|    | data |'],
+      [
+        'table cells',
+        '| H1 | H2 |\n| :- | :- |\n| <!-- c --> | data |',
+        undefined,
+        '| H1 | H2   |\n| :- | :--- |\n|    | data |',
+      ],
       // inline formatting
       ['adjacent to bold/italic', '**b**<!-- c -->*i*<!-- c --> x', undefined, '**b***i* x'],
       ['adjacent to link/image', '[a](u)<!-- c -->![b](v)', undefined, '[a](u)![b](v)'],
@@ -658,8 +674,14 @@ end"`);
     });
 
     it.each([
-      ['comment + magic block child', '- Item <!-- c -->\n  [block:html]\n  {\n    "html": "<p>hi</p>"\n  }\n  [/block]'],
-      ['comment between magic blocks', '[block:html]\n{\n  "html": "<a>A</a>"\n}\n[/block]\n<!-- c -->\n[block:code]\n{\n  "codes": [{"code": "1", "language": "js"}]\n}\n[/block]'],
+      [
+        'comment + magic block child',
+        '- Item <!-- c -->\n  [block:html]\n  {\n    "html": "<p>hi</p>"\n  }\n  [/block]',
+      ],
+      [
+        'comment between magic blocks',
+        '[block:html]\n{\n  "html": "<a>A</a>"\n}\n[/block]\n<!-- c -->\n[block:code]\n{\n  "codes": [{"code": "1", "language": "js"}]\n}\n[/block]',
+      ],
       ['comment between raw HTML', '<div>A</div>\n<!-- c -->\n<div>B</div>'],
     ])('should strip comments but preserve adjacent blocks: %s', async (_name, input) => {
       const output = await stripComments(input);
@@ -667,7 +689,8 @@ end"`);
     });
 
     it('should strip all comments in a full mdxish page', async () => {
-      const input = '{/* JSX */}\n<!-- HTML -->\n# Title\n{user.name}\n<!-- c -->\n<Foo />\n- Step\n  [block:callout]\n  {\n    "type": "info",\n    "body": "x"\n  }\n  [/block]\n<<glossary:auth>>';
+      const input =
+        '{/* JSX */}\n<!-- HTML -->\n# Title\n{user.name}\n<!-- c -->\n<Foo />\n- Step\n  [block:callout]\n  {\n    "type": "info",\n    "body": "x"\n  }\n  [/block]\n<<glossary:auth>>';
       const output = await stripComments(input, { mdxish: true });
       expect(output).toContain('{user.name}');
       expect(output).toContain('<Foo />');
@@ -679,7 +702,8 @@ end"`);
     });
 
     it('should strip comments inside mdx nested components', async () => {
-      const input = '<Steps>\n  {/* c */}\n  <Step>First</Step>\n  {/* c */}\n  <Step>Second</Step>\n</Steps>\n\n{/** deprecated */}\n\n<Tabs>\n  <Tab title="JS">\n    ```js\n    // {/* stays */}\n    ```\n  </Tab>\n</Tabs>';
+      const input =
+        '<Steps>\n  {/* c */}\n  <Step>First</Step>\n  {/* c */}\n  <Step>Second</Step>\n</Steps>\n\n{/** deprecated */}\n\n<Tabs>\n  <Tab title="JS">\n    ```js\n    // {/* stays */}\n    ```\n  </Tab>\n</Tabs>';
       const output = await stripComments(input, { mdx: true });
       expect(output).toContain('<Steps>');
       expect(output).toContain('{/* stays */}');

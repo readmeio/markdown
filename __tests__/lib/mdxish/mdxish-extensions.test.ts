@@ -158,7 +158,9 @@ describe('mdxishExtensions', () => {
     });
 
     it('still claims an inline NoTranslate', () => {
-      const tree = parseWith('Hi <NoTranslate>Acme</NoTranslate> there') as { children: { children: { type: string }[] }[] };
+      const tree = parseWith('Hi <NoTranslate>Acme</NoTranslate> there') as {
+        children: { children: { type: string }[] }[];
+      };
 
       expect(tree.children[0].children.map(child => child.type)).toStrictEqual(['text', 'html', 'text']);
     });
