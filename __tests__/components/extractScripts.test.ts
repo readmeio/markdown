@@ -22,10 +22,10 @@ describe('extractScripts', () => {
     });
   });
 
-  it('assembles an opener when the delimiter is the first character after a removed script', () => {
+  it('strips an opener assembled by a cut without executing the revealed body', () => {
     expect(extractScripts('<script<script></script>>alert(1)</script>')).toStrictEqual({
       html: '',
-      scripts: ['', 'alert(1)'],
+      scripts: [''],
     });
   });
 
@@ -60,10 +60,18 @@ describe('extractScripts', () => {
     });
   });
 
-  it('removes a script assembled by stripping a nested script, then the revealed one', () => {
+  it('strips a script assembled by a nested script without executing the revealed body', () => {
     expect(extractScripts('<scrip<script></script>t>mockFn()</s<script></script>cript>')).toStrictEqual({
       html: '',
-      scripts: ['', '', 'mockFn()'],
+      scripts: ['', ''],
+    });
+  });
+
+  it('runs first-pass scripts in order and does not run a tag the cut assembles', () => {
+    const html = `<scr<script>log('X')</script>ipt>log('A')</script><script>log('B')</script>`;
+    expect(extractScripts(html)).toStrictEqual({
+      html: '',
+      scripts: ["log('X')", "log('B')"],
     });
   });
 
@@ -72,7 +80,7 @@ describe('extractScripts', () => {
     const html = `<scrip<${inner}script></script>t>mockFn()</s<${inner}script></script>cript>`;
     expect(extractScripts(html)).toStrictEqual({
       html: '',
-      scripts: ['R', 'R', '', '', 'mockFn()'],
+      scripts: ['R', 'R'],
     });
   });
 
@@ -80,7 +88,7 @@ describe('extractScripts', () => {
     const html = `${'<scrip'.repeat(40)}<script></script>${'t></script>'.repeat(40)}<p>keep</p>`;
     expect(extractScripts(html)).toStrictEqual({
       html: '<p>keep</p>',
-      scripts: Array.from({ length: 41 }, () => ''),
+      scripts: [''],
     });
   });
 });

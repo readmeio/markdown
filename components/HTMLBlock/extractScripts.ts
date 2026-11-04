@@ -175,8 +175,8 @@ const collectScripts = (list: CharList, from: number, joins: number[] | null): S
   return matches;
 };
 
-// Pull out `<script>` elements, including tags assembled by cutting a nested script.
-// Each pass cuts every current match, then resumes just before each surviving join.
+// Pull out the `<script>` elements a browser would run, then delete any tag a cut
+// assembles. Only the first pass is executed; later passes only strip.
 export const extractScripts = (html: string): { html: string; scripts: string[] } => {
   if (!html) return { html: '', scripts: [] };
 
@@ -190,8 +190,12 @@ export const extractScripts = (html: string): { html: string; scripts: string[] 
     const matches = collectScripts(list, cursor, joins);
     if (!matches.length) break;
 
-    for (let i = 0; i < matches.length; i += 1) {
-      scripts.push(readUntil(list, matches[i].bodyStart, matches[i].bodyEnd));
+    // A tag that appears only after a cut is plain text to a browser, so it is
+    // removed and not executed. `joins` is null until the first cut.
+    if (joins === null) {
+      for (let i = 0; i < matches.length; i += 1) {
+        scripts.push(readUntil(list, matches[i].bodyStart, matches[i].bodyEnd));
+      }
     }
     const nextJoins = survivingJoins(matches);
     for (let i = 0; i < matches.length; i += 1) {

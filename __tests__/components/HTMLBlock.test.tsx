@@ -64,20 +64,21 @@ describe('HTML Block', () => {
     expect(container.querySelector('.rdmd-html')?.innerHTML).toBe('');
   });
 
-  it('does not let an earlier split script swallow a later one', () => {
-    const inner = '<script>void 0</script>';
-    const html = `<scrip<${inner}script></script>t>mockFn()</s<${inner}script></script>cript>`;
+  it('runs first-pass scripts in order and does not run a tag the cut assembles', () => {
+    const html = `<scr<script>mockFn('X')</script>ipt>mockFn('A')</script><script>mockFn('B')</script>`;
     const { container } = render(<HTMLBlock runScripts={true}>{html}</HTMLBlock>);
-    expect(g.mockFn).toHaveBeenCalledTimes(1);
+    expect(g.mockFn).toHaveBeenNthCalledWith(1, 'X');
+    expect(g.mockFn).toHaveBeenNthCalledWith(2, 'B');
+    expect(g.mockFn).toHaveBeenCalledTimes(2);
     expect(container.querySelector('script')).toBeNull();
     expect(container.querySelector('.rdmd-html')?.innerHTML).toBe('');
   });
 
-  it('runs a script revealed by stripping an inner script tag when runScripts is set', () => {
+  it('removes a script revealed by stripping an inner script tag without running it', () => {
     const { container } = render(
       <HTMLBlock runScripts={true}>{'<scrip<script></script>t>mockFn()</script>'}</HTMLBlock>,
     );
-    expect(g.mockFn).toHaveBeenCalledTimes(1);
+    expect(g.mockFn).not.toHaveBeenCalled();
     expect(container.querySelector('script')).toBeNull();
   });
 
