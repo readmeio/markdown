@@ -9,7 +9,7 @@ import { mdxish, mix, renderMdxish } from '../../../lib';
 import * as utils from '../../../processor/utils';
 import { findElementByTagName } from '../../helpers';
 
-vi.mock('../../../processor/utils', async importOriginal => {
+vi.mock(import('../../../processor/utils'), async importOriginal => {
   const actual = (await importOriginal()) as Record<string, unknown> & { evaluate: (source: string) => unknown };
   return {
     ...actual,

@@ -1,11 +1,21 @@
 {
   "name": "@readme/markdown",
-  "description": "ReadMe's React-based Markdown parser",
-  "author": "Rafe Goldberg <rafe@readme.io>",
   "version": "16.2.0",
+  "description": "ReadMe's React-based Markdown parser",
+  "homepage": "https://rdmd.readme.io",
+  "license": "MIT",
+  "author": "Rafe Goldberg <rafe@readme.io>",
+  "repository": "https://github.com/readmeio/markdown",
+  "files": [
+    "styles",
+    "components",
+    "dist",
+    "types.d.ts",
+    "enums.ts"
+  ],
   "main": "dist/main.node.js",
-  "types": "dist/index.d.ts",
   "browser": "dist/main.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -30,18 +40,12 @@
     "./package.json": "./package.json",
     "./*": "./*"
   },
-  "files": [
-    "styles",
-    "components",
-    "dist",
-    "types.d.ts",
-    "enums.ts"
-  ],
   "scripts": {
     "build": "webpack --mode production && npm run build-types",
     "build-types": "npx tsc --declaration --emitDeclarationOnly --declarationDir ./dist --skipLibCheck",
     "build:verify": "npm run build && npm run verify-exports",
-    "lint": "eslint . --ext .jsx --ext .js --ext .ts --ext .tsx",
+    "format": "npx oxlint --fix && npx oxfmt --write",
+    "lint": "tsc --noEmit --skipLibCheck && npx oxlint && npx oxfmt --check",
     "release": "npx semantic-release",
     "release.dry": "npx semantic-release --dry-run",
     "start": "webpack serve --open --mode development --config ./webpack.dev.js",
@@ -118,18 +122,8 @@
     "util": "^0.12.5",
     "xast-util-to-xml": "^4.0.0"
   },
-  "peerDependencies": {
-    "@mdx-js/react": "^3.0.0",
-    "@readme/syntax-highlighter": "^16.0.0",
-    "@tippyjs/react": "^4.1.0",
-    "acorn": "v8.13.0",
-    "acorn-jsx": "^5.3.2",
-    "react": "18.x",
-    "react-dom": "18.x"
-  },
   "devDependencies": {
-    "@babel/core": "^7.21.4",
-    "@babel/eslint-parser": "^7.21.3",
+    "@babel/core": "^7.29.7",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/plugin-proposal-export-default-from": "^7.23.3",
     "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
@@ -142,8 +136,8 @@
     "@commitlint/cli": "^19",
     "@commitlint/config-angular": "^19",
     "@commitlint/config-conventional": "^19",
-    "@readme/eslint-config": "^14.0.0",
     "@readme/markdown-legacy": "npm:@readme/markdown@^6.87.1",
+    "@readme/oxlint-config": "^15.0.9",
     "@readme/syntax-highlighter": "^16.0.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
@@ -154,16 +148,16 @@
     "@types/jest": "^30.0.0",
     "@types/mdast": "^4.0.3",
     "@types/mdx": "^2.0.12",
+    "@types/node": "^26.6.6",
     "@types/unist": "^3.0.2",
     "@vitejs/plugin-react": "^4.2.1",
-    "@vitest/coverage-v8": "^4.1.11",
-    "@vitest/ui": "^4.1.11",
+    "@vitest/coverage-v8": "^5.1.0",
+    "@vitest/ui": "^5.1.0",
     "babel-jest": "^30.3.0",
     "babel-loader": "^9.1.2",
     "browserify-fs": "^1.0.0",
     "codemirror": "^5.54.0",
     "css-loader": "^7.1.2",
-    "eslint": "^8.37.0",
     "hast-util-to-text": "^4.0.2",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.3.0",
@@ -173,7 +167,8 @@
     "jest-puppeteer": "^11.0.0",
     "mermaid": "^11.16.1",
     "mini-css-extract-plugin": "^2.7.5",
-    "prettier": "^3.2.5",
+    "oxfmt": "^0.75.0",
+    "oxlint": "^1.87.0",
     "puppeteer": "^19.8.3",
     "react-router-dom": "^6.30.4",
     "remark-slug": "^7.0.1",
@@ -187,17 +182,34 @@
     "typescript": "^5.7.3",
     "unist-util-map": "^4.0.0",
     "unist-util-remove-position": "^5.0.0",
-    "vite": "^6.4.3",
-    "vitest": "^4.1.11",
+    "vite": "^6.4.5",
+    "vitest": "^5.1.0",
     "webpack": "^5.104.1",
     "webpack-cli": "^7.2.2",
     "webpack-dev-server": "^6.0.0",
     "webpack-merge": "^5.8.0"
   },
-  "license": "MIT",
-  "homepage": "https://rdmd.readme.io",
-  "repository": "https://github.com/readmeio/markdown",
-  "prettier": "@readme/eslint-config/prettier",
+  "peerDependencies": {
+    "@mdx-js/react": "^3.0.0",
+    "@readme/syntax-highlighter": "^16.0.0",
+    "@tippyjs/react": "^4.1.0",
+    "acorn": "v8.13.0",
+    "acorn-jsx": "^5.3.2",
+    "react": "18.x",
+    "react-dom": "18.x"
+  },
+  "optionalDependencies": {
+    "mermaid": "^11.16.1"
+  },
+  "overrides": {
+    "@readme/markdown-legacy": {
+      "@readme/variable": "^18.0.0"
+    },
+    "conventional-changelog-conventionalcommits": ">= 8.0.0",
+    "parse5": {
+      "entities": "$entities"
+    }
+  },
   "bundlewatch": {
     "files": [
       {
@@ -225,17 +237,5 @@
         "maxSize": "4.5MB"
       }
     ]
-  },
-  "optionalDependencies": {
-    "mermaid": "^11.16.1"
-  },
-  "overrides": {
-    "@readme/markdown-legacy": {
-      "@readme/variable": "^18.0.0"
-    },
-    "conventional-changelog-conventionalcommits": ">= 8.0.0",
-    "parse5": {
-      "entities": "$entities"
-    }
   }
 }

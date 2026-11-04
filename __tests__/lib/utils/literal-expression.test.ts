@@ -1,6 +1,6 @@
 import { existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import path from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -66,10 +66,14 @@ describe('attribute expressions are never executed', () => {
     ['mdast', () => mdast(CANARY_DOC)],
     ['hast', () => hast(CANARY_DOC)],
     ['a component definition', () => hast('<Foo />', { components: { Foo: CANARY_DOC } })],
-    ['a component definition checked for missing components', () =>
-      mdast('hi', { components: { Foo: CANARY_DOC }, missingComponents: 'ignore' })],
-    ['an Image caption, which is re-parsed', () =>
-      mdast(`<Image src="/x.png" caption="${CANARY_DOC.replace(/"/g, '')}" />`)],
+    [
+      'a component definition checked for missing components',
+      () => mdast('hi', { components: { Foo: CANARY_DOC }, missingComponents: 'ignore' }),
+    ],
+    [
+      'an Image caption, which is re-parsed',
+      () => mdast(`<Image src="/x.png" caption="${CANARY_DOC.replace(/"/g, '')}" />`),
+    ],
   ])('in %s', (_description, parse) => {
     canaryScope.attributeCanary = false;
     parse();
@@ -103,7 +107,7 @@ describe('host access and command execution', () => {
   });
 
   it('does not run a shell command', () => {
-    const marker = join(tmpdir(), 'rdmd-command-execution-canary');
+    const marker = path.join(tmpdir(), 'rdmd-command-execution-canary');
     rmSync(marker, { force: true });
     mdast(`<Callout icon={process.getBuiltinModule("child_process").execSync("touch ${marker}")} />`);
 

@@ -327,9 +327,7 @@ More markdown after the component.`;
       const hast = mdxish(doc, { components });
 
       // Find the paragraph with inline code
-      const paragraph = hast.children.find(
-        child => child.type === 'element' && child.tagName === 'p',
-      ) as Element;
+      const paragraph = hast.children.find(child => child.type === 'element' && child.tagName === 'p') as Element;
       expect(paragraph).toBeDefined();
 
       // Find the code element inside the paragraph

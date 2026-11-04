@@ -2130,7 +2130,9 @@ asdasdasd
 
   describe('api-header block', () => {
     const apiHeader = (title: string, level?: number) => {
-      const json = level ? `{ "title": ${JSON.stringify(title)}, "level": ${level} }` : `{ "title": ${JSON.stringify(title)} }`;
+      const json = level
+        ? `{ "title": ${JSON.stringify(title)}, "level": ${level} }`
+        : `{ "title": ${JSON.stringify(title)} }`;
       return `[block:api-header]\n${json}\n[/block]`;
     };
 

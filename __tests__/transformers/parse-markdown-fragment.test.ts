@@ -240,7 +240,7 @@ describe('getDocumentSource', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     expect(getDocumentSource(new VFile())).toBe('');
-    expect(warn).toHaveBeenCalledOnce();
+    expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
   });
 });

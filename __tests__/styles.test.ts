@@ -1,7 +1,6 @@
 import path from 'path';
 
 import * as sass from 'sass';
-
 import { describe, expect, it } from 'vitest';
 
 import webpackConfig from '../webpack.config';

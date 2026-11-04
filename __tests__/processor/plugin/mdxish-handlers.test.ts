@@ -18,11 +18,12 @@ const expr = (name: string, value: string): MdxJsxAttribute => ({
 });
 
 const runJsx = (attributes: Attr[], name = 'C'): MdxJsx =>
-  mdxComponentHandlers.mdxJsxFlowElement!(
-    state,
-    { type: 'mdxJsxFlowElement', name, attributes, children: [] },
-    undefined,
-  ) as MdxJsx;
+  mdxComponentHandlers.mdxJsxFlowElement!(state, {
+    type: 'mdxJsxFlowElement',
+    name,
+    attributes,
+    children: [],
+  }) as MdxJsx;
 
 describe('mdxJsxElementHandler', () => {
   it('emits an mdx-jsx node with tagName and string properties', () => {
@@ -97,52 +98,53 @@ describe('clone-safe deferral', () => {
 
 describe('expression + esm handlers', () => {
   it('converts mdxFlowExpression / mdxTextExpression to text nodes', () => {
-    const flow = mdxComponentHandlers.mdxFlowExpression!(state, { type: 'mdxFlowExpression', value: 'a' }, undefined);
-    const text = mdxComponentHandlers.mdxTextExpression!(state, { type: 'mdxTextExpression', value: 'b' }, undefined);
+    const flow = mdxComponentHandlers.mdxFlowExpression!(state, { type: 'mdxFlowExpression', value: 'a' });
+    const text = mdxComponentHandlers.mdxTextExpression!(state, { type: 'mdxTextExpression', value: 'b' });
     expect(flow).toStrictEqual({ type: 'text', value: 'a' });
     expect(text).toStrictEqual({ type: 'text', value: 'b' });
   });
 
   it('emits empty text when the expression value is missing', () => {
-    const result = mdxComponentHandlers.mdxFlowExpression!(state, { type: 'mdxFlowExpression' }, undefined);
+    const result = mdxComponentHandlers.mdxFlowExpression!(state, { type: 'mdxFlowExpression' });
     expect(result).toStrictEqual({ type: 'text', value: '' });
   });
 
   it('drops mdxjsEsm by returning undefined', () => {
-    expect(mdxComponentHandlers.mdxjsEsm!(state, { type: 'mdxjsEsm', value: '' }, undefined)).toBeUndefined();
+    expect(mdxComponentHandlers.mdxjsEsm!(state, { type: 'mdxjsEsm', value: '' })).toBeUndefined();
   });
 });
 
 describe('htmlBlockHandler', () => {
   it('forwards hProperties onto an html-block element', () => {
-    const result = mdxComponentHandlers[NodeTypes.htmlBlock]!(
-      state,
-      { type: NodeTypes.htmlBlock, data: { hName: 'html-block', hProperties: { html: '<p>hi</p>' } }, children: [] },
-      undefined,
-    );
+    const result = mdxComponentHandlers[NodeTypes.htmlBlock]!(state, {
+      type: NodeTypes.htmlBlock,
+      data: { hName: 'html-block', hProperties: { html: '<p>hi</p>' } },
+      children: [],
+    });
     expect(result).toStrictEqual({
-      type: 'element', tagName: 'html-block', properties: { html: '<p>hi</p>' }, children: [],
+      type: 'element',
+      tagName: 'html-block',
+      properties: { html: '<p>hi</p>' },
+      children: [],
     });
   });
 });
 
 describe('embedHandler', () => {
   it('renders magic-block embeds as <Embed> with no children', () => {
-    const result = mdxComponentHandlers.embed!(
-      state,
-      { type: 'embed', data: { hName: NodeTypes.embedBlock, hProperties: { url: 'https://x.com' } } },
-      undefined,
-    );
+    const result = mdxComponentHandlers.embed!(state, {
+      type: 'embed',
+      data: { hName: NodeTypes.embedBlock, hProperties: { url: 'https://x.com' } },
+    });
     expect(result).toMatchObject({ tagName: 'Embed', properties: { url: 'https://x.com' }, children: [] });
   });
 
   it('renders inline embeds as <embed>, populating children via state.all', () => {
     const localState = { all: () => [{ type: 'text', value: 'c' }] } as unknown as State;
-    const result = mdxComponentHandlers.embed!(
-      localState,
-      { type: 'embed', data: { hProperties: { href: 'https://x.com' } } },
-      undefined,
-    );
+    const result = mdxComponentHandlers.embed!(localState, {
+      type: 'embed',
+      data: { hProperties: { href: 'https://x.com' } },
+    });
     expect(result).toMatchObject({ tagName: 'embed', children: [{ type: 'text', value: 'c' }] });
   });
 });

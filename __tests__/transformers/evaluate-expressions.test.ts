@@ -124,7 +124,9 @@ describe('evaluateExpressions', () => {
     });
 
     it('should evaluate an expression that spans several lines without leaking into the document', () => {
-      const tree = mdxish(['Before', '', '{true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', 'After'].join('\n'));
+      const tree = mdxish(
+        ['Before', '', '{true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', 'After'].join('\n'),
+      );
 
       expect(tree.children.filter(child => child.type === 'element')).toMatchObject([
         { tagName: 'p', children: [{ type: 'text', value: 'Before' }] },
@@ -162,7 +164,9 @@ describe('evaluateExpressions', () => {
     });
 
     it('should keep the blocks around a multiline expression intact', () => {
-      const tree = mdxish(['# Title', '', '{true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', '## After'].join('\n'));
+      const tree = mdxish(
+        ['# Title', '', '{true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', '## After'].join('\n'),
+      );
 
       expect(tree.children.filter(child => child.type === 'element')).toMatchObject([
         { tagName: 'h1', children: [{ type: 'text', value: 'Title' }] },
@@ -172,7 +176,9 @@ describe('evaluateExpressions', () => {
     });
 
     it('should evaluate a multiline expression inside a list item', () => {
-      const tree = mdxish(['- one', '- {true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '- three'].join('\n'));
+      const tree = mdxish(
+        ['- one', '- {true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '- three'].join('\n'),
+      );
 
       const items = findAllElementsByTagName(tree, 'li');
       expect(items).toHaveLength(3);
@@ -209,7 +215,9 @@ describe('evaluateExpressions', () => {
     });
 
     it('should keep a failed multiline expression literal without breaking the blocks around it', () => {
-      const tree = mdxish(['Before', '', '{nope', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', 'After'].join('\n'));
+      const tree = mdxish(
+        ['Before', '', '{nope', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', 'After'].join('\n'),
+      );
 
       const paragraphs = tree.children.filter(child => child.type === 'element');
       expect(paragraphs).toMatchObject([
@@ -263,7 +271,11 @@ describe('evaluateExpressions', () => {
 
     it.each([
       ['a single-line hook component', `${hookComponent}\n\n{<Counter />}`, '<div class="c">1</div>'],
-      ['a multiline hook component', `${hookComponent}\n\n{true ? (\n  <Counter />\n) : null}`, '<div class="c">1</div>'],
+      [
+        'a multiline hook component',
+        `${hookComponent}\n\n{true ? (\n  <Counter />\n) : null}`,
+        '<div class="c">1</div>',
+      ],
       ['a multiline memo component', `${memoComponent}\n\n{true ? (\n  <Boxed />\n) : null}`, '<div class="m">m</div>'],
     ])('should keep %s rendered through the fallback out of a paragraph', (_name, doc, expected) => {
       expect(mix(doc)).toBe(expected);

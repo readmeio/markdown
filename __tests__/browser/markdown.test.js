@@ -167,7 +167,9 @@ describe('visual regression tests', () => {
 
     // code blocks already hold a 15px margin inside their box, so the gap isn't doubled
     const codeGap = await page.$eval('.CodeTabs', code =>
-      Math.round(code.nextElementSibling.getBoundingClientRect().top - code.querySelector('pre').getBoundingClientRect().bottom),
+      Math.round(
+        code.nextElementSibling.getBoundingClientRect().top - code.querySelector('pre').getBoundingClientRect().bottom,
+      ),
     );
 
     expect(codeGap).toBe(15);
@@ -177,7 +179,9 @@ describe('visual regression tests', () => {
       columns.map(column => {
         const content = document.createRange();
         content.selectNodeContents(column);
-        return Math.round(column.nextElementSibling.getBoundingClientRect().top - content.getBoundingClientRect().bottom);
+        return Math.round(
+          column.nextElementSibling.getBoundingClientRect().top - content.getBoundingClientRect().bottom,
+        );
       }),
     );
 

@@ -10,17 +10,10 @@ const path = require('path');
 // inverse of render-diff's check (which requires the same tokens to be
 // absent).
 const bundlePath =
-  process.env.VERIFY_RENDER_FIXTURE_BUNDLE_PATH ||
-  path.join(__dirname, '..', 'dist', 'render-fixture.node.js');
+  process.env.VERIFY_RENDER_FIXTURE_BUNDLE_PATH || path.join(__dirname, '..', 'dist', 'render-fixture.node.js');
 const bundle = fs.readFileSync(bundlePath, 'utf-8');
 
-const ENGINE_TOKENS = [
-  'mdxishAstProcessor',
-  'mdxishMdastToMd',
-  'renderMdxish',
-  'mdxCompileSync',
-  'sanitizeSchema',
-];
+const ENGINE_TOKENS = ['mdxishAstProcessor', 'mdxishMdastToMd', 'renderMdxish', 'mdxCompileSync', 'sanitizeSchema'];
 
 const missing = ENGINE_TOKENS.filter(token => !bundle.includes(token));
 assert(

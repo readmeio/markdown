@@ -10,7 +10,9 @@ const NO_TRANSLATE_IN_TEXT_RE = /<NoTranslate(?:\s[^>]*)?>([\s\S]*?)<\/NoTransla
 export const noTranslateTagsToSpans = (text: string | undefined): React.ReactNode =>
   text && NO_TRANSLATE_IN_TEXT_RE.test(text) ? (
     // One node, so a flex title (Accordion, Card) keeps the spaces around the span.
-    <span>{text.split(NO_TRANSLATE_IN_TEXT_RE).map((part, i) => (i % 2 ? <NoTranslate key={i}>{part}</NoTranslate> : part))}</span>
+    <span>
+      {text.split(NO_TRANSLATE_IN_TEXT_RE).map((part, i) => (i % 2 ? <NoTranslate key={i}>{part}</NoTranslate> : part))}
+    </span>
   ) : (
     text
   );
