@@ -1,12 +1,12 @@
-import type { ExpectationResult } from '@vitest/expect';
 import type { Root, Node } from 'mdast';
+import type { MatcherResult, MatcherState } from 'vitest';
 
 import { map } from 'unist-util-map';
 import { expect } from 'vitest';
 
 const removePosition = ({ position, ...node }: Node) => node;
 
-function toStrictEqualExceptPosition(received: Root, expected: Root): ExpectationResult {
+function toStrictEqualExceptPosition(this: MatcherState, received: Root, expected: Root): MatcherResult {
   const { equals } = this;
   const receivedTrimmed = map(received, removePosition);
   const expectedTrimmed = map(expected, removePosition);
