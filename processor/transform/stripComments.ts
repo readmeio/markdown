@@ -3,6 +3,19 @@ import type { Root } from 'mdast';
 import { visit, SKIP } from 'unist-util-visit';
 
 const HTML_COMMENT_REGEX = /<!--[\s\S]*?-->/g;
+
+// Removing one comment can assemble another (`<!<!-- a -->-- b -->`).
+const stripHtmlComments = (value: string): string => {
+  let current = value;
+  let previous: string;
+  do {
+    previous = current;
+    HTML_COMMENT_REGEX.lastIndex = 0;
+    current = current.replace(HTML_COMMENT_REGEX, '');
+  } while (current !== previous);
+  return current;
+};
+
 export const MDX_COMMENT_REGEX = /\/\*(?:(?!\*\/)[\s\S])*\*\//g;
 // A backtick run up to its partner of the same size, as CommonMark reads a code span.
 const CODE_SPAN_REGEX = /(`+)[\s\S]*?\1/;
@@ -26,8 +39,9 @@ export const stripCommentsTransformer = () => {
     visit(tree, ['html', 'mdxFlowExpression', 'mdxTextExpression'], (node, index, parent) => {
       if (parent && typeof index === 'number') {
         // Remove HTML comments
+        HTML_COMMENT_REGEX.lastIndex = 0;
         if (node.type === 'html' && HTML_COMMENT_REGEX.test(node.value)) {
-          const newValue = node.value.replace(HTML_COMMENT_REGEX, '').trim();
+          const newValue = stripHtmlComments(node.value).trim();
           if (newValue) {
             node.value = newValue;
           } else {

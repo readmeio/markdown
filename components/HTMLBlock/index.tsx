@@ -1,14 +1,22 @@
 import React, { useEffect, useMemo } from 'react';
 
-const MATCH_SCRIPT_TAGS = /<script\b[^>]*>([\s\S]*?)<\/script *>\n?/gim;
+// Browsers accept end tags like `</script foo="bar">` and `</script\t\n bar>`.
+// One removal can also assemble a new `<script>` (`<scrip<script></script>t>`).
+const SCRIPT_TAG = /<script\b[\s\S]*?>([\s\S]*?)<\/script\b[\s\S]*?>\n?/gi;
 
 const extractScripts = (html: string = ''): [string, () => void] => {
   const scripts: string[] = [];
-  let match: RegExpExecArray | null;
-  while ((match = MATCH_SCRIPT_TAGS.exec(html)) !== null) {
-    scripts.push(match[1]);
-  }
-  const cleaned = html.replace(MATCH_SCRIPT_TAGS, '');
+  let cleaned = html;
+  let previous: string;
+  do {
+    previous = cleaned;
+    SCRIPT_TAG.lastIndex = 0;
+    cleaned = cleaned.replace(SCRIPT_TAG, (_match, body: string) => {
+      scripts.push(body);
+      return '';
+    });
+  } while (cleaned !== previous);
+
   // eslint-disable-next-line no-eval
   return [cleaned, () => scripts.map(js => window.eval(js))];
 };

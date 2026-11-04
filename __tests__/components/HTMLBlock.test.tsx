@@ -47,9 +47,29 @@ describe('HTML Block', () => {
     expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
   });
 
+  it('runs a script whose end tag has trailing junk when runScripts is set', () => {
+    const { container } = render(
+      <HTMLBlock runScripts={true}>{'<p>ok</p><script>mockFn()</script\t\n bar>'}</HTMLBlock>,
+    );
+    expect(g.mockFn).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('script')).toBeNull();
+    expect(screen.getByText('ok')).toBeInTheDocument();
+  });
+
   it("doesn't render user scripts with a malicious string", () => {
-    render(<HTMLBlock>{'<scrip<script></script>t>mockFn()</s<script></script>cript>'}</HTMLBlock>);
+    const { container } = render(
+      <HTMLBlock>{'<scrip<script></script>t>mockFn()</s<script></script>cript>'}</HTMLBlock>,
+    );
     expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
+    expect(container.querySelector('script')).toBeNull();
+  });
+
+  it('runs a script revealed by stripping an inner script tag when runScripts is set', () => {
+    const { container } = render(
+      <HTMLBlock runScripts={true}>{'<scrip<script></script>t>mockFn()</script>'}</HTMLBlock>,
+    );
+    expect(g.mockFn).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('script')).toBeNull();
   });
 
   // A non-string child must never throw can appear if the user does not enclose
