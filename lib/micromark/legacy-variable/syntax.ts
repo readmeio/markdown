@@ -17,12 +17,7 @@ declare module 'micromark-util-types' {
 }
 
 function isAllowedValueChar(code: Code): boolean {
-  return (
-    code !== null &&
-    code !== codes.lessThan &&
-    code !== codes.greaterThan &&
-    !markdownLineEnding(code)
-  );
+  return code !== null && code !== codes.lessThan && code !== codes.greaterThan && !markdownLineEnding(code);
 }
 
 const legacyVariableConstruct: Construct = {

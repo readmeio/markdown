@@ -47,7 +47,10 @@ describe('pathological input performance', () => {
     ['a large marker-free token', (n: number) => `Hi team,\n\nHere is the payload:\n\n${BASE64_UNIT.repeat(n)}`],
     // A lone marker character in the same paragraph means marker-presence
     // gating can't skip the node: the scan itself must be bounded.
-    ['a large unbroken token sharing a text node with a marker', (n: number) => `The value* is ${BASE64_UNIT.repeat(n)}`],
+    [
+      'a large unbroken token sharing a text node with a marker',
+      (n: number) => `The value* is ${BASE64_UNIT.repeat(n)}`,
+    ],
     // base64url underscores are never beside whitespace, so the loose
     // whitespace-adjacency gate must skip the underscore families entirely.
     ['a large base64url token', (n: number) => `Hi team,\n\nHere is the payload:\n\n${BASE64URL_UNIT.repeat(n)}`],

@@ -20,7 +20,11 @@ const headingIdsTransformer: Plugin<[], Root> = () => (tree, file) => {
     if (typeof id !== 'string') return;
     const ids = file.data.explicitHeadingIds ?? new Set<string>();
     file.data.explicitHeadingIds = ids;
-    if (ids.has(id)) console.warn(`[mdxish] Heading id "${id}" is used more than once; links reach only the first.`);
+    if (ids.has(id)) {
+      // oxlint-disable-next-line no-console
+      console.warn(`[mdxish] Heading id "${id}" is used more than once; links reach only the first.`);
+    }
+
     ids.add(id);
   });
 };

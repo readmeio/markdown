@@ -104,5 +104,8 @@ export const normalizeTagSpacing = (html: string): RepairResult => {
     },
   });
 
-  return applyInserts(html, pairs.flatMap(p => symmetrizePair(html, p)));
+  return applyInserts(
+    html,
+    pairs.flatMap(p => symmetrizePair(html, p)),
+  );
 };

@@ -134,17 +134,19 @@ const promoteInlineHtml = (
  * carries an expression attribute and isn't a non-inline PascalCase component;
  * plain inline HTML like `<a href="x">` stays as an html node for rehype-raw.
  */
-const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> = (opts = {}) => (tree, file) => {
-  const safeMode = !!opts.safeMode;
-  const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
-  const footnotes: string[] = [];
-  visit(tree, 'footnoteDefinition', (def: FootnoteDefinition) => {
-    footnotes.push(def.identifier.toUpperCase());
-  });
-  const documentSource = getDocumentSource(file);
-  const fragmentOptions: FragmentParseOptions = { documentSource, footnotes, phrasing: true, safeMode };
+const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> =
+  (opts = {}) =>
+  (tree, file) => {
+    const safeMode = !!opts.safeMode;
+    const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
+    const footnotes: string[] = [];
+    visit(tree, 'footnoteDefinition', (def: FootnoteDefinition) => {
+      footnotes.push(def.identifier.toUpperCase());
+    });
+    const documentSource = getDocumentSource(file);
+    const fragmentOptions: FragmentParseOptions = { documentSource, footnotes, phrasing: true, safeMode };
 
-  promoteHtmlIn(tree, child => promoteInlineHtml(child, parseOpts, fragmentOptions));
-};
+    promoteHtmlIn(tree, child => promoteInlineHtml(child, parseOpts, fragmentOptions));
+  };
 
 export default mdxishInlineMdxHtmlBlocks;

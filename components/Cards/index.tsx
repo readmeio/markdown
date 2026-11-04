@@ -5,18 +5,17 @@ import { noTranslateTagsToSpans } from '../NoTranslate';
 
 import './style.scss';
 
-interface CardProps
-  extends React.PropsWithChildren<{
-    // Optional link component wrapper so that the link can be formatted & processed by the parent
-    LinkComponent?: React.ElementType;
-    badge?: string;
-    href?: string;
-    icon?: string;
-    iconColor?: string;
-    kind?: 'card' | 'tile';
-    target?: string;
-    title?: string;
-  }> {}
+interface CardProps extends React.PropsWithChildren<{
+  // Optional link component wrapper so that the link can be formatted & processed by the parent
+  LinkComponent?: React.ElementType;
+  badge?: string;
+  href?: string;
+  icon?: string;
+  iconColor?: string;
+  kind?: 'card' | 'tile';
+  target?: string;
+  title?: string;
+}> {}
 
 export const Card = ({
   badge,
@@ -50,7 +49,7 @@ export const Card = ({
   );
 };
 
-interface CardsGridProps extends React.PropsWithChildren<{ cardWidth?: string, columns?: number | string }> {}
+interface CardsGridProps extends React.PropsWithChildren<{ cardWidth?: string; columns?: number | string }> {}
 
 // max() can't take keyword widths like auto or min-content, so only wrap a length or a math expression
 const canWrapColumns = (columns: number | string, cardWidth: string) =>
@@ -60,7 +59,10 @@ const CardsGrid = ({ cardWidth = '200px', columns = 'auto-fit', children }: Card
   const className = canWrapColumns(columns, cardWidth) ? 'CardsGrid CardsGrid_wrap' : 'CardsGrid';
 
   return (
-    <div className={className} style={{ '--CardsGrid-cardWidth': cardWidth, '--CardsGrid-columns': columns } as React.CSSProperties}>
+    <div
+      className={className}
+      style={{ '--CardsGrid-cardWidth': cardWidth, '--CardsGrid-columns': columns } as React.CSSProperties}
+    >
       {children}
     </div>
   );

@@ -178,7 +178,7 @@ export const findQuotedAttributeValue = (tag: string, name: string) => {
   const unindentedTag = tag.trimStart();
   const parsed = parseTag(unindentedTag);
   const nameLength = unindentedTag.match(tagNamePattern)?.[0].length;
-  if (!parsed || nameLength === undefined) return undefined;
+  if (!parsed || nameLength === undefined) return;
 
   const quotedValueRanges = new Map<string, { end: number; start: number }>();
   parseAttributes(parsed.attrString, {}, quotedValueRanges);

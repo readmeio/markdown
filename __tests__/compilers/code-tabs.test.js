@@ -55,7 +55,7 @@ const cool = true;
     const hast = mdxish(markdown);
     // Code blocks should be grouped into CodeTabs
     const firstChild = hast.children[0];
-    
+
     expect(firstChild.type).toBe('element');
     expect(firstChild.tagName).toBe('CodeTabs');
     expect(firstChild.children).toHaveLength(2); // Two code blocks
@@ -72,7 +72,7 @@ const cool = true;
 
     const hast = mdxish(markdown);
     const firstChild = hast.children[0];
-    
+
     expect(firstChild.type).toBe('element');
     expect(firstChild.tagName).toBe('CodeTabs');
     expect(firstChild.children).toHaveLength(2); // Two code blocks
@@ -96,7 +96,7 @@ I should stay here
     const firstChild = hast.children[0];
     expect(firstChild.type).toBe('element');
     expect(firstChild.tagName).toBe('CodeTabs');
-    
+
     // Then heading
     const heading = hast.children.find(c => c.type === 'element' && c.tagName === 'h2');
     expect(heading).toBeDefined();

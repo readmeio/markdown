@@ -1,6 +1,8 @@
 import { defaultSchema } from 'hast-util-sanitize/lib/schema';
 
 const createSchema = ({ safeMode } = {}) => {
+  // Deep-clone the stock schema. It is plain data; a parse failure should surface.
+  // oxlint-disable-next-line readme/json-parse-try-catch
   const schema = JSON.parse(JSON.stringify(defaultSchema));
 
   // Sanitization Schema Defaults

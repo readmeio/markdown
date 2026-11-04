@@ -32,7 +32,8 @@ const isFlowChild = (child: Nodes): boolean => {
 /** A newline in a normalized cell (e.g. inside `inlineCode`) has no inline equivalent. */
 const containsLiteralNewline = (nodes: Node[]): boolean =>
   nodes.some(
-    node => (isLiteral(node) && node.value.includes('\n')) || (hasChildren(node) && containsLiteralNewline(node.children)),
+    node =>
+      (isLiteral(node) && node.value.includes('\n')) || (hasChildren(node) && containsLiteralNewline(node.children)),
   );
 
 /** True when normalized cell content survives a single-line GFM pipe cell without losing structure. */
@@ -74,7 +75,6 @@ const mdxishTablesToJsx = (): Transform => tree => {
           return EXIT;
         }
         gfmCells.push([cell, normalized]);
-        return undefined;
       });
 
       const widths = table.data?.widths ?? [];

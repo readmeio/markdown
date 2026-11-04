@@ -731,9 +731,9 @@ describe('normalize-malformed-md-syntax', () => {
         const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
 
         expect(strong).toBeDefined();
-        expect(strong?.children.length).toBeGreaterThanOrEqual(2);
-        expect(strong?.children[0]).toStrictEqual({ type: 'text', value: 'A user issues the ' });
-        expect((strong?.children[1] as { type: string }).type).toBe('link');
+        expect(strong?.children?.length).toBeGreaterThanOrEqual(2);
+        expect(strong?.children?.[0]).toStrictEqual({ type: 'text', value: 'A user issues the ' });
+        expect(strong?.children?.[1]?.type).toBe('link');
       });
 
       it('should handle malformed bold containing inline code', () => {
@@ -785,8 +785,8 @@ describe('normalize-malformed-md-syntax', () => {
         const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
 
         expect(strong).toBeDefined();
-        expect(strong?.children[0]).toStrictEqual({ type: 'text', value: 'open with ' });
-        expect((strong?.children[1] as { type: string }).type).toBe('link');
+        expect(strong?.children?.[0]).toStrictEqual({ type: 'text', value: 'open with ' });
+        expect(strong?.children?.[1]?.type).toBe('link');
 
         const textAfter = paragraph.children.find(
           (c): c is Text => c.type === 'text' && c.value.includes('no-space-closing'),

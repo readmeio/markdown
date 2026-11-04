@@ -56,7 +56,11 @@ describe('variables transformer', () => {
 
   it.each([
     ['a callout body', '<Callout>\n{user.name}\n</Callout>', '<Callout><variable name="name"></variable></Callout>'],
-    ['a table cell', '<Table><tr><td>{user.name}</td></tr></Table>', '<table><tr><td><variable name="name"></variable></td></tr></table>'],
+    [
+      'a table cell',
+      '<Table><tr><td>{user.name}</td></tr></Table>',
+      '<table><tr><td><variable name="name"></variable></td></tr></table>',
+    ],
     ['the root, split across lines', '{user.name\n}', '<variable name="name"></variable>'],
   ])('keeps a lone variable in %s bare, with no paragraph around it', (_name, doc, expected) => {
     // A lone `{user.x}` line is a flow expression, and its Variable node is placed as-is — the

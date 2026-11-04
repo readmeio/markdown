@@ -30,9 +30,7 @@ describe('embeds transformer', () => {
       });
 
       it('converts an @embed link inside <Callout> to an <embed> element', () => {
-        const tree = mdxish(
-          '<Callout icon="📘">\n\n[doc](https://example.com/cool.pdf "@embed")\n\n</Callout>',
-        );
+        const tree = mdxish('<Callout icon="📘">\n\n[doc](https://example.com/cool.pdf "@embed")\n\n</Callout>');
 
         const embed = findElementByTagName(tree, 'embed');
         expect(embed).toMatchObject({
@@ -43,9 +41,7 @@ describe('embeds transformer', () => {
       });
 
       it('does NOT convert a regular link (no @embed title) inside <Tabs>', () => {
-        const tree = mdxish(
-          '<Tabs>\n<Tab title="x">\n\n[doc](https://example.com/cool.pdf)\n\n</Tab>\n</Tabs>',
-        );
+        const tree = mdxish('<Tabs>\n<Tab title="x">\n\n[doc](https://example.com/cool.pdf)\n\n</Tab>\n</Tabs>');
 
         expect(findElementByTagName(tree, 'embed')).toBeNull();
         const link = findElementByTagName(tree, 'a');

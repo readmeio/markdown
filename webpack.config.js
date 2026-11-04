@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 const ExtractCSS = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 const { merge } = require('webpack-merge');

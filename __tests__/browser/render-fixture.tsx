@@ -63,7 +63,7 @@ export async function settleImages() {
   if (!pending.length) return;
 
   await Promise.race([
-    Promise.all(pending.map(img => img.decode().catch(() => undefined))),
+    Promise.all(pending.map(img => img.decode().catch(() => {}))),
     new Promise(resolve => {
       setTimeout(resolve, 8_000);
     }),

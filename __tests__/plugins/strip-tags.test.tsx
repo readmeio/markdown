@@ -4,7 +4,6 @@ import type { MDXContent } from 'mdx/types';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { unified } from 'unified';
-
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { compile, mdxish, renderMdxish } from '../../lib';
@@ -152,7 +151,7 @@ describe('strip tags', () => {
     ];
 
     it.each(sanitizeEngines)('%s: keeps the script by default', (_engine, render) => {
-      expect(renderToString(React.createElement(render(undefined)))).toContain('alert(1)');
+      expect(renderToString(React.createElement(render()))).toContain('alert(1)');
     });
 
     it.each(sanitizeEngines)('%s: keeps the script when explicitly disabled', (_engine, render) => {
