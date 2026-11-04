@@ -1,14 +1,13 @@
 import { act, render, waitFor } from '@testing-library/react';
 import postcss from 'postcss';
 import React from 'react';
-
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import TailwindStyle from '../../components/TailwindStyle';
 import { tailwindPrefix } from '../../utils/consts';
 import { tailwindCompiler } from '../../utils/tailwind-compiler';
 
-vi.mock('../../utils/tailwind-compiler', () => ({
+vi.mock(import('../../utils/tailwind-compiler'), () => ({
   tailwindCompiler: vi.fn().mockResolvedValue({ css: '.bg-red-500 { background: red; }' }),
 }));
 

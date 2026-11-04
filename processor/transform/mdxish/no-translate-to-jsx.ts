@@ -11,7 +11,8 @@ type NoTranslateElement = MdxJsxFlowElement | MdxJsxTextElement;
 
 const isNoTranslate = (node: Node): node is NoTranslate | NoTranslateElement =>
   node.type === NodeTypes.noTranslate ||
-  ((node.type === 'mdxJsxTextElement' || node.type === 'mdxJsxFlowElement') && (node as NoTranslateElement).name === 'NoTranslate');
+  ((node.type === 'mdxJsxTextElement' || node.type === 'mdxJsxFlowElement') &&
+    (node as NoTranslateElement).name === 'NoTranslate');
 
 // An empty child list writes `<NoTranslate />`. Alone on a line, that starts an HTML block
 // that swallows the next lines raw. An empty child keeps the `</NoTranslate>`, a fresh one per node.

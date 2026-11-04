@@ -28,7 +28,6 @@ const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode: safeMo
   const nonStringChildren = typeof htmlSource !== 'string';
   const html: string = nonStringChildren ? '' : htmlSource;
 
-  // eslint-disable-next-line no-param-reassign
   runScripts = typeof runScripts !== 'boolean' ? runScripts === 'true' : runScripts;
 
   // In MDX mode, safeMode is passed in as a boolean from JSX parsing

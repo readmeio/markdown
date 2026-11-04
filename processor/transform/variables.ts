@@ -21,8 +21,9 @@ const variables =
         expression.type !== 'ExpressionStatement' ||
         expression.expression.object?.name !== 'user' ||
         !['Literal', 'Identifier'].includes(expression.expression.property?.type)
-      )
+      ) {
         return;
+      }
 
       const name =
         expression.expression.property.type === 'Identifier'

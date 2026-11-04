@@ -50,7 +50,6 @@ const injectTailwindRoot =
 
     parent.children.splice(index, 1, wrapper);
 
-    // eslint-disable-next-line consistent-return
     return SKIP;
   };
 

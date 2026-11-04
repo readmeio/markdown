@@ -10,7 +10,7 @@ import { mdxish } from '../../../../lib';
 import { findAllElementsByTagName } from '../../../helpers';
 
 /** A `<Cards>` wrapper around one `<Card>` whose data URI is `chars` base64 chars long. */
-function buildCards(chars: number): { imageSrc: string, md: string; } {
+function buildCards(chars: number): { imageSrc: string; md: string } {
   const imageSrc = `data:image/svg+xml;base64,${'A'.repeat(chars)}`;
   const md = `<Cards columns={2}>
   <Card title="UFL API" href="https://example.com/ufl" imageSrc="${imageSrc}">
@@ -47,7 +47,9 @@ describe('huge data-URI attribute performance', () => {
     const ratio60 = t60 / t20;
     const ratio120 = t120 / t20;
     // eslint-disable-next-line no-console
-    console.log(`  60k/20k = ${ratio60.toFixed(2)}× (linear ≈ 3, quadratic ≈ 9) | 120k/20k = ${ratio120.toFixed(2)}× (linear ≈ 6, quadratic ≈ 36)`);
+    console.log(
+      `  60k/20k = ${ratio60.toFixed(2)}× (linear ≈ 3, quadratic ≈ 9) | 120k/20k = ${ratio120.toFixed(2)}× (linear ≈ 6, quadratic ≈ 36)`,
+    );
 
     expect(ratio60).toBeLessThan(5);
     expect(ratio120).toBeLessThan(10);
@@ -70,7 +72,9 @@ describe('stray `<` in prose performance', () => {
     const ratio3 = t3 / t1;
     const ratio6 = t6 / t1;
     // eslint-disable-next-line no-console
-    console.log(`  3k/1k = ${ratio3.toFixed(2)}× (linear ≈ 3, quadratic ≈ 9) | 6k/1k = ${ratio6.toFixed(2)}× (linear ≈ 6, quadratic ≈ 36)`);
+    console.log(
+      `  3k/1k = ${ratio3.toFixed(2)}× (linear ≈ 3, quadratic ≈ 9) | 6k/1k = ${ratio6.toFixed(2)}× (linear ≈ 6, quadratic ≈ 36)`,
+    );
 
     expect(ratio3).toBeLessThan(5);
     expect(ratio6).toBeLessThan(10);

@@ -386,7 +386,7 @@ describe('mdxishAstProcessor', () => {
     const { processor, parserReadyContent } = mdxishAstProcessor(md);
     expect(parserReadyContent).toBe(md);
     expect(processor).toBeDefined();
-    expect(typeof processor.parse).toBe('function');
+    expect(processor.parse).toBeTypeOf('function');
 
     const ast = processor.parse(parserReadyContent);
     // @ts-expect-error - custom matcher
@@ -853,7 +853,10 @@ Content here
       expect(out).not.toMatch(/^>\s*📘\s+Content here/);
 
       const second = mdxishAstProcessor(out, { newEditorTypes: true });
-      const tree2 = second.processor.runSync(second.processor.parse(second.parserReadyContent), second.parserReadyContent) as Root;
+      const tree2 = second.processor.runSync(
+        second.processor.parse(second.parserReadyContent),
+        second.parserReadyContent,
+      ) as Root;
       const callout = tree2.children[0] as {
         children: { type: string }[];
         data?: { hProperties?: { empty?: boolean } };

@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 16.2.0
+### ✨ New & Improved
+
+* **mdxish:** add markdown fragment re-parser that maps positions to the document ([#1656](https://github.com/readmeio/markdown/issues/1656)) ([2113176](https://github.com/readmeio/markdown/commit/21131767145553c0a8c91cc388b81231a5071882)), closes [#1657](https://github.com/readmeio/markdown/issues/1657) [#1658](https://github.com/readmeio/markdown/issues/1658)
+* **mdxish:** map re-parsed positions to the document and drop reparseSource stamps ([#1657](https://github.com/readmeio/markdown/issues/1657)) ([dc2a865](https://github.com/readmeio/markdown/commit/dc2a8654b18479c6de06ff5981e205b69a111a9d))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** give magic block output and Glossary elements source positions ([#1658](https://github.com/readmeio/markdown/issues/1658)) ([2c65ed9](https://github.com/readmeio/markdown/commit/2c65ed90f52bf6e6b00751e6b533949451682107))
+
 ## Version 16.1.0
 ### ✨ New & Improved
 

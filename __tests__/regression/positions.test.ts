@@ -2,14 +2,14 @@ import type { MdxishOpts } from '../../lib/mdxish';
 import type { Node } from 'unist';
 
 import { readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
 import { loadFixture } from '../../lib/render-fixture';
 import { parseMdxishWithSource } from '../helpers';
 
-const FIXTURES_DIR = join(__dirname, 'fixtures');
+const FIXTURES_DIR = path.join(__dirname, 'fixtures');
 
 const describeRange = (node: Node) => `${node.type} ${node.position?.start.offset}-${node.position?.end.offset}`;
 
@@ -33,7 +33,7 @@ const misplacedNodes = (tree: Node, source: string): string[] => {
       node.children.forEach((child: Node) => visit(child, range ? node : ancestor));
     }
   };
-  visit(tree, undefined);
+  visit(tree);
   return misplaced;
 };
 
@@ -47,7 +47,7 @@ describe('mdxish node positions', () => {
     ['editor', { newEditorTypes: true }],
   ] satisfies [string, MdxishOpts][])('%s', (_mode, opts) => {
     it.each(fixtures)('%s keeps every node inside its parent and the document', fixture => {
-      const { body } = loadFixture(join(FIXTURES_DIR, fixture));
+      const { body } = loadFixture(path.join(FIXTURES_DIR, fixture));
       const { source, tree } = parseMdxishWithSource(body, opts);
 
       expect(misplacedNodes(tree, source)).toStrictEqual([]);

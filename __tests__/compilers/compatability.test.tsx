@@ -5,7 +5,6 @@ import fs from 'node:fs';
 
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-
 import { vi } from 'vitest';
 
 import { mdx, compile, run, mdxish } from '../../index';
@@ -156,6 +155,7 @@ This is some in progress <!-- commented out stuff -->
     `);
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('closes un-closed self closing tags', () => {
     const md = `
 This is a break: <br>
@@ -164,6 +164,7 @@ This is a break: <br>
     expect(migrate(md).trim()).toBe('This is a break: <br />');
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('closes un-closed self closing tags with a space', () => {
     const md = `
 This is a break: <br >
@@ -172,6 +173,7 @@ This is a break: <br >
     expect(migrate(md).trim()).toBe('This is a break: <br />');
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('closes complex un-closed self closing tags', () => {
     const md = `
 This is an image: <img src="http://example.com/#\\>" >

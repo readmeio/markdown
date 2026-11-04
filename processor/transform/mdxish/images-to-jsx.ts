@@ -23,7 +23,10 @@ interface ReadmeImage extends Image {
 
 const hasExtra = (attributes: MdxJsxAttribute[]) => attributes.some(attr => !PLAIN_IMAGE_ATTRS.includes(attr.name));
 
-const toImageJsx = (attributes: MdxJsxAttribute[], children: MdxJsxFlowElement['children'] = []): MdxJsxFlowElement => ({
+const toImageJsx = (
+  attributes: MdxJsxAttribute[],
+  children: MdxJsxFlowElement['children'] = [],
+): MdxJsxFlowElement => ({
   type: 'mdxJsxFlowElement',
   name: 'Image',
   attributes,
@@ -70,7 +73,7 @@ const imagesToJsx = (): Transform => tree => {
 
   visit(tree, 'image', (n, index, parent: Parent | undefined) => {
     const node = n as ReadmeImage;
-    if (!parent || index === undefined) return undefined;
+    if (!parent || index === undefined) return;
 
     const hProperties = node.data?.hProperties;
 
@@ -82,20 +85,20 @@ const imagesToJsx = (): Transform => tree => {
         value: node.title,
       };
       parent.children[index] = emoji;
-      return undefined;
+      return;
     }
 
     if (hProperties) {
       const attributes = toAttributes({ ...node, ...hProperties, src: node.url }, IMAGE_ATTRS);
       if (hasExtra(attributes)) {
         parent.children[index] = toImageJsx(attributes);
-        return undefined;
+        return;
       }
     }
 
     // An attribute-less `[block:image]` parses straight to an `image` in a flow slot, so it needs
     // the same wrap. Editor images always arrive inside a paragraph and are left alone.
-    if (INLINE_ONLY_PARENT_TYPES.has(parent.type)) return undefined;
+    if (INLINE_ONLY_PARENT_TYPES.has(parent.type)) return;
 
     placeImage(parent, index, node);
     // Step over the paragraph just created, or the visitor walks back into the same image.
