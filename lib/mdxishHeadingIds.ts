@@ -81,8 +81,14 @@ const isHeadingElement = (node: Node): node is MdxJsxFlowElement | MdxJsxTextEle
 // An expression the hub has to run changes a heading from inside one (Markdown or an HTML heading tag), by
 // building an element (a call or JSX), or as a block: alone in its paragraph, its result is lifted out as one.
 function canChangeHeadings(node: Expression, ancestors: Parent[], heading: Heading | undefined): boolean {
-  if (heading || ancestors.some(isHeadingElement) || node.type === 'mdxFlowExpression' || canBuildElements(node.value))
+  if (
+    heading ||
+    ancestors.some(isHeadingElement) ||
+    node.type === 'mdxFlowExpression' ||
+    canBuildElements(node.value)
+  ) {
     return true;
+  }
   const parent = ancestors[ancestors.length - 1];
   return parent.children.every(child => child === node || (child.type === 'text' && !child.value.trim()));
 }

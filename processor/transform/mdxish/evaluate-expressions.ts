@@ -46,7 +46,7 @@ const componentScope = (expression: string, components: CustomComponents): Recor
 
 /**
  * We divide the result of an expression into two categories:
- * 1. Renderable values: HTML, JSX, e.g. .map() returning JSX 
+ * 1. Renderable values: HTML, JSX, e.g. .map() returning JSX
  * 2. Non-renderable values: a string, number, or object, regular JS values
  */
 const isRenderable = (value: unknown): boolean => {
@@ -54,7 +54,8 @@ const isRenderable = (value: unknown): boolean => {
   return Array.isArray(value) && value.some(isRenderable);
 };
 
-const isPhrasingTag = (tagName: string): boolean => phrasing({ type: 'element', tagName, properties: {}, children: [] });
+const isPhrasingTag = (tagName: string): boolean =>
+  phrasing({ type: 'element', tagName, properties: {}, children: [] });
 
 /**
  * Whether an expression evaluated to block-level content. A capitalized tag is a component,
@@ -64,7 +65,9 @@ const isPhrasingTag = (tagName: string): boolean => phrasing({ type: 'element', 
  */
 const isBlockResult = (children: ElementContent[]): boolean =>
   children.some(child => {
-    if (child.type === 'raw') return isBlockResult(fromHtml(child.value, { fragment: true }).children as ElementContent[]);
+    if (child.type === 'raw') {
+      return isBlockResult(fromHtml(child.value, { fragment: true }).children as ElementContent[]);
+    }
     if (child.type !== 'element' && child.type !== 'mdx-jsx') return false;
     const { tagName } = child as { tagName: string };
     return /^[A-Z]/.test(tagName) ? !INLINE_COMPONENT_TAGS.has(tagName) : !isPhrasingTag(tagName);
@@ -116,9 +119,9 @@ const evaluateExpressions: Plugin<[Options?], Root> =
         const scope = { ...componentScope(expression, components ?? {}), ...baseScope };
         const result = evalExpression(expression, scope);
         if (isRenderable(result)) {
-          // Stash hast built straight from the React tree; `mdxExpressionHandler` emits it and it 
-          // passes through rehypeRaw/parse5 step later in the pipeline. This ensures that the 
-          // expression result is not parsed by parse5 and fragmenting the nesting that is valid JSX 
+          // Stash hast built straight from the React tree; `mdxExpressionHandler` emits it and it
+          // passes through rehypeRaw/parse5 step later in the pipeline. This ensures that the
+          // expression result is not parsed by parse5 and fragmenting the nesting that is valid JSX
           // but invalid HTML — e.g. an `<a>` wrapping `<a>`.
           const hChildren = reactElementToHast(result);
           expressionNode.data = { ...expressionNode.data, hChildren };

@@ -1,4 +1,3 @@
-/* eslint-disable vitest/consistent-test-it */
 import { bench, describe } from 'vitest';
 
 import { mdast, mdx, mdxish, mix } from '../../lib';

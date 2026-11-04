@@ -2438,25 +2438,48 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
   describe('block NoTranslate round trip', () => {
     const saved = '<NoTranslate>\n  Para one **bold**\n\n  - item\n</NoTranslate>\n\nafter\n';
 
-    it.each([false, true])('writes a NoTranslate spread over paragraphs as a block with newEditorTypes %s', newEditorTypes => {
-      expect(roundTripMdxish('<NoTranslate>one\n\ntwo</NoTranslate>\n', { newEditorTypes })).toBe('<NoTranslate>\n  one\n\n  two\n</NoTranslate>\n');
-    });
+    it.each([false, true])(
+      'writes a NoTranslate spread over paragraphs as a block with newEditorTypes %s',
+      newEditorTypes => {
+        expect(roundTripMdxish('<NoTranslate>one\n\ntwo</NoTranslate>\n', { newEditorTypes })).toBe(
+          '<NoTranslate>\n  one\n\n  two\n</NoTranslate>\n',
+        );
+      },
+    );
 
     it.each([false, true])('writes a block NoTranslate as a block with newEditorTypes %s', newEditorTypes => {
-      expect(roundTripMdxish('<NoTranslate>\nPara one **bold**\n\n- item\n</NoTranslate>\n\nafter', { newEditorTypes })).toBe(saved);
+      expect(
+        roundTripMdxish('<NoTranslate>\nPara one **bold**\n\n- item\n</NoTranslate>\n\nafter', { newEditorTypes }),
+      ).toBe(saved);
     });
 
-    it.each([false, true])('round-trips a saved block NoTranslate byte for byte with newEditorTypes %s', newEditorTypes => {
-      expect(roundTripMdxish(saved, { newEditorTypes })).toBe(saved);
-    });
+    it.each([false, true])(
+      'round-trips a saved block NoTranslate byte for byte with newEditorTypes %s',
+      newEditorTypes => {
+        expect(roundTripMdxish(saved, { newEditorTypes })).toBe(saved);
+      },
+    );
 
-    it.each([false, true])('keeps the block after an empty block NoTranslate with newEditorTypes %s', newEditorTypes => {
-      expect(roundTripMdxish('<NoTranslate>\n</NoTranslate>\n\n# Heading\n', { newEditorTypes })).toBe('<NoTranslate>\n\n</NoTranslate>\n\n# Heading\n');
-    });
+    it.each([false, true])(
+      'keeps the block after an empty block NoTranslate with newEditorTypes %s',
+      newEditorTypes => {
+        expect(roundTripMdxish('<NoTranslate>\n</NoTranslate>\n\n# Heading\n', { newEditorTypes })).toBe(
+          '<NoTranslate>\n\n</NoTranslate>\n\n# Heading\n',
+        );
+      },
+    );
 
     describe.each([
-      ['an expression', '<NoTranslate>\n{"</NoTranslate>"}</NoTranslate>\n', '<NoTranslate>\n  {"</NoTranslate>"}\n</NoTranslate>\n'],
-      ['an inline NoTranslate', '<NoTranslate>\n<NoTranslate>inner</NoTranslate></NoTranslate>\n', '<NoTranslate>\n  <NoTranslate>inner</NoTranslate>\n</NoTranslate>\n'],
+      [
+        'an expression',
+        '<NoTranslate>\n{"</NoTranslate>"}</NoTranslate>\n',
+        '<NoTranslate>\n  {"</NoTranslate>"}\n</NoTranslate>\n',
+      ],
+      [
+        'an inline NoTranslate',
+        '<NoTranslate>\n<NoTranslate>inner</NoTranslate></NoTranslate>\n',
+        '<NoTranslate>\n  <NoTranslate>inner</NoTranslate>\n</NoTranslate>\n',
+      ],
       [
         'an inline NoTranslate opened on an earlier line',
         '<NoTranslate>\nkept <NoTranslate>inner\nstill</NoTranslate></NoTranslate>\n',
@@ -2469,8 +2492,16 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     });
 
     describe.each([
-      ['a blockquote', '> <NoTranslate>\n> first\n> </NoTranslate> later\n', '> <NoTranslate>\n>   first\n> </NoTranslate>\n>\n> later\n'],
-      ['a list item', '- <NoTranslate>\n  first\n  </NoTranslate> later\n', '- <NoTranslate>\n    first\n  </NoTranslate>\n  later\n'],
+      [
+        'a blockquote',
+        '> <NoTranslate>\n> first\n> </NoTranslate> later\n',
+        '> <NoTranslate>\n>   first\n> </NoTranslate>\n>\n> later\n',
+      ],
+      [
+        'a list item',
+        '- <NoTranslate>\n  first\n  </NoTranslate> later\n',
+        '- <NoTranslate>\n    first\n  </NoTranslate>\n  later\n',
+      ],
       ['trailing spaces', '<NoTranslate>\nfirst\n</NoTranslate>   \n', '<NoTranslate>\n  first\n</NoTranslate>\n'],
     ])('in %s', (_label, doc, expected) => {
       it.each([false, true])('ends the block at its closer with newEditorTypes %s', newEditorTypes => {

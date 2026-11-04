@@ -175,11 +175,13 @@ describe('markdown inside indented plain HTML blocks', () => {
     expect(findElementByTagName(ast, 'code')).toBeNull();
 
     // Both sibling wrappers survive rather than one collapsing into a code block.
-    expect(findAllElementsByTagName(ast, 'div').filter(el =>
-      Array.isArray(el.properties.className)
-        ? el.properties.className.includes('top-image-container')
-        : el.properties.className === 'top-image-container',
-    )).toHaveLength(1);
+    expect(
+      findAllElementsByTagName(ast, 'div').filter(el =>
+        Array.isArray(el.properties.className)
+          ? el.properties.className.includes('top-image-container')
+          : el.properties.className === 'top-image-container',
+      ),
+    ).toHaveLength(1);
 
     expect(html).toContain('Try Akamai products for free</h2>');
     expect(findElementByTagName(ast, 'a')).toMatchObject({ properties: { href: 'https://example.com/trials' } });
@@ -187,7 +189,12 @@ describe('markdown inside indented plain HTML blocks', () => {
   });
 
   it('dedents a tab-indented <div> body so single-tab-deep markdown still parses', () => {
-    const md = ['<div className="simple-list">', '\t<h2>Learn By Example</h2>', '\t<p>Use the <a href="https://example.com">API Simulator</a>.</p>', '</div>'].join('\n');
+    const md = [
+      '<div className="simple-list">',
+      '\t<h2>Learn By Example</h2>',
+      '\t<p>Use the <a href="https://example.com">API Simulator</a>.</p>',
+      '</div>',
+    ].join('\n');
 
     const ast = mdxish(md);
 

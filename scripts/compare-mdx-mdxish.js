@@ -1,5 +1,4 @@
 // Script for comparing MDX vs MDXish performance on large documents
-/* eslint-disable no-console */
 const { Blob } = require('node:buffer');
 
 const rdmd = require('..');
@@ -8,7 +7,7 @@ const rdmd = require('..');
  * Create a plain markdown document of approximately the target byte size
  * Uses safe markdown that works with both MDX and MDXish
  */
-const createLargeDoc = (targetBytes) => {
+const createLargeDoc = targetBytes => {
   // Use only plain markdown features - no MDX expressions or JSX components
   const plainMarkdown = `
 # Performance Test Document
@@ -139,19 +138,21 @@ Content in subsection three with tables and blockquotes.
   let doc = '';
   let repetition = 0;
   const targetSize = targetBytes;
-  
+
   while (new Blob([doc]).size < targetSize) {
     // Add repetition number to make each section unique
-    const numberedContent = plainMarkdown.replace(/# Performance Test Document/g, 
-      `# Performance Test Document - Part ${repetition + 1}`);
+    const numberedContent = plainMarkdown.replace(
+      /# Performance Test Document/g,
+      `# Performance Test Document - Part ${repetition + 1}`,
+    );
     doc += numberedContent;
     doc += '\n\n---\n\n';
     repetition += 1;
-    
+
     // Safety check
     if (repetition > 500) break;
   }
-  
+
   return doc;
 };
 
@@ -187,7 +188,7 @@ function benchmark(name, fn) {
     const start = Date.now();
     const result = fn();
     const duration = Date.now() - start;
-    
+
     // Calculate result size
     let resultSize = 0;
     if (typeof result === 'string') {
@@ -201,7 +202,7 @@ function benchmark(name, fn) {
         resultSize = Object.keys(result).length * 100;
       }
     }
-    
+
     return {
       name,
       duration,
@@ -233,10 +234,7 @@ function formatTableRow(columns, widths) {
  */
 function printTable(headers, rows) {
   const widths = headers.map((h, i) => {
-    const maxContent = Math.max(
-      h.length,
-      ...rows.map(row => String(row[i] || '').length)
-    );
+    const maxContent = Math.max(h.length, ...rows.map(row => String(row[i] || '').length));
     return Math.max(maxContent, 10);
   });
 
@@ -306,20 +304,20 @@ function runBenchmarkForSize(sizeConfig) {
     const mdastParse = benchmark('MDAST parse', () => {
       return rdmd.mdast(doc);
     });
-    
+
     const mdxishParse = benchmark('MDXish parse', () => {
       return rdmd.mdxish(doc);
     });
-    
+
     const mdxString = benchmark('MDX string', () => {
       const tree = rdmd.mdast(doc);
       return rdmd.mdx(tree);
     });
-    
+
     const mdxishString = benchmark('MDXish string', () => {
       return rdmd.mix(doc);
     });
-    
+
     if (!mdastParse.error) {
       mdastParseTimes.push(mdastParse.duration);
     }
@@ -335,18 +333,12 @@ function runBenchmarkForSize(sizeConfig) {
   }
 
   // Calculate averages
-  const avgMdast = mdastParseTimes.length > 0
-    ? mdastParseTimes.reduce((a, b) => a + b, 0) / mdastParseTimes.length
-    : 0;
-  const avgMdxish = mdxishParseTimes.length > 0
-    ? mdxishParseTimes.reduce((a, b) => a + b, 0) / mdxishParseTimes.length
-    : 0;
-  const avgMdx = mdxStringTimes.length > 0
-    ? mdxStringTimes.reduce((a, b) => a + b, 0) / mdxStringTimes.length
-    : 0;
-  const avgMdxishString = mdxishStringTimes.length > 0
-    ? mdxishStringTimes.reduce((a, b) => a + b, 0) / mdxishStringTimes.length
-    : 0;
+  const avgMdast = mdastParseTimes.length > 0 ? mdastParseTimes.reduce((a, b) => a + b, 0) / mdastParseTimes.length : 0;
+  const avgMdxish =
+    mdxishParseTimes.length > 0 ? mdxishParseTimes.reduce((a, b) => a + b, 0) / mdxishParseTimes.length : 0;
+  const avgMdx = mdxStringTimes.length > 0 ? mdxStringTimes.reduce((a, b) => a + b, 0) / mdxStringTimes.length : 0;
+  const avgMdxishString =
+    mdxishStringTimes.length > 0 ? mdxishStringTimes.reduce((a, b) => a + b, 0) / mdxishStringTimes.length : 0;
 
   return {
     name,
@@ -410,17 +402,24 @@ function printResults(allResults) {
   // Single Run Results - Parse-only
   console.log('\n📊 Single Run Results: Parse-only (AST trees)');
   console.log('-'.repeat(100));
-  const parseOnlySingleHeaders = ['Document Size', 'MDAST (ms)', 'MDXish (ms)', 'Faster', 'Speedup', 'Output Size (MDAST)', 'Output Size (MDXish)'];
+  const parseOnlySingleHeaders = [
+    'Document Size',
+    'MDAST (ms)',
+    'MDXish (ms)',
+    'Faster',
+    'Speedup',
+    'Output Size (MDAST)',
+    'Output Size (MDXish)',
+  ];
   const parseOnlySingleRows = allResults.map(result => {
     const mdast = result.singleRun.parseOnly.mdast;
     const mdxish = result.singleRun.parseOnly.mdxish;
-    const faster = mdast.error || mdxish.error
-      ? 'N/A'
-      : mdast.duration > mdxish.duration ? 'MDXish' : 'MDAST';
-    const speedup = mdast.error || mdxish.error
-      ? 'N/A'
-      : `${(Math.max(mdast.duration, mdxish.duration) / Math.min(mdast.duration, mdxish.duration)).toFixed(2)}x`;
-    
+    const faster = mdast.error || mdxish.error ? 'N/A' : mdast.duration > mdxish.duration ? 'MDXish' : 'MDAST';
+    const speedup =
+      mdast.error || mdxish.error
+        ? 'N/A'
+        : `${(Math.max(mdast.duration, mdxish.duration) / Math.min(mdast.duration, mdxish.duration)).toFixed(2)}x`;
+
     return [
       `${result.name} (${result.description})`,
       mdast.error ? 'ERROR' : mdast.duration.toFixed(2),
@@ -436,17 +435,24 @@ function printResults(allResults) {
   // Single Run Results - String Output
   console.log('\n📊 Single Run Results: String Outputs');
   console.log('-'.repeat(100));
-  const stringSingleHeaders = ['Document Size', 'MDX (ms)', 'MDXish (ms)', 'Faster', 'Speedup', 'Output Size (MDX)', 'Output Size (MDXish)'];
+  const stringSingleHeaders = [
+    'Document Size',
+    'MDX (ms)',
+    'MDXish (ms)',
+    'Faster',
+    'Speedup',
+    'Output Size (MDX)',
+    'Output Size (MDXish)',
+  ];
   const stringSingleRows = allResults.map(result => {
     const mdx = result.singleRun.stringOutput.mdx;
     const mdxish = result.singleRun.stringOutput.mdxish;
-    const faster = mdx.error || mdxish.error
-      ? 'N/A'
-      : mdx.duration > mdxish.duration ? 'MDXish' : 'MDX';
-    const speedup = mdx.error || mdxish.error
-      ? 'N/A'
-      : `${(Math.max(mdx.duration, mdxish.duration) / Math.min(mdx.duration, mdxish.duration)).toFixed(2)}x`;
-    
+    const faster = mdx.error || mdxish.error ? 'N/A' : mdx.duration > mdxish.duration ? 'MDXish' : 'MDX';
+    const speedup =
+      mdx.error || mdxish.error
+        ? 'N/A'
+        : `${(Math.max(mdx.duration, mdxish.duration) / Math.min(mdx.duration, mdxish.duration)).toFixed(2)}x`;
+
     return [
       `${result.name} (${result.description})`,
       mdx.error ? 'ERROR' : mdx.duration.toFixed(2),
@@ -462,20 +468,26 @@ function printResults(allResults) {
   // Average Results - Parse-only
   console.log('\n📊 Average Results (10 iterations): Parse-only (AST trees)');
   console.log('-'.repeat(100));
-  const parseOnlyAvgHeaders = ['Document Size', 'MDAST Avg (ms)', 'MDXish Avg (ms)', 'MDAST Min-Max', 'MDXish Min-Max', 'Faster', 'Speedup', 'Time Saved (ms)'];
+  const parseOnlyAvgHeaders = [
+    'Document Size',
+    'MDAST Avg (ms)',
+    'MDXish Avg (ms)',
+    'MDAST Min-Max',
+    'MDXish Min-Max',
+    'Faster',
+    'Speedup',
+    'Time Saved (ms)',
+  ];
   const parseOnlyAvgRows = allResults.map(result => {
     const mdast = result.averages.parseOnly.mdast;
     const mdxish = result.averages.parseOnly.mdxish;
-    const faster = mdast.avg === 0 || mdxish.avg === 0
-      ? 'N/A'
-      : mdast.avg > mdxish.avg ? 'MDXish' : 'MDAST';
-    const speedup = mdast.avg === 0 || mdxish.avg === 0
-      ? 'N/A'
-      : `${(Math.max(mdast.avg, mdxish.avg) / Math.min(mdast.avg, mdxish.avg)).toFixed(2)}x`;
-    const timeSaved = mdast.avg === 0 || mdxish.avg === 0
-      ? 'N/A'
-      : Math.abs(mdast.avg - mdxish.avg).toFixed(2);
-    
+    const faster = mdast.avg === 0 || mdxish.avg === 0 ? 'N/A' : mdast.avg > mdxish.avg ? 'MDXish' : 'MDAST';
+    const speedup =
+      mdast.avg === 0 || mdxish.avg === 0
+        ? 'N/A'
+        : `${(Math.max(mdast.avg, mdxish.avg) / Math.min(mdast.avg, mdxish.avg)).toFixed(2)}x`;
+    const timeSaved = mdast.avg === 0 || mdxish.avg === 0 ? 'N/A' : Math.abs(mdast.avg - mdxish.avg).toFixed(2);
+
     return [
       `${result.name} (${result.description})`,
       mdast.avg === 0 ? 'N/A' : mdast.avg.toFixed(2),
@@ -492,20 +504,26 @@ function printResults(allResults) {
   // Average Results - String Output
   console.log('\n📊 Average Results (10 iterations): String Outputs');
   console.log('-'.repeat(100));
-  const stringAvgHeaders = ['Document Size', 'MDX Avg (ms)', 'MDXish Avg (ms)', 'MDX Min-Max', 'MDXish Min-Max', 'Faster', 'Speedup', 'Time Saved (ms)'];
+  const stringAvgHeaders = [
+    'Document Size',
+    'MDX Avg (ms)',
+    'MDXish Avg (ms)',
+    'MDX Min-Max',
+    'MDXish Min-Max',
+    'Faster',
+    'Speedup',
+    'Time Saved (ms)',
+  ];
   const stringAvgRows = allResults.map(result => {
     const mdx = result.averages.stringOutput.mdx;
     const mdxish = result.averages.stringOutput.mdxish;
-    const faster = mdx.avg === 0 || mdxish.avg === 0
-      ? 'N/A'
-      : mdx.avg > mdxish.avg ? 'MDXish' : 'MDX';
-    const speedup = mdx.avg === 0 || mdxish.avg === 0
-      ? 'N/A'
-      : `${(Math.max(mdx.avg, mdxish.avg) / Math.min(mdx.avg, mdxish.avg)).toFixed(2)}x`;
-    const timeSaved = mdx.avg === 0 || mdxish.avg === 0
-      ? 'N/A'
-      : Math.abs(mdx.avg - mdxish.avg).toFixed(2);
-    
+    const faster = mdx.avg === 0 || mdxish.avg === 0 ? 'N/A' : mdx.avg > mdxish.avg ? 'MDXish' : 'MDX';
+    const speedup =
+      mdx.avg === 0 || mdxish.avg === 0
+        ? 'N/A'
+        : `${(Math.max(mdx.avg, mdxish.avg) / Math.min(mdx.avg, mdxish.avg)).toFixed(2)}x`;
+    const timeSaved = mdx.avg === 0 || mdxish.avg === 0 ? 'N/A' : Math.abs(mdx.avg - mdxish.avg).toFixed(2);
+
     return [
       `${result.name} (${result.description})`,
       mdx.avg === 0 ? 'N/A' : mdx.avg.toFixed(2),
@@ -536,4 +554,3 @@ process.stdout.write(`\r${' '.repeat(50)}\r`); // Clear progress line
 
 // Print all results
 printResults(allResults);
-

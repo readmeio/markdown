@@ -148,8 +148,8 @@ describe('toc transformer', () => {
 
     render(<Toc />);
 
-    expect(await screen.findByText('Keys [{"apiKey":"rdme_123"}]')).toBeDefined();
-    expect(await screen.findByText('Profile {"plan":"enterprise"} 25')).toBeDefined();
+    await expect(screen.findByText('Keys [{"apiKey":"rdme_123"}]')).resolves.toBeDefined();
+    await expect(screen.findByText('Profile {"plan":"enterprise"} 25')).resolves.toBeDefined();
   });
 
   it('falls back to the variable name for nullish values in labels', async () => {
@@ -169,8 +169,8 @@ describe('toc transformer', () => {
 
     render(<Toc />);
 
-    expect(await screen.findByText('Hello nullValue')).toBeDefined();
-    expect(await screen.findByText('Bye undefinedValue')).toBeDefined();
+    await expect(screen.findByText('Hello nullValue')).resolves.toBeDefined();
+    await expect(screen.findByText('Bye undefinedValue')).resolves.toBeDefined();
   });
 
   it('keeps adjacent legacy variable values and suffixes together', () => {

@@ -39,7 +39,7 @@ describe('mdxish gemoji compiler', () => {
     expect(
       hasEmoji ||
         paragraph.children.some(child => child.type === 'text' && 'value' in child && child.value?.includes('😂')),
-    ).toBeTruthy();
+    ).toBe(true);
   });
 
   it('should convert owlmoji to image nodes', () => {

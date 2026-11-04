@@ -49,6 +49,8 @@ function compilers(this: Processor, mdxish = false) {
 }
 
 export function mdxishCompilers(this: Processor) {
+  // Unified calls compiler plugins with the processor as `this`.
+  // oxlint-disable-next-line oxc/no-this-in-exported-function
   return compilers.call(this, true);
 }
 

@@ -1,5 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies
- */
 const ExtractCSS = require('mini-css-extract-plugin');
 const sass = require('sass');
 const webpack = require('webpack');

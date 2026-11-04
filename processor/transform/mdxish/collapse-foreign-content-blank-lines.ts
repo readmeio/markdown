@@ -42,9 +42,10 @@ function findForeignContentSpans(text: string): [number, number][] {
 
   // Foreign tags inside an HTML comment are inert; a stray `<svg>`/`<math>` in a comment
   // must not open an island and latch onto the rest of the doc.
-  const comments = [...text.matchAll(HTML_COMMENT_RE)].map(
-    (m): [number, number] => [m.index ?? 0, (m.index ?? 0) + m[0].length],
-  );
+  const comments = [...text.matchAll(HTML_COMMENT_RE)].map((m): [number, number] => [
+    m.index ?? 0,
+    (m.index ?? 0) + m[0].length,
+  ]);
 
   // Offsets of openers still waiting for their closer, innermost last.
   const openOffsets: number[] = [];

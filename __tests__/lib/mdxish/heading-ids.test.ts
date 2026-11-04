@@ -13,10 +13,12 @@ const textOf = (node: Element) =>
     .join('');
 
 const renderedHeadings = (doc: string, opts = {}) =>
-  collectNodes<Element>(mdxish(doc, opts), isElement(/^h[1-6]$/)).map(node => ({ id: node.properties.id, text: textOf(node) }));
+  collectNodes<Element>(mdxish(doc, opts), isElement(/^h[1-6]$/)).map(node => ({
+    id: node.properties.id,
+    text: textOf(node),
+  }));
 
-const renderedParagraph = (doc: string, opts = {}) =>
-  collectNodes<Element>(mdxish(doc, opts), isElement(/^p$/))[0];
+const renderedParagraph = (doc: string, opts = {}) => collectNodes<Element>(mdxish(doc, opts), isElement(/^p$/))[0];
 
 describe.each([
   ['with expressions', { safeMode: false }],
@@ -30,7 +32,12 @@ describe.each([
     ['a tab before the id', '## Setup\t{#install}', 'Setup', 'install'],
     ['trailing spaces after the id', '## Setup {#install}   ', 'Setup', 'install'],
     ['a `#` in the heading text', '## C# {#sharp}', 'C#', 'sharp'],
-    ['an id with underscores', '## The `__init__` method {#the-__init__-method}', 'The __init__ method', 'the-__init__-method'],
+    [
+      'an id with underscores',
+      '## The `__init__` method {#the-__init__-method}',
+      'The __init__ method',
+      'the-__init__-method',
+    ],
     ['a unicode id', '## Coffee {#café}', 'Coffee', 'café'],
     ['an id outside the basic multilingual plane', '## Deseret {#𐐀}', 'Deseret', '𐐀'],
     ['a heading that is only an id', '## {#empty}', '', 'empty'],

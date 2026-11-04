@@ -111,6 +111,8 @@ export const mdxComponentHandlers: Handlers = {
   mdxJsxFlowElement: mdxJsxElementHandler,
   mdxJsxTextElement: mdxJsxElementHandler,
   mdxTextExpression: mdxExpressionHandler,
+  // The handler type requires a return value. `() => {}` is void and does not typecheck.
+  // oxlint-disable-next-line unicorn/no-useless-undefined
   mdxjsEsm: () => undefined,
   [NodeTypes.htmlBlock]: htmlBlockHandler,
 };

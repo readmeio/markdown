@@ -112,20 +112,22 @@ const NON_STANDARD_TAGS = new Set<string>([
 /**
  * Standard HTML tags list.
  * A use case of this is to differentiate custom components tag vs standard HTML tags.
- * 
+ *
  * Unioned from:
  * - `html-tags`: All modern spec HTML elements
  * - parse5's `TAG_NAMES`: Elements the HTML tree-construction algorithm has to special-case
  *   This includes obsolete tags that are still rendered by browsers.
- * - NON_STANDARD_TAGS: We've had to filter because currently parse5's `TAG_NAMES` set over-enumerates 
+ * - NON_STANDARD_TAGS: We've had to filter because currently parse5's `TAG_NAMES` set over-enumerates
  *   tags that are not actually standard HTML tags. It also allows custom tags to be filtered out.
  */
-export const STANDARD_HTML_TAGS: Set<string> = new Set([
-  ...htmlTags,
-  ...Object.values(parse5Html.TAG_NAMES),
-  'acronym',  // Obselete tag not included either of the above sources. Add here if we have missed any.
-  'blink',
-].filter(tag => !NON_STANDARD_TAGS.has(tag)));
+export const STANDARD_HTML_TAGS: Set<string> = new Set(
+  [
+    ...htmlTags,
+    ...Object.values(parse5Html.TAG_NAMES),
+    'acronym', // Obselete tag not included either of the above sources. Add here if we have missed any.
+    'blink',
+  ].filter(tag => !NON_STANDARD_TAGS.has(tag)),
+);
 
 /**
  * Table structural tags. Blank lines inside these carry deliberate meaning for
