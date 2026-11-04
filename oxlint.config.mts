@@ -45,11 +45,16 @@ export default defineConfig({
   },
   overrides: [
     {
-      // Webpack, scripts, and a few library entrypoints are CommonJS. The previous ESLint config
-      // turned `@typescript-eslint/no-var-requires` off for the same reason.
+      // Webpack, scripts, and a few library entrypoints are CommonJS.
       files: ['**/*.{js,cjs,jsx}'],
       rules: {
         'typescript/no-require-imports': 'off',
+      },
+    },
+    {
+      files: ['scripts/**/*.js'],
+      rules: {
+        'no-console': 'off',
       },
     },
     {
@@ -61,10 +66,14 @@ export default defineConfig({
       },
       rules: {
         ...oxlintConfigVitest.rules,
-        // vitest.config.mts sets `globals: true`.
+
+        'vitest/no-large-snapshots': 'off',
         'vitest/prefer-importing-vitest-globals': 'off',
+
         // The fixer rewrites `toBeTruthy()` on DOM nodes to `toBe(true)`, which fails.
         'vitest/prefer-strict-boolean-matchers': 'off',
+
+        'vitest/require-mock-type-parameters': 'off',
       },
     },
     {
@@ -77,8 +86,7 @@ export default defineConfig({
       ...oxlintConfigJest,
       globals: {
         ...oxlintConfigJest.globals,
-        // jest-puppeteer injects this.
-        page: 'readonly',
+        page: 'readonly', // jest-puppeteer injects this.
       },
       rules: oxlintConfigJest.rules,
     },

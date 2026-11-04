@@ -2,6 +2,7 @@
 // oxlint-disable-next-line import/named
 import { astToPlainText, hast } from '../../index';
 
+// oxlint-disable-next-line vitest/no-disabled-tests
 describe.skip('astToPlainText with tables', () => {
   it('includes all cells', () => {
     const text = `

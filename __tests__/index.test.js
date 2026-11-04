@@ -1,3 +1,4 @@
+// oxlint-disable vitest/no-disabled-tests
 import { render, screen } from '@testing-library/react';
 import React, { createElement } from 'react';
 

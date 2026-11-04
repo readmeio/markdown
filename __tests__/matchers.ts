@@ -19,4 +19,5 @@ function toStrictEqualExceptPosition(this: MatcherState, received: Root, expecte
   };
 }
 
+// oxlint-disable-next-line vitest/require-hook
 expect.extend({ toStrictEqualExceptPosition });

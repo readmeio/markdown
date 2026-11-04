@@ -29,6 +29,7 @@ describe('Table of Contents', () => {
     expect(container.querySelector('.toc-children')).toHaveTextContent('Heading 1');
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('generates TOC from headings', () => {
     const txt = '# Heading Zed\n\n# Heading One';
     const ast = reactProcessor().parse(txt);
@@ -38,6 +39,7 @@ describe('Table of Contents', () => {
     expect(container.querySelectorAll('li > a[href]:not([href="#"])')).toHaveLength(2);
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('includes two heading levels', () => {
     const txt = '# Heading Zed\n\n## Subheading One\n\n### Deep Heading Two';
     const ast = reactProcessor().parse(txt);
@@ -48,6 +50,7 @@ describe('Table of Contents', () => {
     expect(container.innerHTML).toMatchSnapshot();
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('normalizes root depth level', () => {
     const txt = '##### Heading Zed\n\n###### Subheading Zed';
     const ast = reactProcessor().parse(txt);
@@ -57,6 +60,7 @@ describe('Table of Contents', () => {
     expect(container.querySelectorAll('li > a[href]:not([href="#"])')).toHaveLength(2);
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('includes variables', () => {
     const txt = '# Heading <<test>>';
     const ast = reactProcessor().parse(txt);
@@ -66,6 +70,7 @@ describe('Table of Contents', () => {
     expect(container.querySelector('li > a[href]:not([href="#"])')).toHaveTextContent(`Heading ${variables.user.test}`);
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('includes glossary items', () => {
     const txt = '# Heading <<glossary:demo>>';
     const ast = reactProcessor().parse(txt);
@@ -336,7 +341,7 @@ describe('Table of Contents', () => {
       await act(async () => {});
 
       // Observer should be watching the headings
-      expect(observedElements.map(el => el.id)).toEqual(
+      expect(observedElements.map(el => el.id)).toStrictEqual(
         expect.arrayContaining(['heading-1', 'heading-2', 'heading-3']),
       );
 

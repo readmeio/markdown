@@ -1,5 +1,4 @@
 // Script for comparing MDX vs MDXish performance on large documents
-/* eslint-disable no-console */
 const { Blob } = require('node:buffer');
 
 const rdmd = require('..');
