@@ -45,20 +45,25 @@ async function waitForMarkup() {
   throw new Error('markdown did not render');
 }
 
-async function settleImages() {
-  const pending = [...document.images].filter(img => !img.complete);
+/** Lazy images report `complete` before they download, then expand the document. */
+export async function settleImages() {
+  const pending = [...document.images].flatMap(img => {
+    const lazy = img.loading === 'lazy';
+    if (lazy) img.loading = 'eager';
+    if (!img.getAttribute('src') || (img.complete && img.naturalWidth > 0)) return [];
+    // A lazy image can look complete before the browser fetches it. Kick the
+    // request once; SVGs with no intrinsic size stay at naturalWidth 0.
+    if (lazy && img.naturalWidth === 0) {
+      const src = img.src;
+      img.removeAttribute('src');
+      img.src = src;
+    }
+    return [img];
+  });
   if (!pending.length) return;
 
   await Promise.race([
-    Promise.all(
-      pending.map(
-        img =>
-          new Promise(resolve => {
-            img.addEventListener('load', resolve, { once: true });
-            img.addEventListener('error', resolve, { once: true });
-          }),
-      ),
-    ),
+    Promise.all(pending.map(img => img.decode().catch(() => undefined))),
     new Promise(resolve => {
       setTimeout(resolve, 8_000);
     }),

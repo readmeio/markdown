@@ -117,8 +117,8 @@ export default defineConfig({
             allowedMismatchedPixels: 0,
           },
           screenshotOptions: {
-            // `page` screenshots are the iframe viewport. The body locator
-            // captures the whole document, which is what the old suite did.
+            // Tests grow the iframe to the document before this runs. A clip
+            // taller than the iframe viewport is blank below the fold.
             scale: 'css',
           },
           timeout: 15_000,
