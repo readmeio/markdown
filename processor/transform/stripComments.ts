@@ -2,18 +2,32 @@ import type { Root } from 'mdast';
 
 import { visit, SKIP } from 'unist-util-visit';
 
-const HTML_COMMENT_REGEX = /<!--[\s\S]*?-->/g;
-
-// Removing one comment can assemble another (`<!<!-- a -->-- b -->`).
+// Removing one comment can assemble another (`<!<!-- a -->-- b -->`). Track the
+// earliest `<!--` and cut through its `-->` so each character is copied once.
 const stripHtmlComments = (value: string): string => {
-  let current = value;
-  let previous: string;
-  do {
-    previous = current;
-    HTML_COMMENT_REGEX.lastIndex = 0;
-    current = current.replace(HTML_COMMENT_REGEX, '');
-  } while (current !== previous);
-  return current;
+  const buf: string[] = [];
+  let openAt = -1;
+
+  for (let i = 0; i < value.length; i += 1) {
+    buf.push(value[i]);
+    const end = buf.length;
+    if (
+      openAt === -1 &&
+      end >= 4 &&
+      buf[end - 4] === '<' &&
+      buf[end - 3] === '!' &&
+      buf[end - 2] === '-' &&
+      buf[end - 1] === '-'
+    ) {
+      openAt = end - 4;
+    }
+    if (openAt !== -1 && end >= openAt + 7 && buf[end - 3] === '-' && buf[end - 2] === '-' && buf[end - 1] === '>') {
+      buf.length = openAt;
+      openAt = -1;
+    }
+  }
+
+  return buf.join('');
 };
 
 export const MDX_COMMENT_REGEX = /\/\*(?:(?!\*\/)[\s\S])*\*\//g;
@@ -38,15 +52,18 @@ export const stripCommentsTransformer = () => {
   return (tree: Root) => {
     visit(tree, ['html', 'mdxFlowExpression', 'mdxTextExpression'], (node, index, parent) => {
       if (parent && typeof index === 'number') {
-        // Remove HTML comments
-        HTML_COMMENT_REGEX.lastIndex = 0;
-        if (node.type === 'html' && HTML_COMMENT_REGEX.test(node.value)) {
-          const newValue = stripHtmlComments(node.value).trim();
-          if (newValue) {
-            node.value = newValue;
-          } else {
-            parent.children.splice(index, 1);
-            return [SKIP, index];
+        // Remove HTML comments. Leave the node untouched when nothing matched so a
+        // tokenized tag still gets its `{/* … */}` expressions stripped below.
+        if (node.type === 'html') {
+          const stripped = stripHtmlComments(node.value);
+          if (stripped !== node.value) {
+            const newValue = stripped.trim();
+            if (newValue) {
+              node.value = newValue;
+            } else {
+              parent.children.splice(index, 1);
+              return [SKIP, index];
+            }
           }
         }
 

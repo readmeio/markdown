@@ -62,6 +62,16 @@ describe('HTML Block', () => {
     );
     expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
     expect(container.querySelector('script')).toBeNull();
+    expect(container.querySelector('.rdmd-html')?.innerHTML).toBe('');
+  });
+
+  it('does not let an earlier split script swallow a later one', () => {
+    const inner = '<script>void 0</script>';
+    const html = `<scrip<${inner}script></script>t>mockFn()</s<${inner}script></script>cript>`;
+    const { container } = render(<HTMLBlock runScripts={true}>{html}</HTMLBlock>);
+    expect(g.mockFn).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('script')).toBeNull();
+    expect(container.querySelector('.rdmd-html')?.innerHTML).toBe('');
   });
 
   it('runs a script revealed by stripping an inner script tag when runScripts is set', () => {
@@ -70,6 +80,24 @@ describe('HTML Block', () => {
     );
     expect(g.mockFn).toHaveBeenCalledTimes(1);
     expect(container.querySelector('script')).toBeNull();
+  });
+
+  it('does not end a script at a string that only looks like a closing tag', () => {
+    const { container } = render(
+      <HTMLBlock runScripts={true}>
+        {'<script>const marker = "</script-example>"; mockFn();</script><p>after</p>'}
+      </HTMLBlock>,
+    );
+    expect(g.mockFn).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('script')).toBeNull();
+    expect(screen.getByText('after')).toBeInTheDocument();
+    expect(screen.queryByText(/marker|script-example/)).not.toBeInTheDocument();
+  });
+
+  it('leaves custom elements whose names start with script', () => {
+    render(<HTMLBlock>{'<script-example>keep</script-example><scripting>also</scripting>'}</HTMLBlock>);
+    expect(screen.getByText('keep')).toBeInTheDocument();
+    expect(screen.getByText('also')).toBeInTheDocument();
   });
 
   // A non-string child must never throw can appear if the user does not enclose

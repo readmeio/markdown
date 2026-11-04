@@ -1,25 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 
-// Browsers accept end tags like `</script foo="bar">` and `</script\t\n bar>`.
-// One removal can also assemble a new `<script>` (`<scrip<script></script>t>`).
-const SCRIPT_TAG = /<script\b[\s\S]*?>([\s\S]*?)<\/script\b[\s\S]*?>\n?/gi;
-
-const extractScripts = (html: string = ''): [string, () => void] => {
-  const scripts: string[] = [];
-  let cleaned = html;
-  let previous: string;
-  do {
-    previous = cleaned;
-    SCRIPT_TAG.lastIndex = 0;
-    cleaned = cleaned.replace(SCRIPT_TAG, (_match, body: string) => {
-      scripts.push(body);
-      return '';
-    });
-  } while (cleaned !== previous);
-
-  // eslint-disable-next-line no-eval
-  return [cleaned, () => scripts.map(js => window.eval(js))];
-};
+import { extractScripts } from './extractScripts';
 
 interface Props {
   children?: React.ReactElement | string;
@@ -44,7 +25,16 @@ const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode: safeMo
   const safeMode = typeof safeModeRaw !== 'boolean' ? safeModeRaw === 'true' : safeModeRaw;
 
   // Memoised so `exec` is stable across rerenders and the effect below only runs when the html changes.
-  const [cleanedHtml, exec] = useMemo(() => extractScripts(html), [html]);
+  const [cleanedHtml, exec] = useMemo((): [string, () => void] => {
+    const extracted = extractScripts(html);
+    return [
+      extracted.html,
+      () => {
+        // eslint-disable-next-line no-eval
+        extracted.scripts.forEach(js => window.eval(js));
+      },
+    ];
+  }, [html]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && typeof runScripts === 'boolean' && runScripts) exec();

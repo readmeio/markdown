@@ -8,6 +8,12 @@ describe('removeComments', () => {
     expect(output).not.toContain('<!--');
   });
 
+  it('removes a chain of comments that each appear only after the previous one is stripped', async () => {
+    const input = `<div>${'<!'.repeat(40)}<!-- a -->${'-- b -->'.repeat(40)}keep</div>`;
+    const output = await stripComments(input);
+    expect(output).toBe('<div>keep</div>');
+  });
+
   it('removes HTML comments', async () => {
     const input = `Hello
 
