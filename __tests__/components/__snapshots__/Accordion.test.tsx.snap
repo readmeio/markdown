@@ -39,7 +39,7 @@ exports[`Accordion > mdx > renders an accordion with an emoji icon 1`] = `
         class="Accordion-toggleIcon fa fa-regular fa-chevron-right"
       />
       <span
-        class="Accordion-icon"
+        class="Accordion-icon Icon-emoji"
       >
         🚀
       </span>
@@ -119,7 +119,7 @@ exports[`Accordion > mdxish > renders an accordion with an emoji icon 1`] = `
         class="Accordion-toggleIcon fa fa-regular fa-chevron-right"
       />
       <span
-        class="Accordion-icon"
+        class="Accordion-icon Icon-emoji"
       >
         🚀
       </span>

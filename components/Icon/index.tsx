@@ -5,13 +5,13 @@ const FA_PREFIXES = new Set(['fa', 'fab', 'fad', 'fal', 'far', 'fas', 'fast', 'f
 
 interface Props {
   /** class applied to the rendered element */
-  className: string;
+  className?: string;
   /** additional class applied only when the icon renders as a Font Awesome `<i>` (A use case is to retain legacy CSS classes that custom CSS might target) */
   faClassName?: string;
   /** Emoji or Font Awesome class string (e.g. `fa-book`, `fad fa-book`). Bare `fa-` icons fall back to the `fad` duotone prefix. */
   icon: string;
   /** Inline `color` style applied to Font Awesome icons. Has no effect on emoji. */
-  iconColor?: string;
+  iconColor?: string | null;
 }
 
 /**
@@ -22,7 +22,8 @@ const Icon = ({ className, faClassName, icon, iconColor }: Props) => {
   const isFontAwesome = hasFontAwesomePrefix || icon.startsWith('fa-');
 
   if (!isFontAwesome) {
-    return <span className={className}>{icon}</span>;
+    const emojiClassName = [className, 'Icon-emoji'].filter(Boolean).join(' ');
+    return <span className={emojiClassName}>{icon}</span>;
   }
 
   // Get & combine all class names for the font awesome icon

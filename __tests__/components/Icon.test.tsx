@@ -53,7 +53,13 @@ describe('Icon', () => {
       const { container } = render(<Icon className="Test-icon" icon="🚀" />);
       const icon = container.querySelector('span.Test-icon');
       expect(icon).toBeInTheDocument();
+      expect(icon).toHaveClass('Icon-emoji');
       expect(icon).toHaveTextContent('🚀');
+    });
+
+    it('renders an emoji without requiring a caller class', () => {
+      const { container } = render(<Icon icon="🚀" />);
+      expect(container.querySelector('span.Icon-emoji')).toHaveTextContent('🚀');
     });
 
     it('does not render an <i> for an emoji', () => {
