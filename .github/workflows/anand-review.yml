@@ -92,7 +92,7 @@ jobs:
       # ---------- CHECKS GATE: don't review a red PR ----------
       # Poll the ci.yml WORKFLOW RUN for the PR head, not an individual check run: a workflow run
       # exists within seconds of the PR event, and its conclusion covers every job (the node-matrix
-      # Test job and the puppeteer visual job) without pinning a job name. If no run exists after
+      # Test job and the Vitest browser visual job) without pinning a job name. If no run exists after
       # the grace window, CI didn't dispatch for this PR and the review proceeds. The gate fails on
       # a red/absent conclusion or after 20 minutes, keeping most of the job's 90-minute budget for
       # the review.
