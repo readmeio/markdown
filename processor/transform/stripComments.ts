@@ -2,26 +2,33 @@ import type { Root } from 'mdast';
 
 import { visit, SKIP } from 'unist-util-visit';
 
+const HTML_COMMENT_OPEN = '<!--';
+const HTML_COMMENT_CLOSE = '-->';
+// `<!---->` is the shortest pair that does not share a character. `<!-->` stays.
+const HTML_COMMENT_MIN = HTML_COMMENT_OPEN.length + HTML_COMMENT_CLOSE.length;
+
+const tailIs = (buf: readonly string[], token: string): boolean => {
+  const start = buf.length - token.length;
+  if (start < 0) return false;
+  for (let i = 0; i < token.length; i += 1) {
+    if (buf[start + i] !== token[i]) return false;
+  }
+  return true;
+};
+
 // Removing one comment can assemble another (`<!<!-- a -->-- b -->`). Track the
 // earliest `<!--` and cut through its `-->` so each character is copied once.
 const stripHtmlComments = (value: string): string => {
+  // A later comment can only be assembled from an opener already in the string.
+  if (!value.includes(HTML_COMMENT_OPEN)) return value;
+
   const buf: string[] = [];
   let openAt = -1;
 
   for (let i = 0; i < value.length; i += 1) {
     buf.push(value[i]);
-    const end = buf.length;
-    if (
-      openAt === -1 &&
-      end >= 4 &&
-      buf[end - 4] === '<' &&
-      buf[end - 3] === '!' &&
-      buf[end - 2] === '-' &&
-      buf[end - 1] === '-'
-    ) {
-      openAt = end - 4;
-    }
-    if (openAt !== -1 && end >= openAt + 7 && buf[end - 3] === '-' && buf[end - 2] === '-' && buf[end - 1] === '>') {
+    if (openAt === -1 && tailIs(buf, HTML_COMMENT_OPEN)) openAt = buf.length - HTML_COMMENT_OPEN.length;
+    if (openAt !== -1 && buf.length >= openAt + HTML_COMMENT_MIN && tailIs(buf, HTML_COMMENT_CLOSE)) {
       buf.length = openAt;
       openAt = -1;
     }

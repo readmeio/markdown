@@ -8,10 +8,31 @@ describe('extractScripts', () => {
     });
   });
 
-  it('does not end a script at a closing tag hidden in a string', () => {
+  it('does not treat </script-example> as a closing script tag', () => {
     expect(extractScripts('<script>const marker = "</script-example>"; mockFn();</script><p>after</p>')).toStrictEqual({
       html: '<p>after</p>',
       scripts: ['const marker = "</script-example>"; mockFn();'],
+    });
+  });
+
+  it('ends a script at </script> even when that text sits in a JS string', () => {
+    expect(extractScripts('<script>const marker = "</script>"; mockFn();</script><p>after</p>')).toStrictEqual({
+      html: '"; mockFn();</script><p>after</p>',
+      scripts: ['const marker = "'],
+    });
+  });
+
+  it('assembles an opener when the delimiter is the first character after a removed script', () => {
+    expect(extractScripts('<script<script></script>>alert(1)</script>')).toStrictEqual({
+      html: '',
+      scripts: ['', 'alert(1)'],
+    });
+  });
+
+  it('removes a script whose closer swallows a nested script before the tag ends', () => {
+    expect(extractScripts('<script>alert(1)</script<script></script> >')).toStrictEqual({
+      html: ' >',
+      scripts: ['alert(1)</script<script>'],
     });
   });
 

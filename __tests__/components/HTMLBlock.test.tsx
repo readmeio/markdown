@@ -81,7 +81,7 @@ describe('HTML Block', () => {
     expect(container.querySelector('script')).toBeNull();
   });
 
-  it('does not end a script at a string that only looks like a closing tag', () => {
+  it('does not treat </script-example> as the end of a script', () => {
     const { container } = render(
       <HTMLBlock runScripts={true}>
         {'<script>const marker = "</script-example>"; mockFn();</script><p>after</p>'}

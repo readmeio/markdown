@@ -3,9 +3,12 @@
 const HTML_TAG_DELIMITERS = new Set([' ', '\t', '\n', '\f', '\r', '/', '>']);
 
 const SCRIPT_NAME = 'script';
-// `<script` is 7 characters. A tag split by a deletion starts at most this far before the join.
-const SPLIT_TAG_LOOKBEHIND = 7;
+// Lookbehind covers `<script` when its delimiter is the first surviving character.
+// A closer is longer (`</script`) and is never where the next scan starts.
+const SPLIT_TAG_LOOKBEHIND = '<script'.length;
 
+// Node ids are indexes into `html`. Cuts rewire `next`/`prev` and never reorder,
+// so ids stay in document order and `<` compares them.
 interface CharList {
   html: string;
   next: Int32Array;
@@ -16,6 +19,12 @@ interface ScriptMatch {
   bodyEnd: number;
   bodyStart: number;
   end: number;
+  start: number;
+}
+
+interface ScriptTag {
+  closing: boolean;
+  delimiter: number;
   start: number;
 }
 
@@ -62,16 +71,30 @@ const findChar = (list: CharList, start: number, char: string): number => {
   return current;
 };
 
-// The end tag is `</script` followed by a delimiter. Anything up to the next `>` is the tag's tail.
-const findCloser = (list: CharList, start: number): { delimiter: number; start: number } | null => {
+// `<script` or `</script`, then an HTML delimiter. The name and the delimiter are one check.
+const readScriptTag = (list: CharList, at: number): ScriptTag | null => {
+  if (at === -1 || list.html[at] !== '<') return null;
+  let name = list.next[at];
+  if (name === -1) return null;
+
+  const closing = list.html[name] === '/';
+  if (closing) {
+    name = list.next[name];
+    if (name === -1) return null;
+  }
+  if (!isScriptName(list, name)) return null;
+
+  const delimiter = step(list, name, SCRIPT_NAME.length);
+  if (delimiter === -1 || !HTML_TAG_DELIMITERS.has(list.html[delimiter])) return null;
+  return { closing, delimiter, start: at };
+};
+
+const findTag = (list: CharList, start: number, kind: 'close' | 'open'): ScriptTag | null => {
+  const closing = kind === 'close';
   let current = start;
   while (current !== -1) {
-    const slash = list.html[current] === '<' ? list.next[current] : -1;
-    const name = slash !== -1 && list.html[slash] === '/' ? list.next[slash] : -1;
-    const delimiter = name === -1 ? -1 : step(list, name, SCRIPT_NAME.length);
-    if (name !== -1 && isScriptName(list, name) && delimiter !== -1 && HTML_TAG_DELIMITERS.has(list.html[delimiter])) {
-      return { delimiter, start: current };
-    }
+    const tag = readScriptTag(list, current);
+    if (tag && tag.closing === closing) return tag;
     current = list.next[current];
   }
   return null;
@@ -79,24 +102,24 @@ const findCloser = (list: CharList, start: number): { delimiter: number; start: 
 
 // An opener with no closer would consume any later end tag, so the scan stops instead of resuming.
 const findNextScript = (list: CharList, start: number): ScriptMatch | null => {
-  let current = start;
-  while (current !== -1) {
-    const name = list.html[current] === '<' ? list.next[current] : -1;
-    const delimiter = name === -1 ? -1 : step(list, name, SCRIPT_NAME.length);
-    if (name !== -1 && isScriptName(list, name) && delimiter !== -1 && HTML_TAG_DELIMITERS.has(list.html[delimiter])) {
-      const openEnd = findChar(list, delimiter, '>');
-      if (openEnd === -1) return null;
-      const closer = findCloser(list, list.next[openEnd]);
-      if (!closer) return null;
-      const closeEnd = findChar(list, closer.delimiter, '>');
-      if (closeEnd === -1) return null;
-      let end = list.next[closeEnd];
-      if (end !== -1 && list.html[end] === '\n') end = list.next[end];
-      return { bodyEnd: closer.start, bodyStart: list.next[openEnd], end, start: current };
-    }
-    current = list.next[current];
-  }
-  return null;
+  const opener = findTag(list, start, 'open');
+  if (!opener) return null;
+
+  const openEnd = findChar(list, opener.delimiter, '>');
+  if (openEnd === -1) return null;
+  const closer = findTag(list, list.next[openEnd], 'close');
+  if (!closer) return null;
+  const closeEnd = findChar(list, closer.delimiter, '>');
+  if (closeEnd === -1) return null;
+
+  let end = list.next[closeEnd];
+  if (end !== -1 && list.html[end] === '\n') end = list.next[end];
+  return {
+    bodyEnd: closer.start,
+    bodyStart: list.next[openEnd],
+    end,
+    start: opener.start,
+  };
 };
 
 const createCharList = (html: string): CharList => {
@@ -120,20 +143,40 @@ const unlink = (list: CharList, head: number, start: number, end: number): numbe
   return before === -1 ? end : head;
 };
 
-// A join is the first character after a removed match. Adjacent matches share one join.
+// A join is the first surviving character after a cut. Adjacent matches share that boundary.
 const survivingJoins = (matches: ScriptMatch[]): number[] => {
   const joins: number[] = [];
   for (let i = 0; i < matches.length; i += 1) {
     const { end } = matches[i];
     const later = matches[i + 1];
-    const covered = later && end >= later.start && (later.end === -1 || end < later.end);
-    if (end !== -1 && !covered) joins.push(end);
+    if (end !== -1 && end !== later?.start) joins.push(end);
   }
   return joins;
 };
 
-// Pull out `<script>` elements, including tags assembled by removing a nested script.
-// Each pass deletes every current match, then resumes within 7 characters of a join.
+// The first pass (`joins === null`) reads the whole string. Later passes skip to each
+// join; a new opener cannot start more than SPLIT_TAG_LOOKBEHIND live characters before one.
+const collectScripts = (list: CharList, from: number, joins: number[] | null): ScriptMatch[] => {
+  const matches: ScriptMatch[] = [];
+  let joinIndex = 0;
+  let current = from;
+  while (current !== -1) {
+    const match = findNextScript(list, current);
+    if (!match) break;
+    matches.push(match);
+    current = match.end;
+    if (joins) {
+      while (joinIndex < joins.length && joins[joinIndex] < match.end) joinIndex += 1;
+      if (joinIndex >= joins.length) break;
+      const resume = rewind(list, joins[joinIndex], SPLIT_TAG_LOOKBEHIND);
+      if (current !== -1 && resume !== -1 && current < resume) current = resume;
+    }
+  }
+  return matches;
+};
+
+// Pull out `<script>` elements, including tags assembled by cutting a nested script.
+// Each pass cuts every current match, then resumes just before each surviving join.
 export const extractScripts = (html: string): { html: string; scripts: string[] } => {
   if (!html) return { html: '', scripts: [] };
 
@@ -141,32 +184,15 @@ export const extractScripts = (html: string): { html: string; scripts: string[] 
   const scripts: string[] = [];
   let head = 0;
   let cursor = 0;
-  // `null` on the first pass, which has to read the whole string. Later passes only
-  // revisit deletion joins; a new tag cannot start more than 7 characters before one.
   let joins: number[] | null = null;
 
   while (cursor !== -1 && head !== -1) {
-    const matches: ScriptMatch[] = [];
-    let joinIndex = 0;
-    let current = cursor;
-    while (current !== -1) {
-      const match = findNextScript(list, current);
-      if (!match) break;
-      matches.push(match);
-      current = match.end;
-      if (joins) {
-        while (joinIndex < joins.length && joins[joinIndex] < match.end) joinIndex += 1;
-        if (joinIndex >= joins.length) break;
-        const jump = rewind(list, joins[joinIndex], SPLIT_TAG_LOOKBEHIND);
-        if (current !== -1 && jump !== -1 && current < jump) current = jump;
-      }
-    }
-
+    const matches = collectScripts(list, cursor, joins);
     if (!matches.length) break;
 
-    matches.forEach(match => {
-      scripts.push(readUntil(list, match.bodyStart, match.bodyEnd));
-    });
+    for (let i = 0; i < matches.length; i += 1) {
+      scripts.push(readUntil(list, matches[i].bodyStart, matches[i].bodyEnd));
+    }
     const nextJoins = survivingJoins(matches);
     for (let i = 0; i < matches.length; i += 1) {
       head = unlink(list, head, matches[i].start, matches[i].end);
