@@ -160,7 +160,7 @@
     "css-loader": "^7.1.2",
     "hast-util-to-text": "^4.0.2",
     "jsdom": "^26.1.0",
-    "mermaid": "^11.16.1",
+    "mermaid": "^12.2.0",
     "mini-css-extract-plugin": "^2.7.5",
     "oxfmt": "^0.75.0",
     "oxlint": "^1.87.0",
@@ -194,7 +194,7 @@
     "react-dom": "18.x"
   },
   "optionalDependencies": {
-    "mermaid": "^11.16.1"
+    "mermaid": "^12.2.0"
   },
   "overrides": {
     "@readme/markdown-legacy": {
