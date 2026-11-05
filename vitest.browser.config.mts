@@ -111,8 +111,9 @@ export default defineConfig({
         toMatchScreenshot: {
           comparatorName: 'pixelmatch',
           comparatorOptions: {
-            // Small color distance covers antialiasing; any counted pixel still fails.
-            threshold: 0.1,
+            // jest-image-snapshot's pixelmatch default. pixelmatch's own 0.1 ignores
+            // larger color shifts, so antialiased edges would pass without counting.
+            threshold: 0.01,
             allowedMismatchedPixels: 0,
           },
           screenshotOptions: {
