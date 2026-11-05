@@ -21,6 +21,11 @@
       }
     }
 
+    // Browsers center th by default, so match body cells; an align attribute or inline style still wins
+    th:not([align]) {
+      text-align: inherit;
+    }
+
     th,
     thead td {
       font-weight: 600;
