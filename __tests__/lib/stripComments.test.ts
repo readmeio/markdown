@@ -1,6 +1,24 @@
 import { stripComments } from '../../lib';
 
 describe('removeComments', () => {
+  it('leaves html with no comment opener unchanged', async () => {
+    const input = '<div><! -- not a comment -->keep</div>';
+    await expect(stripComments(input)).resolves.toBe(input);
+  });
+
+  it('removes a comment assembled by stripping an inner comment', async () => {
+    const input = '<div><!<!-- inner -->-- still a comment -->keep</div>';
+    const output = await stripComments(input);
+    expect(output).toBe('<div>keep</div>');
+    expect(output).not.toContain('<!--');
+  });
+
+  it('removes a chain of comments that each appear only after the previous one is stripped', async () => {
+    const input = `<div>${'<!'.repeat(40)}<!-- a -->${'-- b -->'.repeat(40)}keep</div>`;
+    const output = await stripComments(input);
+    expect(output).toBe('<div>keep</div>');
+  });
+
   it('removes HTML comments', async () => {
     const input = `Hello
 

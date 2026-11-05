@@ -2,7 +2,41 @@ import type { Root } from 'mdast';
 
 import { visit, SKIP } from 'unist-util-visit';
 
-const HTML_COMMENT_REGEX = /<!--[\s\S]*?-->/g;
+const HTML_COMMENT_OPEN = '<!--';
+const HTML_COMMENT_CLOSE = '-->';
+// `<!---->` is the shortest pair that does not share a character. `<!-->` stays.
+const HTML_COMMENT_MIN = HTML_COMMENT_OPEN.length + HTML_COMMENT_CLOSE.length;
+
+const tailIs = (buf: readonly string[], token: string): boolean => {
+  const start = buf.length - token.length;
+  if (start < 0) return false;
+  for (let i = 0; i < token.length; i += 1) {
+    if (buf[start + i] !== token[i]) return false;
+  }
+  return true;
+};
+
+// Removing one comment can assemble another (`<!<!-- a -->-- b -->`). Track the
+// earliest `<!--` and cut through its `-->` so each character is copied once.
+const stripHtmlComments = (value: string): string => {
+  // A later comment can only be assembled from an opener already in the string.
+  if (!value.includes(HTML_COMMENT_OPEN)) return value;
+
+  const buf: string[] = [];
+  let openAt = -1;
+
+  for (let i = 0; i < value.length; i += 1) {
+    buf.push(value[i]);
+    if (openAt === -1 && tailIs(buf, HTML_COMMENT_OPEN)) openAt = buf.length - HTML_COMMENT_OPEN.length;
+    if (openAt !== -1 && buf.length >= openAt + HTML_COMMENT_MIN && tailIs(buf, HTML_COMMENT_CLOSE)) {
+      buf.length = openAt;
+      openAt = -1;
+    }
+  }
+
+  return buf.join('');
+};
+
 export const MDX_COMMENT_REGEX = /\/\*(?:(?!\*\/)[\s\S])*\*\//g;
 // A backtick run up to its partner of the same size, as CommonMark reads a code span.
 const CODE_SPAN_REGEX = /(`+)[\s\S]*?\1/;
@@ -25,14 +59,18 @@ export const stripCommentsTransformer = () => {
   return (tree: Root) => {
     visit(tree, ['html', 'mdxFlowExpression', 'mdxTextExpression'], (node, index, parent) => {
       if (parent && typeof index === 'number') {
-        // Remove HTML comments
-        if (node.type === 'html' && HTML_COMMENT_REGEX.test(node.value)) {
-          const newValue = node.value.replace(HTML_COMMENT_REGEX, '').trim();
-          if (newValue) {
-            node.value = newValue;
-          } else {
-            parent.children.splice(index, 1);
-            return [SKIP, index];
+        // Remove HTML comments. Leave the node untouched when nothing matched so a
+        // tokenized tag still gets its `{/* … */}` expressions stripped below.
+        if (node.type === 'html') {
+          const stripped = stripHtmlComments(node.value);
+          if (stripped !== node.value) {
+            const newValue = stripped.trim();
+            if (newValue) {
+              node.value = newValue;
+            } else {
+              parent.children.splice(index, 1);
+              return [SKIP, index];
+            }
           }
         }
 

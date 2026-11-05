@@ -6,6 +6,9 @@ on:
       - next
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   Test:
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
@@ -34,6 +37,10 @@ jobs:
   visual:
     name: 'Visual Tests'
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
+    # upload-artifact needs actions: write; job permissions replace the workflow set.
+    permissions:
+      actions: write
+      contents: read
     runs-on: ubuntu-latest
     strategy:
       matrix:
