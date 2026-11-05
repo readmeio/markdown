@@ -22,6 +22,7 @@ import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-ta
 import hardBreaks from '../processor/plugin/hard-breaks';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
+import { enforceSafeModeHtmlBlocks } from '../processor/plugin/safe-mode-html-blocks';
 import { rehypeStripTags } from '../processor/plugin/strip-tags';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
@@ -277,7 +278,8 @@ export function mdxishRenderProcessor(opts: MdxishOpts = {}) {
       components,
       // eslint-disable-next-line @typescript-eslint/no-use-before-define -- component bodies render through mdxish() again
       processMarkdown: (markdown: string) => mdxish(markdown, opts),
-    });
+    })
+    .use(safeMode ? enforceSafeModeHtmlBlocks : undefined); // Force safeMode on every HTMLBlock; runs last so every producer is covered
 }
 
 /**
