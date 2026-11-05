@@ -125,7 +125,7 @@ Extends [`RunOptions`](https://mdxjs.com/packages/mdx/#runoptions)
 
 To make changes to the RDMD engine locally, run the local development server. Clone the repo, `cd` in to it, `npm install`, and `npm run start`!
 
-If you make changes to the docs or how the markdown is rendered, you may need to update the visual regression snapshots by running `make updateSnapshot`. Running these browser tests requires `docker`. Follow the docker [install instructions for mac](https://docs.docker.com/docker-for-mac/install/). You may want to increase the [memory usage](https://docs.docker.com/docker-for-mac/#resources). If you have not already, you'll need to create an account for `docker hub` and [sign-in locally](https://docs.docker.com/docker-for-mac/#docker-hub).
+If you make changes to the docs or how the markdown is rendered, you may need to update the visual regression snapshots by running `make updateSnapshot`. Those tests run in Vitest's browser mode (Playwright, Chromium) inside Docker so font rendering stays stable. `npm run test.browser` runs the suite; `make updateSnapshot` regenerates references. Running these browser tests requires `docker`. Follow the docker [install instructions for mac](https://docs.docker.com/docker-for-mac/install/). You may want to increase the [memory usage](https://docs.docker.com/docker-for-mac/#resources). If you have not already, you'll need to create an account for `docker hub` and [sign-in locally](https://docs.docker.com/docker-for-mac/#docker-hub).
 
 ### Linking Changes to the Main Repo
 
