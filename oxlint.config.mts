@@ -59,7 +59,6 @@ export default defineConfig({
     },
     {
       files: ['__tests__/**/*.{js,jsx,ts,tsx}', 'vitest-setup.js', 'vitest.config.mts', 'vitest.d.ts'],
-      excludeFiles: ['__tests__/browser/**'],
       ...oxlintConfigVitest,
       env: {
         vitest: true,
@@ -77,17 +76,9 @@ export default defineConfig({
       },
     },
     {
-      files: [
-        '__tests__/browser/**/*.{js,jsx,ts,tsx}',
-        '__mocks__/**/*.{js,jsx,ts,tsx}',
-        'jest.config.js',
-        'jest-puppeteer.config.js',
-      ],
+      // The clipboard mock is still a Jest-style CommonJS module.
+      files: ['__mocks__/**/*.{js,jsx,ts,tsx}'],
       ...oxlintConfigJest,
-      globals: {
-        ...oxlintConfigJest.globals,
-        page: 'readonly', // jest-puppeteer injects this.
-      },
       rules: oxlintConfigJest.rules,
     },
   ],

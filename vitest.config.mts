@@ -12,7 +12,8 @@ export default defineConfig({
       {
         extends: true,
         test: {
-          exclude: ['__tests__/browser'],
+          // Browser specs run through vitest.browser.config.mts, not jsdom.
+          exclude: ['**/__tests__/browser/**'],
           name: 'rdmd',
         },
       },

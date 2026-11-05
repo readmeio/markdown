@@ -1,6 +1,6 @@
 ---
 name: reviewing-markdown-prs
-description: Use when reviewing a pull request, diff, or staged/working-tree change in the readmeio/markdown (@readme/markdown) repo — before approving or merging — to check it against the standards reviewers actually enforce there. Keywords: code review, PR review, readme markdown, RMDX, MDX, mdxish, Xish, remark, rehype, micromark, unified, mdast, hast, tokenizer, transformer, compile handler, hName, hProperties, NodeTypes, safeMode, sanitize, regression fixture, equivalence, both engines, bundlewatch, jest-puppeteer, visual snapshots, vitest.
+description: Use when reviewing a pull request, diff, or staged/working-tree change in the readmeio/markdown (@readme/markdown) repo — before approving or merging — to check it against the standards reviewers actually enforce there. Keywords: code review, PR review, readme markdown, RMDX, MDX, mdxish, Xish, remark, rehype, micromark, unified, mdast, hast, tokenizer, transformer, compile handler, hName, hProperties, NodeTypes, safeMode, sanitize, regression fixture, equivalence, both engines, bundlewatch, visual snapshots, vitest browser.
 ---
 
 # Reviewing @readme/markdown PRs
@@ -47,7 +47,7 @@ change is a real finding.
 | `processor/utils.ts`, `enums.ts`, `types.d.ts` | **Reuse & shared contracts** (types.d.ts is cross-repo API), TypeScript |
 | `components/**`, `styles/**`, `contexts/**`, `hooks/**` | **Components, styling & a11y**, Performance (bundle), Compat (DOM/classnames are public API) |
 | `sanitize.schema.js`, anything touching `safeMode`/`evaluate` | **Security & sanitization** |
-| `__tests__/**`, `vitest.*`, `jest.config.js`, `Makefile` | **Testing** |
+| `__tests__/**`, `vitest.*`, `vitest.browser.config.mts`, `Makefile` | **Testing** |
 | `webpack.*.js`, `package.json`, `.releaserc`, `babel.config.js` | **Dependencies, build & release** (bundlewatch, externals, exports map) |
 | `.github/workflows/**` | CI & release process, Security |
 | every `*.ts`/`*.tsx` | TypeScript & types, Reuse, Naming, Comments |
