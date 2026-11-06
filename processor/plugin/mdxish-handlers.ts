@@ -9,6 +9,8 @@ import { defaultHandlers } from 'remark-rehype';
 
 import { NodeTypes } from '../../enums';
 
+const HTML_COMMENT_REGEX = /^<!--[\s\S]*-->$/;
+
 // If hChildren is populated, it means the node holds a renderable value (e.g. React)
 // See evaluate-expressions.ts for more details
 // Otherwise, it's a simple value and we fall back to text
@@ -94,7 +96,7 @@ const rendersBlock = (child: ListItem['children'][number]) => {
     case 'footnoteDefinition':
       return false;
     case 'html':
-      return !/^<!--[\s\S]*-->$/.test(child.value.trim());
+      return !HTML_COMMENT_REGEX.test(child.value.trim());
     default:
       return true;
   }
@@ -111,7 +113,9 @@ const rendersBlock = (child: ListItem['children'][number]) => {
 const listItemHandler: Handler = (state, node, parent) => {
   const item = node as ListItem;
   // A tight item unwraps its text from `<p>`, so a block after it (a callout, a code block)
-  // loses the paragraph margin that spaces it. Wrap the text like the editor does
+  // loses the paragraph margin that spaces it. Wrap the text like the editor does, which always
+  // keeps it in a paragraph, see `ListItem` in
+  // readmeio/readme: packages/react/src/ui/MdxishEditor/extensions/document/List/index.ts
   const hasTextAndBlock =
     item.children.some(child => child.type === 'paragraph') &&
     item.children.some(child => child.type !== 'paragraph' && child.type !== 'list' && rendersBlock(child));
