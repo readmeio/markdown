@@ -7,6 +7,22 @@ import React from 'react';
 import { compile, mdxish, run, renderMdxish } from '../../../lib';
 
 describe('custom components', () => {
+  it('passes cells to a component that maps its array prop', () => {
+    const compiledModule = run(
+      compile(`
+export const InfoRow = ({ cells }) => (
+  <div>{cells.map(cell => <span key={cell}>{cell}</span>)}</div>
+);
+`),
+    );
+    const components = { InfoRow: compiledModule };
+    const tree = mdxish('<InfoRow cells={["a", "b"]} />', { components });
+    const mod = renderMdxish(tree, { components });
+    const { container } = render(<mod.default />);
+
+    expect(Array.from(container.querySelectorAll('span'), span => span.textContent)).toStrictEqual(['a', 'b']);
+  });
+
   describe('components with children', () => {
     it('should pass in props correctly without unexpected whitespace', () => {
       // Before, this would pass in some unexpected whitespace to the children

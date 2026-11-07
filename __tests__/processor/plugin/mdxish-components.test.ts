@@ -175,6 +175,60 @@ describe('smartCamelCase (prop normalization)', () => {
     return elements;
   }
 
+  describe.each([false, true])('with safeMode=%s', safeMode => {
+    const TestComponent = {} as CustomComponents[string];
+    const names = ['cells', 'rows', 'cols', 'options', 'values', 'tabs', 'questions', 'config', 'endpoint'];
+
+    it('preserves lowercase prop names and array expressions', () => {
+      const attributes = names.map(name => `${name}={["a","b"]}`).join(' ');
+      const tree = mdxish(`<TestComponent ${attributes} />`, {
+        components: { TestComponent },
+        safeMode,
+      });
+      const elements = findElementsByTagName(tree, 'TestComponent');
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0].properties).toStrictEqual(
+        Object.fromEntries(names.map(name => [name, safeMode ? '{["a","b"]}' : ['a', 'b']])),
+      );
+    });
+
+    describe.each(['block', 'inline'])('%s components', placement => {
+      const prefix = placement === 'inline' ? 'Some text ' : '';
+
+      it('preserves lowercase prop names and quoted values', () => {
+        const attributes = names.map(name => `${name}="${name} value"`).join(' ');
+        const tree = mdxish(`${prefix}<TestComponent ${attributes} />`, {
+          components: { TestComponent },
+          safeMode,
+        });
+        const elements = findElementsByTagName(tree, 'TestComponent');
+
+        expect(elements).toHaveLength(1);
+        expect(elements[0].properties).toStrictEqual(Object.fromEntries(names.map(name => [name, `${name} value`])));
+      });
+
+      it('still restores lowercase compound props', () => {
+        const tree = mdxish(`${prefix}<TestComponent iconcolor="blue" backgroundcolor="white" />`, {
+          components: { TestComponent },
+          safeMode,
+        });
+        const elements = findElementsByTagName(tree, 'TestComponent');
+
+        expect(elements).toHaveLength(1);
+        expect(elements[0].properties).toStrictEqual({ iconColor: 'blue', backgroundColor: 'white' });
+      });
+    });
+  });
+
+  it('leaves native HTML attributes unchanged', () => {
+    const tree = mdxish('<div cells="a" config="b" endpoint="c" iconcolor="blue"></div>');
+    const elements = findElementsByTagName(tree, 'div');
+
+    expect(elements).toHaveLength(1);
+    expect(elements[0].properties).toStrictEqual({ cells: 'a', config: 'b', endpoint: 'c', iconcolor: 'blue' });
+  });
+
   it('should preserve iconColor prop casing', () => {
     const TestComponent = {} as CustomComponents[string];
     const markdown = '<TestComponent iconColor="blue-500" />';
