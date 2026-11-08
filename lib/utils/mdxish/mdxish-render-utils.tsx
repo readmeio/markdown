@@ -1,4 +1,5 @@
 import type { GlossaryTerm } from '../../../contexts/GlossaryTerms';
+import type { RenderConfig } from '../../../contexts/RenderConfig';
 import type { CustomComponents, IndexableElements, RMDXModule, TocList, Variables } from '../../../types';
 import type { Element } from 'hast';
 
@@ -10,20 +11,22 @@ import { unified } from 'unified';
 import * as Components from '../../../components';
 import Contexts from '../../../contexts';
 import User from '../../../utils/user';
+import { RAW_HTML_PROP_NAMES } from '../../constants';
 import makeUseMDXComponents from '../makeUseMdxComponents';
 
 import { resolveAttributeVariables } from './mdxish-variables';
 
-export interface RenderOpts {
+export interface RenderOpts extends RenderConfig {
   baseUrl?: string;
   components?: CustomComponents;
-  copyButtons?: boolean;
   imports?: Record<string, unknown>;
   terms?: GlossaryTerm[];
   theme?: 'dark' | 'light';
   useTailwind?: boolean;
   variables?: Variables;
 }
+
+type ContextOpts = Pick<RenderOpts, 'baseUrl' | 'copyButtons' | 'mermaidControls' | 'terms' | 'theme' | 'variables'>;
 
 /** Flatten CustomComponents into a component map for rehype-react */
 export function exportComponentsForRehype(components: CustomComponents): Record<string, React.ComponentType> {
@@ -70,17 +73,17 @@ type PropsWithHastNode = Record<string, unknown> & { node?: Element };
  */
 const CODE_TAG_NAMES = new Set(['code']);
 
-/** Raw markup injected with `dangerouslySetInnerHTML` by HTMLBlock and Embed — never interpolate. */
-const RAW_HTML_PROP_NAMES = new Set(['html']);
+const isImageAlt = (tagName: string | undefined, key: string) => tagName === 'img' && key === 'alt';
 
 /**
- * Resolve `{user.*}` in string-valued props. Body text is handled by the `Variable` component, but
+ * Resolve `{user.*}` in string-valued props, plus legacy `<<...>>` in img alt, where markdown flattens
+ * body variables to text (RM-10865). Body text is handled by the `Variable` component, but
  * attributes are plain strings, so they are substituted here — at render time, so that a
  * server-parsed (user-agnostic) tree resolves against the current reader's variables.
  */
 function resolveVariablesInProps(
   props: Record<string, unknown>,
-  user: Record<string, string>,
+  user: Record<string, unknown>,
   tagName?: string,
 ): Record<string, unknown> {
   const isCodeTag = Boolean(tagName && CODE_TAG_NAMES.has(tagName));
@@ -88,7 +91,7 @@ function resolveVariablesInProps(
   const resolvedEntries = Object.entries(props).map(([key, value]): [string, unknown] => {
     const isDocumentContent = RAW_HTML_PROP_NAMES.has(key) || (isCodeTag && key === 'value');
     if (typeof value !== 'string' || isDocumentContent) return [key, value];
-    return [key, resolveAttributeVariables(value, user)];
+    return [key, resolveAttributeVariables(value, user, isImageAlt(tagName, key))];
   });
 
   return Object.fromEntries(resolvedEntries);
@@ -105,7 +108,7 @@ function resolveVariablesInProps(
  * Only arrays win over `rest`, overwriting other shapes would undo correct
  * React conversions like `style="color:red"` → `{ color: 'red' }`.
  */
-const makeCreateElementPreservingHastProps = (user: Record<string, string>) =>
+const makeCreateElementPreservingHastProps = (user: Record<string, unknown>) =>
   function createElementPreservingHastProps(
     type: React.ElementType,
     props: PropsWithHastNode | null,
@@ -154,13 +157,17 @@ export function createTocComponent(tocHast: TocList): React.FC {
 }
 
 /** Create the default wrapper component with contexts */
-export function createDefaultComponent(
-  content: React.ReactNode,
-  opts: Pick<RenderOpts, 'baseUrl' | 'copyButtons' | 'terms' | 'theme' | 'variables'>,
-): React.FC {
-  const { baseUrl, copyButtons, terms, theme, variables } = opts;
+export function createDefaultComponent(content: React.ReactNode, opts: ContextOpts): React.FC {
+  const { baseUrl, copyButtons, mermaidControls, terms, theme, variables } = opts;
   const DefaultComponent = () => (
-    <Contexts baseUrl={baseUrl} copyButtons={copyButtons} terms={terms} theme={theme} variables={variables}>
+    <Contexts
+      baseUrl={baseUrl}
+      copyButtons={copyButtons}
+      mermaidControls={mermaidControls}
+      terms={terms}
+      theme={theme}
+      variables={variables}
+    >
       {content}
     </Contexts>
   );
@@ -173,7 +180,7 @@ export function buildRMDXModule(
   content: React.ReactNode,
   headings: IndexableElements[],
   tocHast: TocList | null,
-  opts: Pick<RenderOpts, 'baseUrl' | 'copyButtons' | 'terms' | 'theme' | 'variables'>,
+  opts: ContextOpts,
 ): RMDXModule {
   const DefaultComponent = createDefaultComponent(content, opts);
   const Toc = tocHast ? createTocComponent(tocHast) : () => null;

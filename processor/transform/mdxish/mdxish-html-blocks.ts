@@ -140,12 +140,13 @@ const mdxishHtmlBlocks = (): Transform => tree => {
       ) as { value?: string } | undefined;
 
       const openingTagIndent = (element.position?.start.column ?? 1) - 1;
-      parent.children[index] = createHtmlBlockNode(
+      const htmlBlock = createHtmlBlockNode(
         formatHtmlForMdxish(extractTemplateLiteral(exprChild?.value), openingTagIndent),
         element.position,
         toRunScripts(jsxAttr(element, 'runScripts')),
         jsxAttr(element, 'safeMode'),
       );
+      parent.children.splice(index, 1, htmlBlock);
     },
   );
 
@@ -153,7 +154,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
   visit(tree, 'html', (node: Html, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return;
     const replacement = splitRawHtmlBlocks(node);
-    if (replacement) parent.children.splice(index, 1, ...(replacement as typeof parent.children));
+    if (replacement) parent.children.splice(index, 1, ...replacement);
   });
 };
 

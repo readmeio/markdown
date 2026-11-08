@@ -17,12 +17,7 @@ declare module 'micromark-util-types' {
 }
 
 function isAllowedValueChar(code: Code): boolean {
-  return (
-    code !== null &&
-    code !== codes.lessThan &&
-    code !== codes.greaterThan &&
-    !markdownLineEnding(code)
-  );
+  return code !== null && code !== codes.lessThan && code !== codes.greaterThan && !markdownLineEnding(code);
 }
 
 const legacyVariableConstruct: Construct = {
@@ -34,9 +29,17 @@ function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State
   let hasValue = false;
 
   const start = (code: Code): State | undefined => {
+    effects.enter('legacyVariable');
+    // Claim `\<<name>>` before CommonMark's character escape drops the backslash, as the legacy parser did.
+    if (code !== codes.backslash) return open(code);
+
+    effects.consume(code); // \
+    return open;
+  };
+
+  const open = (code: Code): State | undefined => {
     if (code !== codes.lessThan) return nok(code);
 
-    effects.enter('legacyVariable');
     effects.enter('legacyVariableMarkerStart');
     effects.consume(code); // <
     return open2;
@@ -79,6 +82,6 @@ function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State
 
 export function legacyVariable(): Extension {
   return {
-    text: { [codes.lessThan]: legacyVariableConstruct },
+    text: { [codes.backslash]: legacyVariableConstruct, [codes.lessThan]: legacyVariableConstruct },
   };
 }

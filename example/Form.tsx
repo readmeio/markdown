@@ -87,6 +87,15 @@ const Form = () => {
             />
           </div>
           <div>
+            <label htmlFor="mermaid-controls">Mermaid Controls</label>
+            <input
+              checked={searchParams.has('mermaidControls')}
+              id="mermaid-controls"
+              onChange={onCheck('mermaidControls')}
+              type="checkbox"
+            />
+          </div>
+          <div>
             <label htmlFor="safe-mode">Safe Mode</label>
             <input
               checked={searchParams.has('safeMode')}
@@ -124,12 +133,7 @@ const Form = () => {
           </div>
           <div>
             <label htmlFor="show-ast">Show AST</label>
-            <input
-              checked={searchParams.has('showAst')}
-              id="show-ast"
-              onChange={onCheck('showAst')}
-              type="checkbox"
-            />
+            <input checked={searchParams.has('showAst')} id="show-ast" onChange={onCheck('showAst')} type="checkbox" />
           </div>
           <div>
             <label htmlFor="new-editor-types">Editor Types (MDXish)</label>
@@ -145,12 +149,7 @@ const Form = () => {
           <legend>Pipeline</legend>
           <div>
             <label htmlFor="pipeline-rmdx">RMDX</label>
-            <input
-              checked={searchParams.has('rmdx')}
-              id="pipeline-rmdx"
-              onChange={onCheck('rmdx')}
-              type="checkbox"
-            />
+            <input checked={searchParams.has('rmdx')} id="pipeline-rmdx" onChange={onCheck('rmdx')} type="checkbox" />
           </div>
           <div>
             <label htmlFor="pipeline-legacy">RDMD (legacy)</label>

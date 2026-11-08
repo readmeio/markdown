@@ -1,5 +1,5 @@
-import type { Html, Root, Text } from 'mdast';
-import type { MdxFlowExpression, MdxJsxTextElement } from 'mdast-util-mdx';
+import type { Html, Root, Table, Text } from 'mdast';
+import type { MdxFlowExpression, MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
 import { toHtml } from 'hast-util-to-html';
 
@@ -15,12 +15,12 @@ const htmlNode = (value: string, start?: { column: number; line: number; offset:
 
 const astProcessor = (md: string): Root => {
   const { processor, parserReadyContent } = mdxishAstProcessor(md);
-  return processor.runSync(processor.parse(parserReadyContent)) as Root;
+  return processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
 };
 
 const astAndSource = (md: string): { parserReadyContent: string; tree: Root } => {
   const { processor, parserReadyContent } = mdxishAstProcessor(md);
-  const tree = processor.runSync(processor.parse(parserReadyContent)) as Root;
+  const tree = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
   return { tree, parserReadyContent };
 };
 
@@ -355,6 +355,48 @@ Just one line.
           ],
         },
       ],
+    });
+  });
+
+  describe('given a mistaken <table> closer', () => {
+    const mistaken = `<table>
+<tr><th>Option</th><th>Description</th></tr>
+<tr><td>foo</td><td>bar</td></tr>
+<table>
+> **Notes:**
+>
+> * This behavior is not required for any Enhanced TLS certificates.
+> * There are no options for this behavior.`;
+
+    it('rewrites the closer in preprocess so Notes is not swallowed', () => {
+      const { parserReadyContent } = mdxishAstProcessor(mistaken);
+      expect(parserReadyContent).toContain('</table>');
+      expect(parserReadyContent).not.toMatch(/<\/tr>\n<table>\n>/);
+    });
+
+    it('parses the table and the following Notes blockquote', () => {
+      const ast = astProcessor(mistaken);
+      expect(ast.children.map(c => c.type)).toStrictEqual(expect.arrayContaining(['mdxJsxFlowElement', 'blockquote']));
+      const table = ast.children.find(
+        (c): c is MdxJsxFlowElement => c.type === 'mdxJsxFlowElement' && (c as MdxJsxFlowElement).name === 'table',
+      );
+      expect(table?.children?.length).toBeGreaterThan(0);
+      const notes = ast.children.find(c => c.type === 'blockquote');
+      expect(notes).toMatchObject({
+        type: 'blockquote',
+        children: expect.arrayContaining([
+          expect.objectContaining({ type: 'paragraph' }),
+          expect.objectContaining({ type: 'list' }),
+        ]),
+      });
+    });
+
+    it('renders table cells and the Notes callout body', () => {
+      const html = toHtml(mdxish(mistaken));
+      expect(html).toContain('Option');
+      expect(html).toContain('foo');
+      expect(html).toContain('Notes:');
+      expect(html).toContain('Enhanced TLS certificates');
     });
   });
 
@@ -1474,7 +1516,9 @@ the /{customer\\_id}/config/clients operation
 
       const mdxFlowExpression = collectNodes(tree, 'mdxFlowExpression');
       expect(mdxFlowExpression).toHaveLength(1);
-      expect((mdxFlowExpression[0] as MdxFlowExpression).value).toBe('/* keep this comment \\_ and * / / and < and > */');
+      expect((mdxFlowExpression[0] as MdxFlowExpression).value).toBe(
+        '/* keep this comment \\_ and * / / and < and > */',
+      );
 
       const strong = collectNodes(tree, 'strong');
       expect(strong).toHaveLength(1);
@@ -1650,7 +1694,10 @@ the /{customer\\_id}/config/clients operation
 
       const { tree, parserReadyContent } = astAndSource(md);
 
-      const ul = collectNodes(tree, (node) => node.type === 'mdxJsxTextElement' && (node as MdxJsxTextElement).name === 'ul');
+      const ul = collectNodes(
+        tree,
+        node => node.type === 'mdxJsxTextElement' && (node as MdxJsxTextElement).name === 'ul',
+      );
 
       expect(ul).toHaveLength(1);
       const { start, end } = ul[0].position!;
@@ -1683,28 +1730,24 @@ the /{customer\\_id}/config/clients operation
         return parserReadyContent.slice(position!.start.offset!, position!.end.offset!);
       });
 
-      expect(mdxSlices).toStrictEqual(expect.arrayContaining([
-        '<object>',
-        '<li>type</li>',
-        '<li>enabled</li>',
-        '<ul><li>type</li><li>enabled</li></ul>',
-        '<br />',
-      ]));
+      expect(mdxSlices).toStrictEqual(
+        expect.arrayContaining([
+          '<object>',
+          '<li>type</li>',
+          '<li>enabled</li>',
+          '<ul><li>type</li><li>enabled</li></ul>',
+          '<br />',
+        ]),
+      );
 
-      const textSlices = collectNodes(
-        tree,
-        node => node.type === 'text',
-      ).map(node => {
+      const textSlices = collectNodes(tree, node => node.type === 'text').map(node => {
         const { position } = node as Text;
         return parserReadyContent.slice(position!.start.offset!, position!.end.offset!);
       });
 
-      expect(textSlices).toStrictEqual(expect.arrayContaining([
-        'Array ',
-        'List of badge configurations:',
-        'type',
-        'enabled',
-      ]));
+      expect(textSlices).toStrictEqual(
+        expect.arrayContaining(['Array ', 'List of badge configurations:', 'type', 'enabled']),
+      );
     });
   });
 
@@ -1758,6 +1801,76 @@ the /{customer\\_id}/config/clients operation
     expect(html).toContain('<strong>bold</strong>');
   });
 
+  // RM-18524: the serializer needs to know a table was authored as lowercase `<table>` so it
+  // can write that spelling back instead of `<Table>`.
+  describe('lowercase <table> origin stamp', () => {
+    const lowercaseTable = (cell: string): string => `<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Foo</td>
+      <td>
+${cell}
+      </td>
+    </tr>
+  </tbody>
+</table>`;
+
+    const listCell = '<ul>\n<li>one</li>\n<li>two</li>\n</ul>';
+
+    it('stamps data.lowercaseTable on a lowercase <table> with a flow-content cell', () => {
+      const [table] = collectNodes<Table>(astProcessor(lowercaseTable(listCell)), 'table');
+
+      expect(table).toMatchObject({
+        type: 'table',
+        align: [null, null],
+        data: { lowercaseTable: true },
+        children: [
+          { type: 'tableRow', children: [{ type: 'tableCell' }, { type: 'tableCell' }] },
+          {
+            type: 'tableRow',
+            children: [
+              { type: 'tableCell', children: [{ type: 'text', value: 'Foo' }] },
+              { type: 'tableCell', children: [{ type: 'mdxJsxFlowElement', name: 'ul' }] },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('stamps a phrasing-only lowercase <table> too', () => {
+      const [table] = collectNodes<Table>(astProcessor(lowercaseTable('plain')), 'table');
+
+      expect(table.data).toStrictEqual({ lowercaseTable: true });
+    });
+
+    it('does not stamp a JSX <Table>', () => {
+      const source = lowercaseTable(listCell).replace('<table>', '<Table>').replace('</table>', '</Table>');
+      const [table] = collectNodes<Table>(astProcessor(source), 'table');
+
+      expect(table.type).toBe('table');
+      expect(table.data?.lowercaseTable).toBeUndefined();
+    });
+
+    it('does not stamp a GFM pipe table', () => {
+      const [table] = collectNodes<Table>(astProcessor('| a | b |\n| --- | --- |\n| c | d |'), 'table');
+
+      expect(table.data?.lowercaseTable).toBeUndefined();
+    });
+
+    it('leaves a lowercase <table> with cell attributes as a JSX element', () => {
+      const tree = astProcessor(lowercaseTable(listCell).replace('<td>Foo</td>', '<td class="x">Foo</td>'));
+
+      expect(collectNodes(tree, 'table')).toHaveLength(0);
+      expect(collectNodes<MdxJsxFlowElement>(tree, 'mdxJsxFlowElement')[0]).toMatchObject({ name: 'table' });
+    });
+  });
+
   describe('<pre> formatting inside HTML table cells', () => {
     it('preserves <pre> indentation when <pre> is at column 0 inside a table', () => {
       const md = `<table>
@@ -1785,88 +1898,109 @@ the /{customer\\_id}/config/clients operation
   describe('splitHtmlWithNestedTables', () => {
     const lowercaseTable = '<table><tr><td>x</td></tr></table>';
     const uppercaseTable = '<Table><tr><td>x</td></tr></Table>';
-    
+    // A node with no position, whose value is the whole document.
+    const splitStandalone = (value: string) => splitHtmlWithNestedTables(htmlNode(value), value);
+
     it('returns null for a top-level lowercase <table>', () => {
-      expect(splitHtmlWithNestedTables(htmlNode(lowercaseTable))).toBeNull();
+      expect(splitStandalone(lowercaseTable)).toBeNull();
     });
 
     it('returns null for a top-level <Table> component', () => {
-      expect(splitHtmlWithNestedTables(htmlNode(uppercaseTable))).toBeNull();
+      expect(splitStandalone(uppercaseTable)).toBeNull();
     });
 
     it('returns null when the block holds no table at all', () => {
-      expect(splitHtmlWithNestedTables(htmlNode('<div>no table here</div>'))).toBeNull();
+      expect(splitStandalone('<div>no table here</div>')).toBeNull();
     });
 
-    it.each(['<tablewrapper>', '<TableOfContents>'])('splits a node beginning with the non-table tag %s', (prefixTag) => {
+    it.each(['<tablewrapper>', '<TableOfContents>'])('splits a node beginning with the non-table tag %s', prefixTag => {
       const closeTag = `</${prefixTag.slice(1, -1)}>`;
       const value = `${prefixTag}${lowercaseTable}${closeTag}`;
-      const parts = splitHtmlWithNestedTables(htmlNode(value));
+      const parts = splitStandalone(value);
 
       expect(parts?.map(p => p.value)).toStrictEqual([prefixTag, lowercaseTable, closeTag]);
     });
 
-    it.each([lowercaseTable, uppercaseTable])('splits a <div>-wrapped %s into wrapper-open, table, wrapper-close parts', (table) => {
-      const value = `<div>\n${table}\n</div>`;
-      const parts = splitHtmlWithNestedTables(htmlNode(value));
+    it.each([lowercaseTable, uppercaseTable])(
+      'splits a <div>-wrapped %s into wrapper-open, table, wrapper-close parts',
+      table => {
+        const value = `<div>\n${table}\n</div>`;
+        const parts = splitStandalone(value);
 
-      expect(parts).toStrictEqual([
-        { type: 'html', value: '<div>\n' },
-        { type: 'html', value: table },
-        { type: 'html', value: '\n</div>' },
-      ]);
-    });
+        expect(parts).toStrictEqual([
+          { type: 'html', value: '<div>\n' },
+          { type: 'html', value: table },
+          { type: 'html', value: '\n</div>' },
+        ]);
+      },
+    );
 
-    it.each([lowercaseTable, uppercaseTable])('lifts every table when the wrapper holds more than one', (table) => {
+    it.each([lowercaseTable, uppercaseTable])('lifts every table when the wrapper holds more than one', table => {
       const value = `<div>\n${table}\n${table}\n</div>`;
-      const parts = splitHtmlWithNestedTables(htmlNode(value));
+      const parts = splitStandalone(value);
 
-      expect(parts?.map(p => p.value)).toStrictEqual([
-        '<div>\n',
-        table,
-        '\n',
-        table,
-        '\n</div>',
-      ]);
+      expect(parts?.map(p => p.value)).toStrictEqual(['<div>\n', table, '\n', table, '\n</div>']);
     });
 
     it('does not match a <table> masked inside a fenced code block', () => {
       const value = '<div>\n\n```html\n<table><td>x</td></table>\n```\n\n</div>';
-      expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+      expect(splitStandalone(value)).toBeNull();
     });
 
     it('leaves an implicitly-closed table whole so trailing content is not dropped', () => {
       const value = '<div>\n<table><tr><td>x</td></tr>\n**important trailing content**\n</div>';
-      expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+      expect(splitStandalone(value)).toBeNull();
     });
 
     it('carries source positions onto each split part', () => {
       const value = '<div>\n<table><tr><td>x</td></tr></table>\n</div>';
-      const parts = splitHtmlWithNestedTables(htmlNode(value, { line: 3, column: 1, offset: 20 }));
+      const source = `Some intro text\n...\n${value}`;
+      const node: Html = {
+        type: 'html',
+        value,
+        position: { start: { line: 3, column: 1, offset: 20 }, end: { line: 5, column: 7, offset: source.length } },
+      };
+      const parts = splitHtmlWithNestedTables(node, source);
 
       const tablePart = parts?.find(p => p.value.startsWith('<table'));
       // `<table>` sits on line 4, offset 6 into the value → offset 26 in the document.
       expect(tablePart?.position?.start).toStrictEqual({ line: 4, column: 1, offset: 26 });
     });
 
+    // CX-4028: the blockquote's `> ` is stripped from each line of `value` but not the source.
+    it('maps each part through the container prefixes stripped from the value', () => {
+      const source = '> <div>\n> <table><tr><td>x</td></tr></table>\n> </div>';
+      const value = '<div>\n<table><tr><td>x</td></tr></table>\n</div>';
+      const node: Html = {
+        type: 'html',
+        value,
+        position: { start: { line: 1, column: 3, offset: 2 }, end: { line: 3, column: 9, offset: source.length } },
+      };
+
+      const tablePart = splitHtmlWithNestedTables(node, source)?.find(p => p.value.startsWith('<table'));
+      const { start, end } = tablePart!.position!;
+      expect(start).toStrictEqual({ line: 2, column: 3, offset: 10 });
+      expect(source.slice(start.offset, end.offset)).toBe('<table><tr><td>x</td></tr></table>');
+    });
+
     describe('when surrounded by HTMLBlock (protected)', () => {
       it('does not split a table inside a closed <HTMLBlock>', () => {
         const value = '<HTMLBlock>\n<table><tr><td>x</td></tr></table>\n</HTMLBlock>';
-        expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+        expect(splitStandalone(value)).toBeNull();
       });
 
       it('leaves a <table> inside an unclosed <HTMLBlock> untouched', () => {
-        expect(splitHtmlWithNestedTables(htmlNode('<HTMLBlock>\n<table><tr><td>x</td></tr></table>'))).toBeNull();
+        expect(splitStandalone('<HTMLBlock>\n<table><tr><td>x</td></tr></table>')).toBeNull();
       });
 
       it('suppresses a later well-formed <table> once an unclosed <HTMLBlock> is open', () => {
         const value = '<div><HTMLBlock>oops</div>\n<table><tr><td>real</td></tr></table>';
-        expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+        expect(splitStandalone(value)).toBeNull();
       });
 
       it('does not protect a table after a self-closing <HTMLBlock/>', () => {
-        const parts = splitHtmlWithNestedTables(htmlNode('<div><HTMLBlock/><table><tr><td>x</td></tr></table></div>'));
-    
+        const parts = splitStandalone('<div><HTMLBlock/><table><tr><td>x</td></tr></table></div>');
+
         expect(parts).not.toBeNull();
         expect(parts).toStrictEqual([
           { type: 'html', value: '<div><HTMLBlock/>' },
@@ -1879,7 +2013,7 @@ the /{customer\\_id}/config/clients operation
 
   describe('given a table wrapped in a raw HTML block', () => {
     // A wrapping `<div>` makes CommonMark html-flow / the mdxComponent plain-block
-    // claim swallow the whole HTML block. We need to extract them out so the 
+    // claim swallow the whole HTML block. We need to extract them out so the
     // table transformer can process the table separately
     const lowercaseTable = `<table>
 <thead>
@@ -1910,32 +2044,38 @@ the /{customer\\_id}/config/clients operation
 </tbody>
 </Table>`;
 
-    it.each([lowercaseTable, uppercaseTable])('parses cell markdown and keeps the wrapper when a blank line follows the <div>', (table) => {
-      const value = `<div>\n\n${table}\n \n</div>`;
-      const html = toHtml(mdxish(value));
+    it.each([lowercaseTable, uppercaseTable])(
+      'parses cell markdown and keeps the wrapper when a blank line follows the <div>',
+      table => {
+        const value = `<div>\n\n${table}\n \n</div>`;
+        const html = toHtml(mdxish(value));
 
-      expect(html).toContain('<div>');
-      expect(html).toContain('<strong>400</strong>');
-      expect(html).toContain('<code>CODE</code>');
-      expect(html).not.toContain('**400**');
-    });
+        expect(html).toContain('<div>');
+        expect(html).toContain('<strong>400</strong>');
+        expect(html).toContain('<code>CODE</code>');
+        expect(html).not.toContain('**400**');
+      },
+    );
 
-    it.each([lowercaseTable, uppercaseTable])('parses cell markdown when the table is directly adjacent to the <div>', (table) => {
-      const html = toHtml(mdxish(`<div>\n${table}\n</div>`));
+    it.each([lowercaseTable, uppercaseTable])(
+      'parses cell markdown when the table is directly adjacent to the <div>',
+      table => {
+        const html = toHtml(mdxish(`<div>\n${table}\n</div>`));
 
-      expect(html).toContain('<div>');
-      expect(html).toContain('<strong>400</strong>');
-      expect(html).toContain('<code>CODE</code>');
-    });
+        expect(html).toContain('<div>');
+        expect(html).toContain('<strong>400</strong>');
+        expect(html).toContain('<code>CODE</code>');
+      },
+    );
 
-    it.each([lowercaseTable, uppercaseTable])('preserves attributes on the wrapping element', (table) => {
+    it.each([lowercaseTable, uppercaseTable])('preserves attributes on the wrapping element', table => {
       const html = toHtml(mdxish(`<div className="wrap">\n\n${table}\n\n</div>`));
 
       expect(html).toContain('class="wrap"');
       expect(html).toContain('<strong>400</strong>');
     });
 
-    it.each([lowercaseTable, uppercaseTable])('lifts every table when the wrapper holds more than one', (table) => {
+    it.each([lowercaseTable, uppercaseTable])('lifts every table when the wrapper holds more than one', table => {
       const second = lowercaseTable.replace('**400**', '**500**').replace('`CODE`', '`OTHER`');
       const html = toHtml(mdxish(`<div>\n${table}\n${second}\n</div>`));
 
@@ -2028,7 +2168,7 @@ ${lowercaseTable}
   });
 
   describe('given a table nested inside a component body (CX-3705)', () => {
-    // The component body is re-parsed by `getInlineMdProcessor`, which must
+    // The component body is re-parsed by `reparseMarkdownFragment`, which must
     // include the `jsxTable` tokenizer. Without it, blank lines between rows let
     // CommonMark HTML block type 6 fragment the table — rows spill out as text
     // and indented code blocks instead of rendering as a table.
@@ -2074,9 +2214,12 @@ ${lowercaseTable}
 
       // Every cell renders; none leak as escaped HTML text.
       const html = toHtml(hast);
-      ['Two adapters disagree', 'Higher-tier adapter wins', 'One adapter reports twice', 'Most recent by Last Seen wins'].forEach(
-        text => expect(html).toContain(text),
-      );
+      [
+        'Two adapters disagree',
+        'Higher-tier adapter wins',
+        'One adapter reports twice',
+        'Most recent by Last Seen wins',
+      ].forEach(text => expect(html).toContain(text));
       expect(html).not.toContain('&#x3C;tr>');
     });
 

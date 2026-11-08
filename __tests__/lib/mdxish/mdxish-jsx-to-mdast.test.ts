@@ -4,15 +4,68 @@ import type { Heading, Paragraph, Root, RootContent, Table, TableCell } from 'md
 
 import { NodeTypes } from '../../../enums';
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
+import { normalizeWidth, widthFromStyleString } from '../../../processor/transform/mdxish/tables/cell-width';
+import { sourceSlicesUnder } from '../../helpers';
+
+describe('normalizeWidth', () => {
+  it.each([
+    ['a percentage', '30%', '30%'],
+    ['a length with padding around it', '  200px ', '200px'],
+    ['a bare number', 200, '200px'],
+    ['a numeric string', '12.5', '12.5px'],
+    ['a CSS function', 'clamp(100px, 50%, 60vw)', 'clamp(100px, 50%, 60vw)'],
+  ])('normalizes %s', (_label, value, expected) => {
+    expect(normalizeWidth(value)).toBe(expected);
+  });
+
+  it.each([
+    ['an empty string', ''],
+    ['whitespace', '   '],
+    ['a value smuggling another declaration', '30%; color: red'],
+    ['a stringified object', '{ width: "30%" }'],
+    ['undefined', undefined],
+    ['null', null],
+    ['an array', ['30%']],
+    ['an object', { width: '30%' }],
+  ])('returns null for %s', (_label, value) => {
+    expect(normalizeWidth(value)).toBeNull();
+  });
+});
+
+describe('widthFromStyleString', () => {
+  it.each([
+    ['a lone declaration', 'width: 30%', ' 30%'],
+    ['a declaration after another property', 'text-align: center; width: 30%', ' 30%'],
+    ['an uppercase property', 'WIDTH: 30%', ' 30%'],
+    ['a value with commas', 'width: clamp(100px, 50%, 60vw)', ' clamp(100px, 50%, 60vw)'],
+    ['a double-quoted object value', '{ textAlign: "center", width: "var(--w, 240px)" }', 'var(--w, 240px)'],
+    ['a single-quoted object value', "{ width: '30%' }", '30%'],
+    ['an unquoted object value', '{ width: 30 }', '30 '],
+  ])('reads %s', (_label, style, expected) => {
+    expect(widthFromStyleString(style)).toBe(expected);
+  });
+
+  it('does not mistake minWidth or maxWidth for width in a stringified object', () => {
+    expect(widthFromStyleString('{ minWidth: "10px", maxWidth: "50%" }')).toBeUndefined();
+    expect(widthFromStyleString('{ minWidth: "10px", width: "30%" }')).toBe('30%');
+    expect(widthFromStyleString('{"width":"30%"}')).toBe('30%');
+  });
+
+  it.each([
+    ['a declaration list without width', 'text-align: center; min-width: 10px'],
+    ['an object without width', '{ textAlign: "center" }'],
+  ])('returns undefined for %s', (_label, style) => {
+    expect(widthFromStyleString(style)).toBeUndefined();
+  });
+});
 
 describe('mdxish-jsx-to-mdast transformer', () => {
   const processWithNewTypes = (md: string): Root => {
     const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-    return processor.runSync(processor.parse(parserReadyContent)) as Root;
+    return processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
   };
 
   describe('with newEditorTypes enabled', () => {
-
     describe('Image component', () => {
       it('should transform <Image /> to image-block node', () => {
         const md = '<Image src="test.png" alt="Test" />';
@@ -146,7 +199,8 @@ describe('mdxish-jsx-to-mdast transformer', () => {
       });
 
       it('should parse caption with markdown and HTML entities into children', () => {
-        const md = '<Image src="test.png" alt="test" caption="With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used." />';
+        const md =
+          '<Image src="test.png" alt="test" caption="With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used." />';
         const ast = processWithNewTypes(md);
 
         const imageNode = ast.children[0] as ImageBlock;
@@ -158,6 +212,62 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         expect(paragraph.children[0]).toMatchObject({ type: 'text', value: 'With ' });
         expect(paragraph.children[1]).toMatchObject({ type: 'strong' });
         expect(paragraph.children[3]).toMatchObject({ type: 'inlineCode', value: 'default' });
+      });
+
+      describe('caption positions', () => {
+        const isImageBlock = ({ type }: { type: string }) => type === NodeTypes.imageBlock;
+        const captionSlices = (caption: string): [string, string][] => [
+          ['paragraph', caption],
+          ['text', 'A '],
+          ['strong', '**bold**'],
+          ['text', 'bold'],
+          ['text', ' cap'],
+        ];
+
+        it('resolves caption children against the caption at the top level', () => {
+          const md = 'Hello world\n\n<Image src="https://x.com/a.png" caption="A **bold** cap" />';
+          expect(sourceSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual(captionSlices('A **bold** cap'));
+        });
+
+        it('resolves caption children inside a component body', () => {
+          const md = ['Hello world', '', '<Accordion title="A">', '  <Image src="https://x.com/a.png" caption="A **bold** cap" />', '</Accordion>'].join('\n'); // prettier-ignore
+          expect(sourceSlicesUnder(md, isImageBlock)).toStrictEqual([
+            ['image-block', '  <Image src="https://x.com/a.png" caption="A **bold** cap" />'],
+            ...captionSlices('A **bold** cap'),
+          ]);
+        });
+
+        // Only the `caption` attribute itself: not `data-caption`, nor `caption=` inside another value.
+        it.each([
+          ['a `data-caption` attribute', 'data-caption="wrong"'],
+          ['`caption=` inside another attribute', 'alt="the caption=\'wrong\' here"'],
+        ])('resolves the caption past %s', (_, otherAttribute) => {
+          const md = `<Image src="https://x.com/a.png" ${otherAttribute} caption="A **bold** cap" />`;
+          expect(sourceSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual(captionSlices('A **bold** cap'));
+        });
+
+        // RM-18923: captions went through the strict MDX parser, so a stray `<` threw and
+        // took down the whole editor parse.
+        it.each([
+          ['a <b', [['paragraph', 'a <b'], ['text', 'a <b']]],
+          ['a **b** <x', [['paragraph', 'a **b** <x'], ['text', 'a '], ['strong', '**b**'], ['text', 'b'], ['text', ' <x']]],
+        ])('parses a caption holding a stray `<` (%s)', (caption, slices) => {
+          const md = `<Image src="https://x.com/a.png" caption="${caption}" />`;
+          expect(sourceSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual(slices);
+        }); // prettier-ignore
+
+        // Entities are decoded before the re-parse, so the line isn't verbatim in the
+        // document and every node takes the caption's whole range.
+        it('falls back to the caption range when it holds entities', () => {
+          const caption = '&#x22;A&#x22; **b**';
+          const md = `<Image src="https://x.com/a.png" caption="${caption}" />`;
+          expect(sourceSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual([
+            ['paragraph', caption],
+            ['text', caption],
+            ['strong', caption],
+            ['text', caption],
+          ]);
+        });
       });
     });
 
@@ -374,6 +484,136 @@ Body content
         expect(anchorNode).toBeDefined();
         expect(anchorNode.data?.hProperties?.href).toBe('https://readme.com');
         expect(anchorNode.children).toHaveLength(0);
+      });
+    });
+
+    describe('NoTranslate component', () => {
+      it('should transform <NoTranslate> to a readme-no-translate node inside its paragraph', () => {
+        const ast = processWithNewTypes('<NoTranslate>Acme **Cloud**</NoTranslate> is great');
+
+        expect(ast.children).toHaveLength(1);
+        expect(ast.children[0]).toMatchObject({
+          type: 'paragraph',
+          children: [
+            {
+              type: NodeTypes.noTranslate,
+              data: { hName: 'NoTranslate' },
+              children: [
+                { type: 'text', value: 'Acme ' },
+                { type: 'strong', children: [{ type: 'text', value: 'Cloud' }] },
+              ],
+            },
+            { type: 'text', value: ' is great' },
+          ],
+        });
+      });
+
+      it.each([
+        [
+          'markdown in the body',
+          'Hello <NoTranslate>Acme **Cloud**</NoTranslate> world',
+          [
+            [NodeTypes.noTranslate, '<NoTranslate>Acme **Cloud**</NoTranslate>'],
+            ['text', 'Acme '],
+            ['strong', '**Cloud**'],
+            ['text', 'Cloud'],
+          ],
+        ],
+        [
+          'a NoTranslate nested in the body',
+          'Hello <NoTranslate>a <NoTranslate>**b**</NoTranslate> c</NoTranslate> end',
+          [
+            [NodeTypes.noTranslate, '<NoTranslate>a <NoTranslate>**b**</NoTranslate> c</NoTranslate>'],
+            ['text', 'a '],
+            [NodeTypes.noTranslate, '<NoTranslate>**b**</NoTranslate>'],
+            ['strong', '**b**'],
+            ['text', 'b'],
+            ['text', ' c'],
+          ],
+        ],
+        [
+          'a NoTranslate alone in the body',
+          'Use <NoTranslate><NoTranslate>**b**</NoTranslate></NoTranslate> now',
+          [
+            [NodeTypes.noTranslate, '<NoTranslate><NoTranslate>**b**</NoTranslate></NoTranslate>'],
+            [NodeTypes.noTranslate, '<NoTranslate>**b**</NoTranslate>'],
+            ['strong', '**b**'],
+            ['text', 'b'],
+          ],
+        ],
+        [
+          'a NoTranslate in a heading',
+          '## Hello <NoTranslate>Acme __Cloud__</NoTranslate>',
+          [
+            [NodeTypes.noTranslate, '<NoTranslate>Acme __Cloud__</NoTranslate>'],
+            ['text', 'Acme '],
+            ['strong', '__Cloud__'],
+            ['text', 'Cloud'],
+          ],
+        ],
+        [
+          'a NoTranslate in a table cell',
+          '| Name |\n| --- |\n| <NoTranslate>Acme *Cloud*</NoTranslate> |',
+          [
+            [NodeTypes.noTranslate, '<NoTranslate>Acme *Cloud*</NoTranslate>'],
+            ['text', 'Acme '],
+            ['emphasis', '*Cloud*'],
+            ['text', 'Cloud'],
+          ],
+        ],
+      ])('should slice every node under a NoTranslate with %s to its own source', (_label, md, slices) => {
+        expect(sourceSlicesUnder(md, node => node.type === NodeTypes.noTranslate)).toStrictEqual(slices);
+      });
+    });
+
+    describe('block NoTranslate component', () => {
+      it('should keep a block <NoTranslate> as a plain JSX element holding its blocks', () => {
+        const ast = processWithNewTypes('<NoTranslate>\nPara one **bold**\n\n- item\n</NoTranslate>\n\nafter');
+
+        expect(ast.children).toHaveLength(2);
+        expect(ast.children[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'NoTranslate',
+          attributes: [],
+          children: [
+            {
+              type: 'paragraph',
+              children: [
+                { type: 'text', value: 'Para one ' },
+                { type: 'strong', children: [{ type: 'text', value: 'bold' }] },
+              ],
+            },
+            { type: 'list' },
+          ],
+        });
+        expect(ast.children[1]).toMatchObject({ type: 'paragraph', children: [{ type: 'text', value: 'after' }] });
+      });
+    });
+
+    describe('nested NoTranslate and Anchor', () => {
+      it.each([
+        [
+          'an Anchor inside a NoTranslate',
+          '<NoTranslate><Anchor target="_blank" href="https://example.com">Acme</Anchor></NoTranslate> after',
+          NodeTypes.noTranslate,
+          NodeTypes.anchor,
+        ],
+        [
+          'a NoTranslate inside an Anchor',
+          '<Anchor target="_blank" href="https://example.com"><NoTranslate>Acme</NoTranslate></Anchor> after',
+          NodeTypes.anchor,
+          NodeTypes.noTranslate,
+        ],
+      ])('should turn %s into nested readme nodes', (_label, md, outer, inner) => {
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children[0]).toMatchObject({
+          type: 'paragraph',
+          children: [
+            { type: outer, children: [{ type: inner, children: [{ type: 'text', value: 'Acme' }] }] },
+            { type: 'text', value: ' after' },
+          ],
+        });
       });
     });
 
@@ -672,7 +912,6 @@ Some callout content
       expect(imageNode.src).toBe('https://example.com/image.jpg');
       expect(imageNode.alt).toBe('Alt text');
     });
-
   });
 
   describe('magic-block image promotion in tableCells (RM-16543)', () => {
@@ -731,7 +970,7 @@ Some callout content
         const node = stack.shift()!;
         if (predicate(node)) return node;
         if ('children' in node && Array.isArray((node as { children?: unknown[] }).children)) {
-          stack.push(...((node as { children: RootContent[] }).children));
+          stack.push(...(node as { children: RootContent[] }).children);
         }
       }
       return undefined;
@@ -755,28 +994,40 @@ Some callout content
 
     it('keeps `![](url)` inside a link as inline `image`', () => {
       const ast = processWithNewTypes('[![Logo](https://example.com/logo.png)](https://example.com)');
-      const link = findFirst(ast, (n): n is RootContent & { children: RootContent[]; type: 'link' } => n.type === 'link');
+      const link = findFirst(
+        ast,
+        (n): n is RootContent & { children: RootContent[]; type: 'link' } => n.type === 'link',
+      );
       expect(link).toBeDefined();
       expect(link!.children[0].type).toBe('image');
     });
 
     it('keeps `![](url)` inside emphasis as inline `image`', () => {
       const ast = processWithNewTypes('*![Logo](https://example.com/logo.png)*');
-      const em = findFirst(ast, (n): n is RootContent & { children: RootContent[]; type: 'emphasis' } => n.type === 'emphasis');
+      const em = findFirst(
+        ast,
+        (n): n is RootContent & { children: RootContent[]; type: 'emphasis' } => n.type === 'emphasis',
+      );
       expect(em).toBeDefined();
       expect(em!.children[0].type).toBe('image');
     });
 
     it('keeps `![](url)` inside strong as inline `image`', () => {
       const ast = processWithNewTypes('**![Logo](https://example.com/logo.png)**');
-      const strong = findFirst(ast, (n): n is RootContent & { children: RootContent[]; type: 'strong' } => n.type === 'strong');
+      const strong = findFirst(
+        ast,
+        (n): n is RootContent & { children: RootContent[]; type: 'strong' } => n.type === 'strong',
+      );
       expect(strong).toBeDefined();
       expect(strong!.children[0].type).toBe('image');
     });
 
     it('keeps `![](url)` inside delete (GFM strikethrough) as inline `image`', () => {
       const ast = processWithNewTypes('~~![Logo](https://example.com/logo.png)~~');
-      const del = findFirst(ast, (n): n is RootContent & { children: RootContent[]; type: 'delete' } => n.type === 'delete');
+      const del = findFirst(
+        ast,
+        (n): n is RootContent & { children: RootContent[]; type: 'delete' } => n.type === 'delete',
+      );
       expect(del).toBeDefined();
       expect(del!.children[0].type).toBe('image');
     });
@@ -1178,7 +1429,7 @@ Some callout content
   describe('with newEditorTypes disabled (default)', () => {
     const processWithoutNewTypes = (md: string): Root => {
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
-      return processor.runSync(processor.parse(parserReadyContent)) as Root;
+      return processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
     };
 
     it('should leave Image as mdxJsxFlowElement', () => {
@@ -1208,6 +1459,28 @@ Some callout content
       const htmlNodes = para.children.filter(c => c.type === 'html');
       expect(htmlNodes.length).toBeGreaterThan(0);
       expect(para.children.find(c => c.type === 'mdxJsxFlowElement')).toBeUndefined();
+    });
+
+    it.each([
+      ['at the start of a line', '<NoTranslate>Acme</NoTranslate> is great', [{ type: 'text', value: ' is great' }]],
+      ['alone on its line', '<NoTranslate>Acme</NoTranslate>', []],
+    ])('should keep a NoTranslate %s as one JSX element in one paragraph', (_label, md, trailing) => {
+      const ast = processWithoutNewTypes(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0]).toMatchObject({
+        type: 'paragraph',
+        children: [
+          {
+            type: 'mdxJsxTextElement',
+            name: 'NoTranslate',
+            children: [{ type: 'text', value: 'Acme' }],
+            position: { start: { offset: 0 }, end: { offset: '<NoTranslate>Acme</NoTranslate>'.length } },
+          },
+          ...trailing,
+        ],
+      });
+      expect((ast.children[0] as Paragraph).children).toHaveLength(1 + trailing.length);
     });
   });
 });

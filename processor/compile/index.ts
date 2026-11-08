@@ -2,16 +2,17 @@ import type { Processor } from 'unified';
 
 import { NodeTypes } from '../../enums';
 
-import anchor from './anchor';
 import callout from './callout';
 import codeTabs from './code-tabs';
 import compatibility from './compatibility';
 import embed from './embed';
 import gemoji from './gemoji';
+import heading from './heading';
 import htmlBlock from './html-block';
+import list from './list';
 import listItem from './list-item';
 import plain from './plain';
-import text from './text';
+import mdxishText, { text } from './text';
 import variable from './variable';
 
 function compilers(this: Processor, mdxish = false) {
@@ -33,12 +34,14 @@ function compilers(this: Processor, mdxish = false) {
     html: compatibility,
     i: compatibility,
     plain,
+    text,
     yaml: compatibility,
 
     // needed only for mdxish
-    ...(mdxish && { [NodeTypes.anchor]: anchor }),
+    ...(mdxish && { heading }),
+    ...(mdxish && { list }),
     ...(mdxish && { listItem }),
-    ...(mdxish && { text }),
+    ...(mdxish && { text: mdxishText }),
     ...(mdxish && { [NodeTypes.variable]: variable }),
   };
 
@@ -46,6 +49,8 @@ function compilers(this: Processor, mdxish = false) {
 }
 
 export function mdxishCompilers(this: Processor) {
+  // Unified calls compiler plugins with the processor as `this`.
+  // oxlint-disable-next-line oxc/no-this-in-exported-function
   return compilers.call(this, true);
 }
 

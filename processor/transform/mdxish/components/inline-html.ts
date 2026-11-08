@@ -1,36 +1,73 @@
-import type { Html, Paragraph, PhrasingContent, Root } from 'mdast';
+import type { FootnoteDefinition, Html, InlineCode, Node, Paragraph, Parent, PhrasingContent, Root, Text } from 'mdast';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-import { INLINE_COMPONENT_TAGS } from '../../../../lib/constants';
+import { INLINE_COMPONENT_TAGS, INLINE_ONLY_PARENT_TYPES } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
-
 import {
-  getInlineMdProcessor,
-  hasExpressionAttr,
-  isPascalCase,
-  stampReparseSource,
-  toMdxJsxTextElement,
-} from './utils';
+  type FragmentParseOptions,
+  getDocumentSource,
+  type MarkdownFragment,
+  reparseMarkdownFragment,
+} from '../parse-markdown-fragment';
+
+import { hasExpressionAttr, isPascalCase, toMdxJsxTextElement } from './utils';
+
+const LEADING_SPACES_RE = /^[ \t]+/;
+const TRAILING_SPACES_RE = /[ \t]+$/;
+
+// gfm unescapes `\|` in a cell's inline code, but a body reparsed on its own has no cell.
+const CELL_CODE_PIPE_RE = /\\\|/g;
+
+type PromoteHtml = (node: Html) => PhrasingContent;
+
+const spaceText = (value: string | undefined): Text[] => (value ? [{ type: 'text', value }] : []);
+
+const isInlineParent = (node: Node): node is Parent => INLINE_ONLY_PARENT_TYPES.has(node.type);
+
+const unescapeCellCode = (node: Node): void => {
+  visit(node, 'inlineCode', (code: InlineCode) => {
+    code.value = code.value.replace(CELL_CODE_PIPE_RE, '|');
+  });
+};
+
+/** Promote every html child of an inline parent (paragraph, heading, table cell). */
+const promoteHtmlIn = (tree: Node, promote: PromoteHtml): void => {
+  visit(tree, isInlineParent, (parent: Parent) => {
+    parent.children = parent.children.map(child => {
+      if (child.type !== 'html') return child;
+      const promoted = promote(child as Html);
+      if (parent.type === 'tableCell' && promoted !== child) unescapeCellCode(promoted);
+      return promoted;
+    });
+  });
+};
 
 /**
  * Parse the body of an inline component as phrasing content. Remark always
  * wraps bare text in a paragraph; flatten that single-paragraph wrapper so
  * the result is valid `mdxJsxTextElement` content.
  *
- * Block content inside an inline tag never reaches here (the text tokenizer
- * rejects line endings), so the paragraph-flatten path covers every case we
- * actually produce; other shapes fall back to empty children.
+ * The body is parsed as phrasing only, so it is always one paragraph.
  */
-const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingContent[] => {
+const parsePhrasingChildren = (
+  body: MarkdownFragment,
+  fragmentOptions: FragmentParseOptions,
+  promote: PromoteHtml,
+): PhrasingContent[] => {
+  const value = body.rawText;
   const trimmed = value.trim();
-  if (!trimmed) return [];
-  const [first] = getInlineMdProcessor({ safeMode }).parse(trimmed).children;
-  if (first?.type !== 'paragraph') return [];
-  // These children root a new coordinate space: their offsets index into `trimmed`.
-  stampReparseSource((first as Paragraph).children, trimmed);
-  return (first as Paragraph).children;
+  // A body of only spaces is still a separator: `Use<NoTranslate> </NoTranslate>now` reads "Use now".
+  if (!trimmed) return spaceText(value);
+  const [paragraph] = reparseMarkdownFragment(body, trimmed, fragmentOptions) as Paragraph[];
+  promoteHtmlIn(paragraph, promote);
+  // Edge spaces are content: `Use<NoTranslate> Acme </NoTranslate>now` reads "Use Acme now".
+  return [
+    ...spaceText(LEADING_SPACES_RE.exec(value)?.[0]),
+    ...paragraph.children,
+    ...spaceText(TRAILING_SPACES_RE.exec(value)?.[0]),
+  ];
 };
 
 /**
@@ -43,8 +80,14 @@ const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingConten
  *
  * Returns the original node unchanged when it doesn't qualify.
  */
-const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMode: boolean): PhrasingContent => {
-  const parsed = parseTag((node.value ?? '').trim(), parseOpts);
+const promoteInlineHtml = (
+  node: Html,
+  parseOpts: ParseAttributesOptions,
+  fragmentOptions: FragmentParseOptions,
+): PhrasingContent => {
+  const value = node.value ?? '';
+  const trimmedValue = value.trim();
+  const parsed = parseTag(trimmedValue, parseOpts);
   if (!parsed) return node;
 
   const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
@@ -56,8 +99,8 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
   if (isPascalCase(tag) && !INLINE_COMPONENT_TAGS.has(tag)) return node;
 
   // Plain inline HTML (no expressions) stays as an html node so rehype-raw
-  // parses it with parse5 as normal.
-  if (!hasExpressionAttr(attributes)) return node;
+  // parses it with parse5 as normal. A tokenized tag is promoted as is.
+  if (!hasExpressionAttr(attributes) && !node.data?.tokenized) return node;
 
   if (selfClosing) return toMdxJsxTextElement(tag, attributes, [], node.position);
 
@@ -67,13 +110,16 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
   const closeIdx = contentAfterTag.lastIndexOf(closingTagStr);
   if (closeIdx < 0) return node;
 
-  const inner = contentAfterTag.slice(0, closeIdx);
-  return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(inner, safeMode), node.position);
+  const bodyStart = value.length - value.trimStart().length + trimmedValue.length - contentAfterTag.length;
+  const body = { parentNode: node, offsetInParentNode: bodyStart, rawText: contentAfterTag.slice(0, closeIdx) };
+  // Body children are already positioned in the page, so a nested tag promotes like a top-level one.
+  const promote: PromoteHtml = child => promoteInlineHtml(child, parseOpts, fragmentOptions);
+  return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(body, fragmentOptions, promote), node.position);
 };
 
 /**
  * Transform inline html nodes with expression attributes
- * inside paragraphs into `mdxJsxTextElement`s.
+ * inside inline parents into `mdxJsxTextElement`s.
  *
  * Runs after `mdxishComponentBlocks`, which skips paragraph-parented html
  * nodes and leaves them for this pass. Two producers put html nodes inside
@@ -88,15 +134,19 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
  * carries an expression attribute and isn't a non-inline PascalCase component;
  * plain inline HTML like `<a href="x">` stays as an html node for rehype-raw.
  */
-const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> = (opts = {}) => tree => {
-  const safeMode = !!opts.safeMode;
-  const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
+const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> =
+  (opts = {}) =>
+  (tree, file) => {
+    const safeMode = !!opts.safeMode;
+    const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
+    const footnotes: string[] = [];
+    visit(tree, 'footnoteDefinition', (def: FootnoteDefinition) => {
+      footnotes.push(def.identifier.toUpperCase());
+    });
+    const documentSource = getDocumentSource(file);
+    const fragmentOptions: FragmentParseOptions = { documentSource, footnotes, phrasing: true, safeMode };
 
-  visit(tree, 'paragraph', (paragraph: Paragraph) => {
-    paragraph.children = paragraph.children.map(child =>
-      child.type === 'html' ? promoteInlineHtml(child as Html, parseOpts, safeMode) : child,
-    );
-  });
-};
+    promoteHtmlIn(tree, child => promoteInlineHtml(child, parseOpts, fragmentOptions));
+  };
 
 export default mdxishInlineMdxHtmlBlocks;

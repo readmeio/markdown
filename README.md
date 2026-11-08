@@ -99,6 +99,7 @@ Extends [`CompileOptions`](https://mdxjs.com/packages/mdx/#compileoptions)
 - **`safeMode`** (`boolean`, optional)—extract script tags from `HTMLBlock`s
 - **`components`** (`Record<string, string>`, optional)—an object of tag names to mdx.
 - **`copyButtons`** (`Boolean`, optional) — add a copy button to code blocks
+- **`hardBreaks`** (`boolean`, optional)—render every newline as a `<br>`. `mdxish` defaults to `true`
 
 ### `RunOpts`
 
@@ -108,6 +109,7 @@ Extends [`RunOptions`](https://mdxjs.com/packages/mdx/#runoptions)
 
 - **`components`** (`Record<string, MDXModule>`, optional)—a set of custom MDX components
 - **`imports`** (`Record<string, unknown>`, optional)—an set of modules to import globally
+- **`mermaidControls`** (`boolean`, optional)—add zoom and drag-to-pan controls to mermaid diagrams. Also accepted by `renderMdxish`
 - **`terms`** (`GlossaryTerm[]`, optional)
 - **`variables`** (`Variables`, optional)—an object containing [user variables](https://github.com/readmeio/variable)
 
@@ -123,7 +125,7 @@ Extends [`RunOptions`](https://mdxjs.com/packages/mdx/#runoptions)
 
 To make changes to the RDMD engine locally, run the local development server. Clone the repo, `cd` in to it, `npm install`, and `npm run start`!
 
-If you make changes to the docs or how the markdown is rendered, you may need to update the visual regression snapshots by running `make updateSnapshot`. Running these browser tests requires `docker`. Follow the docker [install instructions for mac](https://docs.docker.com/docker-for-mac/install/). You may want to increase the [memory usage](https://docs.docker.com/docker-for-mac/#resources). If you have not already, you'll need to create an account for `docker hub` and [sign-in locally](https://docs.docker.com/docker-for-mac/#docker-hub).
+If you make changes to the docs or how the markdown is rendered, you may need to update the visual regression snapshots by running `make updateSnapshot`. Those tests run in Vitest's browser mode (Playwright, Chromium) inside Docker so font rendering stays stable. `npm run test.browser` runs the suite; `make updateSnapshot` regenerates references. Running these browser tests requires `docker`. Follow the docker [install instructions for mac](https://docs.docker.com/docker-for-mac/install/). You may want to increase the [memory usage](https://docs.docker.com/docker-for-mac/#resources). If you have not already, you'll need to create an account for `docker hub` and [sign-in locally](https://docs.docker.com/docker-for-mac/#docker-hub).
 
 ### Linking Changes to the Main Repo
 
@@ -169,7 +171,16 @@ npm link $PATH_TO_LOCAL_MARKDOWN_REPO
 
 ## Releases
 
-First, update `main` with what’s on `next`:
+`@readmeio/mdxish` reviews the Cut release job, then:
+
+1. Actions → [Cut release](https://github.com/readmeio/markdown/actions/workflows/cut-release.yml) → **Run workflow**. That merges `next` into `main`; Release publishes to npm.
+2. Watch [Release](https://github.com/readmeio/markdown/actions/workflows/release.yml). It publishes, then fast-forwards `next` to that release. If `next` moved during publish, merge `main` into `next` by hand.
+3. After a real publish, Release notifies repos in `CONSUMER_DISPATCH_REPOS` (`package-released`). No-op if the variable is unset.
+
+<details>
+<summary>Merge <code>next</code> into <code>main</code> by hand</summary>
+
+Same as steps 1–2 if you are not using Cut release:
 
 ```
 git switch next
@@ -180,7 +191,7 @@ git merge --no-ff next
 git push
 ```
 
-WAIT until the build is finished, then update `next`:
+Wait until Release finishes (it syncs `main` back to `next`). If that sync fails:
 
 ```
 git pull
@@ -188,3 +199,7 @@ git switch next
 git merge main
 git push
 ```
+
+Release still notifies consumers when it actually publishes.
+
+</details>

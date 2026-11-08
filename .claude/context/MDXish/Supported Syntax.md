@@ -35,6 +35,34 @@ Simple markdown link with `@embed` title:
 
 	[Embed Title](https://youtu.be/example "@embed")
 
+### Do Not Translate
+
+`<NoTranslate>` tag for text that must not be translated. Any inline markdown can sit inside, and it stays in its paragraph even at the start of a line. Renders as `<span translate="no">`:
+
+	Sign in to <NoTranslate>Acme **Cloud**</NoTranslate> to start.
+
+With the opener alone on its line, it wraps whole blocks instead and renders as `<div class="readme-no-translate" translate="no">`:
+
+	<NoTranslate>
+	Acme Cloud keeps **every** name as is.
+
+	- Acme CLI
+	</NoTranslate>
+
+Text right after the opener is still the block form when the body has a blank line, or `</NoTranslate>` starts its own line or ends a later line. So a list can start right after the tag, and a `<NoTranslate>` around several paragraphs never drops the later ones:
+
+	<NoTranslate>- Acme CLI
+	- Acme SDK
+	</NoTranslate>
+
+	<NoTranslate>First paragraph.
+
+	Second paragraph.</NoTranslate>
+
+Both forms are claimed whole by their own tokenizer (`lib/micromark/no-translate`), so CommonMark never splits the opener from its closer.
+
+A string prop is plain text, so no tag renders inside one. `<NoTranslate>` is the one exception: an Accordion, Card or Tab title holding `<NoTranslate>Acme</NoTranslate>` still shows the span, in both engines (`noTranslateTagsToSpans` in `components/NoTranslate.tsx`).
+
 ## Data Replacement Syntaxes
 
 ### User Variables
@@ -105,6 +133,10 @@ Standard Markdown heading syntaxes (`#` prefixes) are supported, as well as comp
 
 Underline notation (using `=` or `-` are also supported for first and second level headings, respectively.
 
+A trailing ` {#custom-id}` on a `#` heading sets its anchor, so it survives text changes such as translation. Ids use letters, numbers, `-`, `_`, `.` and `:`; an escaped `\{#id}` stays text. The ATX heading construct takes it off before the inline parse, so nothing outside a `#` heading sees it: underlined headings, legacy callout titles and prose are parsed as before. MDXish only; RMDX rejects the syntax.
+
+	## Prérequis {#prerequisites}
+
 ## Legacy Magic Blocks
 
 The engine also supports the legacy JSON-based "magic block" syntax for backwards compatibility.
@@ -132,7 +164,7 @@ This is a legacy format that should be transpiled to newer ReadMe-flavored synta
 
 ## Additional Features
 
-- **Auto-generated heading anchors** with incremental IDs for duplicate headings
+- **Auto-generated heading anchors** with incremental IDs for duplicate headings, and explicit `{#id}` anchors that auto IDs never reuse
 - **Table of Contents generation** from markup
 - **Custom `doc:` and `ref:` protocols** for internal documentation links
 - **Both JSX and HTML comments** for non-rendered notes and annotations

@@ -2,32 +2,41 @@ import type { Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
-import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
+import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS, INLINE_ONLY_PARENT_TYPES } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
-import { pointAfter } from '../../../utils';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
+import {
+  createNodeValueToDocumentMapper,
+  getDocumentSource,
+  type MarkdownFragment,
+  reparseMarkdownFragment,
+} from '../parse-markdown-fragment';
 import { tableTags } from '../tables/utils';
 import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 
 import {
   containsMarkdownConstruct,
   findBalancedClosingTagIndex,
-  getInlineMdProcessor,
   hasExpressionAttr,
   isMarkdownPromotableHtmlTag,
   isPascalCase,
   NESTED_TABLE_RE,
-  stampReparseSource,
 } from './utils';
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-// Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. */
-const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
+// Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. One name
+// char suffices for existence — `[\w-]+` backtracked quadratically over huge attributes.
+const NESTED_ATTR_EXPRESSION_RE = /[\w-]\s*=\s*\{/;
 
 // Name shape mirrors `componentTagPattern`; the lookbehind skips the inner tag
 // of a legacy `<<VARIABLE>>`.
 const NESTED_COMPONENT_TAG_RE = /(?<!<)<([A-Z][A-Za-z0-9_]*)[\s/>]/g;
+
+// Whole blank lines at a component body's edges. `\n` sits inside each group so a
+// match can only ever span complete lines, never part of a content line.
+const LEADING_BLANK_LINES_RE = /^(?:[ \t]*\n)+/;
+const TRAILING_BLANK_LINES_RE = /(?:\n[ \t]*)+$/;
 
 // Excludes tags with dedicated transformers (`Table`, `HTMLBlock`, inline
 // components), which expect their wrapper to stay raw.
@@ -67,20 +76,34 @@ function safeDeindent(text: string): string {
 }
 
 /**
+ * Drop the blank lines at a component body's edges, keeping the first content line's
+ * indent: `.trim()` stripped that line alone, so a uniformly indented body reparsed
+ * lopsided and every list item after the first nested. The trailing pattern
+ * takes the last content line's newline but leaves its spaces, which are code content
+ * when a fence runs into the end tag.
+ */
+const trimBlankEdges = (text: string): string =>
+  text.replace(LEADING_BLANK_LINES_RE, '').replace(TRAILING_BLANK_LINES_RE, '');
+
+/** The part of `parentNode.value` from `start`, with its surrounding whitespace dropped. */
+const trimmedFragmentFrom = (parentNode: MarkdownFragment['parentNode'], start: number): MarkdownFragment => {
+  const text = parentNode.value.slice(start);
+  const rawText = text.trim();
+  return { parentNode, offsetInParentNode: start + text.indexOf(rawText), rawText };
+};
+
+/**
  * Parse component-body markdown into mdast children. Dedenting shifts columns and
  * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
  * re-runs here; other column-anchored fixups (compact headings, tables) do not.
  */
-const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
-  const reparseSource = terminateHtmlFlowBlocks(safeDeindent(value).trim());
-  const parsed = getInlineMdProcessor({ safeMode }).parse(reparseSource);
+const parseMdChildren = (fragment: MarkdownFragment, safeMode: boolean, documentSource: string): RootContent[] => {
+  const textToParse = terminateHtmlFlowBlocks(trimBlankEdges(safeDeindent(fragment.rawText)));
+  const children = reparseMarkdownFragment(fragment, textToParse, { documentSource, safeMode });
   // Promote nested wrappers bottom-up so an outer wrapper sees markdown buried in a
   // child claimed whole (e.g. `<li>` in `<ol>`) before its containsMarkdownConstruct check (RM-17560).
   // eslint-disable-next-line @typescript-eslint/no-use-before-define -- mutually recursive; hoisted decl, safe at runtime
-  promoteComponentBlocks(parsed as Parent, safeMode, null);
-  const children = parsed.children || [];
-  // These children root a new coordinate space: their offsets index into `reparseSource`.
-  stampReparseSource(children, reparseSource);
+  promoteComponentBlocks({ type: 'root', children }, safeMode, documentSource);
   return children;
 };
 
@@ -89,8 +112,15 @@ const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
 // index-based walk then reaches these spliced siblings and the original children
 // they shift down, so no parent re-queue is needed. Each spliced subtree is marked
 // `promoted` so the walk doesn't redundantly re-descend into it (its html is gone).
-const parseSibling = (parent: Parent, index: number, sibling: string, safeMode: boolean, promoted: WeakSet<Node>) => {
-  const siblingNodes = parseMdChildren(sibling, safeMode) as Node[];
+const parseSibling = (
+  parent: Parent,
+  index: number,
+  sibling: MarkdownFragment,
+  safeMode: boolean,
+  documentSource: string,
+  promoted: WeakSet<Node>,
+) => {
+  const siblingNodes = parseMdChildren(sibling, safeMode, documentSource) as Node[];
   if (siblingNodes.length > 0) {
     (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
     siblingNodes.forEach(siblingNode => promoted.add(siblingNode));
@@ -111,24 +141,11 @@ const positionEndingAtConsumed = (
   nodePosition: Node['position'],
   value: string,
   consumedLength: number,
+  documentSource: string,
 ): Node['position'] => {
-  if (!nodePosition?.start) return nodePosition;
-  return { start: nodePosition.start, end: pointAfter(nodePosition.start, value.slice(0, consumedLength)) };
-};
-
-// Like `positionEndingAtConsumed`, but measures against the original source so
-// blockquote/list prefixes stripped from the html node's value are counted.
-const positionEndingAtClosingTagInSource = (
-  nodePosition: Node['position'],
-  closingTag: string,
-  source: string,
-): Node['position'] => {
-  if (!nodePosition?.start || !nodePosition.end) return nodePosition;
-  const nodeSource = source.slice(nodePosition.start.offset, nodePosition.end.offset);
-  const closingTagOffset = nodeSource.lastIndexOf(closingTag);
-  if (closingTagOffset === -1) return nodePosition;
-  const consumed = nodeSource.slice(0, closingTagOffset + closingTag.length);
-  return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumed) };
+  const toDocumentPosition = createNodeValueToDocumentMapper({ position: nodePosition, value }, documentSource);
+  if (!nodePosition || !toDocumentPosition) return nodePosition;
+  return { start: nodePosition.start, end: toDocumentPosition(0, consumedLength).end };
 };
 
 const createComponentNode = ({
@@ -147,14 +164,6 @@ const createComponentNode = ({
     end: endPosition?.end ?? startPosition?.end,
   },
 });
-
-// The promoted node takes over the html node's position, so it also takes over the
-// coordinate space that position belongs to.
-const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJsxFlowElement) => {
-  const replacedSource = parent.children[index]?.data?.reparseSource;
-  if (replacedSource) stampReparseSource([mdxNode], replacedSource);
-  (parent.children as Node[]).splice(index, 1, mdxNode);
-};
 
 /**
  * Transform PascalCase HTML nodes into mdxJsxFlowElement nodes.
@@ -187,7 +196,7 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * The opening tag, content, and closing tag are all captured in one HTML node
  * (guaranteed by the mdx-component tokenizer).
  */
-function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string | null): Parent {
+function promoteComponentBlocks(tree: Parent, safeMode: boolean, documentSource: string): Parent {
   const stack: Parent[] = [tree];
   const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
   // Subtrees a nested parseMdChildren already promoted wholesale (spliced siblings):
@@ -216,8 +225,12 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     // Offsets so consumed-length math maps back onto the node's real source.
     const leadingWhitespace = value.length - value.trimStart().length;
     const openingTagEnd = trimmed.length - contentAfterTag.length;
+    const bodyStart = leadingWhitespace + openingTagEnd;
+    const parentNode = { position: node.position, value };
 
-    if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return; // owned by dedicated transformers
+    // A block `<NoTranslate>` arrives here whole. An inline one stays with the inline pass.
+    const isBlockForm = !!node.data?.tokenized && !selfClosing && !INLINE_ONLY_PARENT_TYPES.has(parent.type);
+    if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag) && !isBlockForm) return; // owned by dedicated transformers
 
     const isPascal = isPascalCase(tag);
 
@@ -254,19 +267,21 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
 
     // Case 1: Self-closing tag
     if (selfClosing) {
+      const remainingContent = contentAfterTag.trim();
       const componentNode = createComponentNode({
         tag,
         attributes,
         children: [],
         startPosition: node.position,
-        // End at the self-closing tag, not at any trailing content.
-        endPosition: positionEndingAtConsumed(node.position, value, leadingWhitespace + openingTagEnd),
+        // Without trailing content the whole node position is correct; with it, end at the tag.
+        endPosition: remainingContent
+          ? positionEndingAtConsumed(node.position, value, bodyStart, documentSource)
+          : node.position,
       });
-      substituteNodeWithMdxNode(parent, index, componentNode);
+      parent.children.splice(index, 1, componentNode);
 
-      const remainingContent = contentAfterTag.trim();
       if (remainingContent) {
-        parseSibling(parent, index, remainingContent, safeMode, promoted);
+        parseSibling(parent, index, trimmedFragmentFrom(parentNode, bodyStart), safeMode, documentSource, promoted);
       }
       return;
     }
@@ -274,13 +289,16 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     // Case 2: Self-contained block (closing tag in content)
     const closingTagIndex = isPlainLowercaseHtml ? plainClosingTagIndex : contentAfterTag.lastIndexOf(closingTagStr);
     if (closingTagIndex >= 0) {
-      // Untrimmed so parseMdChildren can dedent before trimming.
+      // Left as authored: parseMdChildren needs the original columns to dedent by, and
+      // it clears the blank edges itself.
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
-      const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
+      const closeEnd = bodyStart + closingTagIndex + closingTagStr.length;
+      const contentAfterClose = value.slice(closeEnd).trim();
       let parsedChildren: MdxJsxFlowElement['children'] = [];
       if (componentInnerContent.trim()) {
         try {
-          parsedChildren = parseMdChildren(componentInnerContent, safeMode) as MdxJsxFlowElement['children'];
+          const body = { parentNode, offsetInParentNode: bodyStart, rawText: componentInnerContent };
+          parsedChildren = parseMdChildren(body, safeMode, documentSource) as MdxJsxFlowElement['children'];
         } catch (error) {
           // Plain HTML bodies can hold anything (e.g. stray braces the strict
           // expression parser rejects) — keep the node raw instead of throwing.
@@ -293,24 +311,13 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
       // phrasing content isn't spuriously block-wrapped.
       let unwrappedSoleParagraph = false;
       if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
-        const soleParagraph = parsedChildren[0];
-        parsedChildren = (soleParagraph as Parent).children as MdxJsxFlowElement['children'];
-        // The unwrap drops the stamped root, so its children inherit that coordinate space.
-        if (soleParagraph.data?.reparseSource) stampReparseSource(parsedChildren, soleParagraph.data.reparseSource);
+        parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
         unwrappedSoleParagraph = true;
       }
-      // Without trailing content the whole node position is correct. With it, end
-      // precisely at the closing tag — preferring source offsets when available (the
-      // node's value strips blockquote/list prefixes), else the consumed span.
+      // Without trailing content the whole node position is correct; with it, end at the closing tag.
       let endPosition = node.position;
       if (contentAfterClose) {
-        endPosition = source
-          ? positionEndingAtClosingTagInSource(node.position, closingTagStr, source)
-          : positionEndingAtConsumed(
-              node.position,
-              value,
-              leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
-            );
+        endPosition = positionEndingAtConsumed(node.position, value, closeEnd, documentSource);
       }
       const componentNode = createComponentNode({
         tag,
@@ -319,7 +326,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         startPosition: node.position,
         endPosition,
       });
-      substituteNodeWithMdxNode(parent, index, componentNode);
+      parent.children.splice(index, 1, componentNode);
 
       // The unwrap reparented the children out of their paragraph, so re-walk them
       // since the children HTML may contain promotable syntax (e.g. `{…}`-attr tags)
@@ -331,7 +338,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
       // already promoted any components nested inside both sides, so the promoted
       // subtree itself needs no re-queue.
       if (contentAfterClose) {
-        parseSibling(parent, index, contentAfterClose, safeMode, promoted);
+        parseSibling(parent, index, trimmedFragmentFrom(parentNode, closeEnd), safeMode, documentSource, promoted);
       }
     }
   };
@@ -354,8 +361,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
 const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> =
   (opts = {}) =>
   (tree, file) => {
-    const source: string | null = file?.value ? String(file.value) : null;
-    return promoteComponentBlocks(tree, !!opts.safeMode, source);
+    return promoteComponentBlocks(tree, !!opts.safeMode, getDocumentSource(file));
   };
 
 export default mdxishMdxComponentBlocks;

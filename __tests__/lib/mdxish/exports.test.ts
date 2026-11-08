@@ -1,6 +1,5 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-
 import { describe, it, expect } from 'vitest';
 
 import { compile, mdxish, mix, renderMdxish, run } from '../../../lib';
@@ -27,7 +26,6 @@ describe('In-document MDX variable and function declarations', () => {
 
     expect(html).not.toContain('export const');
   });
-
 
   describe('when exports are not supposed to be evaluated', () => {
     it('does not evaluate exports when safeMode is enabled and keeps them as literal text', () => {
@@ -113,7 +111,7 @@ a = {a}`;
       const md = 'export function Greeting() {\n  return (<div>Hey Ho</div>);\n}\n\n<Greeting />\n';
       const ast = mdxish(md);
 
-      const el = findElementByTagName(ast,'Greeting');
+      const el = findElementByTagName(ast, 'Greeting');
       expect(el).toBeDefined();
     });
 
@@ -241,7 +239,7 @@ isEven(4) = {isEven(4)}.`;
 > <Inner />`;
         expect(renderToHtml(md)).toContain('<strong>nested</strong>');
       });
-      
+
       it('renders an `export default function` whose JSX ternary spans block elements', () => {
         const md = `export default function Page() {
   const selected = "";
@@ -379,7 +377,8 @@ export const Doubler = () => {
     });
 
     it('tolerates a condensed single-line import + export', () => {
-      const md = "import { useState } from 'react';export const Counter = () => { const [n] = useState(3); return <em>{n}</em>; };\n\n<Counter />";
+      const md =
+        "import { useState } from 'react';export const Counter = () => { const [n] = useState(3); return <em>{n}</em>; };\n\n<Counter />";
       expect(renderToHtml(md)).toContain('<em>3</em>');
     });
 
@@ -430,7 +429,8 @@ Greeting: {new MyClass().greet()}.`;
     });
 
     it('only evaluates Function() inside {...} expressions', () => {
-      const md = 'export function Greeting() { return "Hello World"; }\n\nHi {Greeting()}.\n\nGreeting() should literally be Greeting()';
+      const md =
+        'export function Greeting() { return "Hello World"; }\n\nHi {Greeting()}.\n\nGreeting() should literally be Greeting()';
       const html = mix(md);
       expect(html).toContain('Hi Hello World.');
       expect(html).toContain('Greeting() should literally be Greeting()');

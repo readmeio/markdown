@@ -42,12 +42,11 @@ const Callout = (props: Props) => {
 
   const icon = props.icon;
   const hasBody = children.length > 1;
-  const heading = empty ? (hasBody ? <p className={'callout-heading empty'}></p> : null) : children[0];
+  const heading = empty ? hasBody ? <p className={'callout-heading empty'}></p> : null : children[0];
   const theme = props.theme || (icon && themes[icon]) || 'default';
 
   return (
     // @ts-expect-error -- theme is not a valid attribute
-    // eslint-disable-next-line react/jsx-props-no-spreading, react/no-unknown-property
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon || theme}>
       {icon ? <Icon className="callout-icon" faClassName="callout-icon_fa" icon={icon} /> : null}
       {heading}

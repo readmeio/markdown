@@ -49,9 +49,7 @@ describe('parseAttributes', () => {
     });
 
     it('should allow whitespace around =', () => {
-      expect(parseAttributes('title = "hi"')).toStrictEqual([
-        { type: 'mdxJsxAttribute', name: 'title', value: 'hi' },
-      ]);
+      expect(parseAttributes('title = "hi"')).toStrictEqual([{ type: 'mdxJsxAttribute', name: 'title', value: 'hi' }]);
     });
   });
 
@@ -447,12 +445,14 @@ describe('lowercase html tags with JSX expressions are treated as MDX', () => {
     expect(hast.children[0]).toMatchObject({
       type: 'element',
       tagName: 'p',
-      children: [{
-        type: 'element',
-        tagName: 'a',
-        properties: { href: 'https://example.com' },
-        children: [{ type: 'text', value: 'Example' }]
-      }],
+      children: [
+        {
+          type: 'element',
+          tagName: 'a',
+          properties: { href: 'https://example.com' },
+          children: [{ type: 'text', value: 'Example' }],
+        },
+      ],
     });
   });
 

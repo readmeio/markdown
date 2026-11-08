@@ -3,7 +3,9 @@ updates:
   - package-ecosystem: github-actions
     directory: '/'
     schedule:
-      interval: weekly
+      interval: monthly
+    cooldown:
+      default-days: 20
     labels:
       - dependencies
     groups:
@@ -26,7 +28,9 @@ updates:
   - package-ecosystem: npm
     directory: '/'
     schedule:
-      interval: weekly
+      interval: monthly
+    cooldown:
+      default-days: 20
     open-pull-requests-limit: 10
     labels:
       - dependencies

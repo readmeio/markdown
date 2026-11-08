@@ -108,6 +108,53 @@ const name = 'Bearer ${variable}';
     expect(getCodeText(tree)).toBe('sk_live_123');
   });
 
+  it('stringifies structured variables in code', () => {
+    const tree = mdxish('`<<keys>> {user.profile} {user.limit} {user.active}`', {
+      variables: {
+        user: {
+          active: true,
+          keys: [{ apiKey: 'rdme_123' }],
+          limit: 25,
+          profile: { plan: 'enterprise' },
+        },
+        defaults: [],
+      },
+    });
+
+    expect(getCodeText(tree)).toBe('[{"apiKey":"rdme_123"}] {"plan":"enterprise"} 25 true');
+  });
+
+  it('coerces null and undefined user variable values to empty strings', () => {
+    const tree = mdxish('`<<nullValue>>|<<undefinedValue>>`', {
+      variables: {
+        user: {
+          nullValue: null,
+          undefinedValue: undefined,
+        },
+        defaults: [],
+      },
+    });
+
+    expect(getCodeText(tree)).toBe('|');
+  });
+
+  it('coerces unserializable user variable values to empty strings', () => {
+    const cyclicValue: Record<string, unknown> = {};
+    cyclicValue.self = cyclicValue;
+
+    const tree = mdxish('`<<cyclicValue>>|<<bigintValue>>`', {
+      variables: {
+        user: {
+          bigintValue: { limit: BigInt(10) },
+          cyclicValue,
+        },
+        defaults: [],
+      },
+    });
+
+    expect(getCodeText(tree)).toBe('|');
+  });
+
   it('does not double-resolve when a legacy variable value contains an MDX variable pattern', () => {
     const tree = mdxish('`<<payload>>`', {
       variables: {

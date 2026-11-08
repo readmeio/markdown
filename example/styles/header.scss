@@ -1,6 +1,5 @@
 .Header {
-  &-button,
-  &-select {
+  &-button {
     background: transparent;
     border: 1px solid transparent;
     border-radius: var(--border-radius);
@@ -24,7 +23,39 @@
     }
   }
 
-  &-select {
-    appearance: none;
+  &-theme-group {
+    background-color: var(--color-bg-page-muted);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--border-radius);
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+  }
+
+  &-theme-button {
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    border-radius: var(--border-radius);
+    color: var(--color-text-minimum);
+    cursor: pointer;
+    display: flex;
+    font-size: 13px;
+    height: 24px;
+    justify-content: center;
+    line-height: 1;
+    text-align: center;
+    width: 24px;
+
+    &:hover {
+      color: var(--color-text-default);
+    }
+
+    &:active,
+    &:focus,
+    &_active {
+      background: var(--color-bg-page);
+      color: var(--color-text-default);
+    }
   }
 }

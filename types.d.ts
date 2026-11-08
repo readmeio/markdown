@@ -229,15 +229,24 @@ export interface Anchor extends Node {
   type: NodeTypes.anchor;
 }
 
+export interface NoTranslate extends Node {
+  children: PhrasingContent[];
+  data: Data & { hName: 'NoTranslate' };
+  position?: Position;
+  type: NodeTypes.noTranslate;
+}
+
 declare module 'mdast' {
-  // eslint-disable-next-line @typescript-eslint/no-shadow -- augmenting mdast's `Data` requires reusing the name
   interface Data {
-    /**
-     * Marks the root of a re-parsed subtree: this node's and its descendants' positions
-     * index into this string rather than the document. Resolve a node's source from its
-     * nearest stamped self-or-ancestor; unstamped means `parserReadyContent`.
-     */
-    reparseSource?: string;
+    /** Set by a dedicated tokenizer (`lib/micromark/no-translate`) on an html node that holds a whole tag. */
+    tokenized?: boolean;
+  }
+
+  interface TableData {
+    /** Authored as lowercase `<table>`; the serializer keeps that spelling when there is no alignment to encode. */
+    lowercaseTable?: boolean;
+    /** Per-column CSS widths (`"30%"`, `"200px"`), indexed like `align`. */
+    widths?: (string | null)[];
   }
 
   interface BlockContentMap {
@@ -258,14 +267,14 @@ declare module 'mdast' {
   interface PhrasingContentMap {
     [NodeTypes.anchor]: Anchor;
     [NodeTypes.emoji]: Gemoji;
-    [NodeTypes.i]: FaEmoji;
     [NodeTypes.glossary]: Glossary;
-    [NodeTypes.variable]: Variable;
+    [NodeTypes.i]: FaEmoji;
+    [NodeTypes.noTranslate]: NoTranslate;
     [NodeTypes.plain]: Plain;
+    [NodeTypes.variable]: Variable;
   }
 
   interface RootContentMap {
-    Link: Embed | Link;
     [NodeTypes.anchor]: Anchor;
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
@@ -276,12 +285,14 @@ declare module 'mdast' {
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.imageBlock]: ImageBlock;
+    [NodeTypes.noTranslate]: NoTranslate;
     [NodeTypes.plain]: Plain;
     [NodeTypes.recipe]: Recipe;
     [NodeTypes.reusableContent]: ReusableContent;
     [NodeTypes.tableau]: Tableau;
     [NodeTypes.tutorialTile]: Recipe;
     [NodeTypes.variable]: Variable;
+    Link: Embed | Link;
   }
 }
 
@@ -297,7 +308,7 @@ interface TocList extends Element {
 
 interface Variables {
   defaults: { default: string; name: string }[];
-  user: Record<string, string>;
+  user: Record<string, unknown>;
 }
 
 interface TocListItem extends Element {

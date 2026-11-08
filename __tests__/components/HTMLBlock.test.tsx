@@ -2,7 +2,6 @@ import '@testing-library/jest-dom';
 import { render, screen, cleanup } from '@testing-library/react';
 import React from 'react';
 import { renderToStaticMarkup, renderToString } from 'react-dom/server';
-
 import { vi, type Mock } from 'vitest';
 
 import HTMLBlock from '../../components/HTMLBlock';
@@ -26,6 +25,12 @@ describe('HTML Block', () => {
     expect(g.mockFn).toHaveBeenCalledTimes(1);
   });
 
+  it('runs user scripts once in compat mode, not again on rerender', () => {
+    const { rerender } = render(<HTMLBlock runScripts={true}>{'<script>mockFn()</script>'}</HTMLBlock>);
+    rerender(<HTMLBlock runScripts={true}>{'<script>mockFn()</script>'}</HTMLBlock>);
+    expect(g.mockFn).toHaveBeenCalledTimes(1);
+  });
+
   it("doesn't run user scripts by default", () => {
     render(<HTMLBlock>{'<script>mockFn()</script>'}</HTMLBlock>);
     expect(g.mockFn).toHaveBeenCalledTimes(0);
@@ -41,9 +46,58 @@ describe('HTML Block', () => {
     expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
   });
 
+  it('runs a script whose end tag has trailing junk when runScripts is set', () => {
+    const { container } = render(
+      <HTMLBlock runScripts={true}>{'<p>ok</p><script>mockFn()</script\t\n bar>'}</HTMLBlock>,
+    );
+    expect(g.mockFn).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('script')).toBeNull();
+    expect(screen.getByText('ok')).toBeInTheDocument();
+  });
+
   it("doesn't render user scripts with a malicious string", () => {
-    render(<HTMLBlock>{'<scrip<script></script>t>mockFn()</s<script></script>cript>'}</HTMLBlock>);
+    const { container } = render(
+      <HTMLBlock>{'<scrip<script></script>t>mockFn()</s<script></script>cript>'}</HTMLBlock>,
+    );
     expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
+    expect(container.querySelector('script')).toBeNull();
+    expect(container.querySelector('.rdmd-html')?.innerHTML).toBe('');
+  });
+
+  it('runs first-pass scripts in order and does not run a tag the cut assembles', () => {
+    const html = `<scr<script>mockFn('X')</script>ipt>mockFn('A')</script><script>mockFn('B')</script>`;
+    const { container } = render(<HTMLBlock runScripts={true}>{html}</HTMLBlock>);
+    expect(g.mockFn).toHaveBeenNthCalledWith(1, 'X');
+    expect(g.mockFn).toHaveBeenNthCalledWith(2, 'B');
+    expect(g.mockFn).toHaveBeenCalledTimes(2);
+    expect(container.querySelector('script')).toBeNull();
+    expect(container.querySelector('.rdmd-html')?.innerHTML).toBe('');
+  });
+
+  it('removes a script revealed by stripping an inner script tag without running it', () => {
+    const { container } = render(
+      <HTMLBlock runScripts={true}>{'<scrip<script></script>t>mockFn()</script>'}</HTMLBlock>,
+    );
+    expect(g.mockFn).not.toHaveBeenCalled();
+    expect(container.querySelector('script')).toBeNull();
+  });
+
+  it('does not treat </script-example> as the end of a script', () => {
+    const { container } = render(
+      <HTMLBlock runScripts={true}>
+        {'<script>const marker = "</script-example>"; mockFn();</script><p>after</p>'}
+      </HTMLBlock>,
+    );
+    expect(g.mockFn).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('script')).toBeNull();
+    expect(screen.getByText('after')).toBeInTheDocument();
+    expect(screen.queryByText(/marker|script-example/)).not.toBeInTheDocument();
+  });
+
+  it('leaves custom elements whose names start with script', () => {
+    render(<HTMLBlock>{'<script-example>keep</script-example><scripting>also</scripting>'}</HTMLBlock>);
+    expect(screen.getByText('keep')).toBeInTheDocument();
+    expect(screen.getByText('also')).toBeInTheDocument();
   });
 
   // A non-string child must never throw can appear if the user does not enclose

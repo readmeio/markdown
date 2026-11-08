@@ -4,6 +4,7 @@ import { buildJsx } from 'estree-util-build-jsx';
 import { toJs } from 'estree-util-to-js';
 
 import { evaluate, jsxAcornParser } from '../../../processor/utils';
+import { componentNamePattern } from '../../constants';
 
 const parseExpression = (expression: string): Program =>
   jsxAcornParser.parse(expression, { ecmaVersion: 'latest', sourceType: 'module' }) as Program;
@@ -19,6 +20,49 @@ const containsJsxNode = (value: unknown): boolean => {
   const { type } = value as { type?: unknown };
   if (type === 'JSXElement' || type === 'JSXFragment') return true;
   return Object.values(value).some(containsJsxNode);
+};
+
+const jsxElementName = (name: unknown): string | undefined => {
+  if (name === null || typeof name !== 'object') return undefined;
+  const node = name as { name?: unknown; type?: string };
+
+  if (node.type !== 'JSXIdentifier' || typeof node.name !== 'string') return undefined;
+  return componentNamePattern.test(node.name) ? node.name : undefined;
+};
+
+/**
+ * Collect the component names an expression uses as JSX tags. Parsed rather than pattern
+ * matched: `{count < Max ? <Foo/> : <Bar/>}` puts a capitalized name straight after a `<` without
+ * it being a tag, and only the parser can tell the two apart. Unparseable input yields nothing —
+ * evaluation is about to throw on it anyway.
+ */
+export const jsxComponentNames = (expression: string): string[] => {
+  let program: Program;
+  try {
+    program = parseExpression(expression);
+  } catch {
+    return [];
+  }
+
+  const names = new Set<string>();
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      value.forEach(walk);
+      return;
+    }
+    if (value === null || typeof value !== 'object') return;
+
+    const node = value as { name?: unknown; type?: string };
+    if (node.type === 'JSXOpeningElement') {
+      const name = jsxElementName(node.name);
+      if (name) names.add(name);
+    }
+
+    Object.values(node).forEach(walk);
+  };
+
+  walk(program);
+  return Array.from(names);
 };
 
 /** Convert a program's JSX into `React.createElement` calls and evaluate it. `scope` must provide `React`. */

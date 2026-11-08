@@ -1,6 +1,223 @@
 Changelog
 ===
 
+## Version 16.2.0
+### ✨ New & Improved
+
+* **mdxish:** add markdown fragment re-parser that maps positions to the document ([#1656](https://github.com/readmeio/markdown/issues/1656)) ([2113176](https://github.com/readmeio/markdown/commit/21131767145553c0a8c91cc388b81231a5071882)), closes [#1657](https://github.com/readmeio/markdown/issues/1657) [#1658](https://github.com/readmeio/markdown/issues/1658)
+* **mdxish:** map re-parsed positions to the document and drop reparseSource stamps ([#1657](https://github.com/readmeio/markdown/issues/1657)) ([dc2a865](https://github.com/readmeio/markdown/commit/dc2a8654b18479c6de06ff5981e205b69a111a9d))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** give magic block output and Glossary elements source positions ([#1658](https://github.com/readmeio/markdown/issues/1658)) ([2c65ed9](https://github.com/readmeio/markdown/commit/2c65ed90f52bf6e6b00751e6b533949451682107))
+
+## Version 16.1.0
+### ✨ New & Improved
+
+* **tabs:** support anchors inside tabs ([#1668](https://github.com/readmeio/markdown/issues/1668)) ([3e14638](https://github.com/readmeio/markdown/commit/3e14638bab7b8c4dea6a749ee862bff80641df97))
+
+### 🛠 Fixes & Updates
+
+* **styles:** stop sass emitting a BOM that breaks the img-align-right selector ([#1667](https://github.com/readmeio/markdown/issues/1667)) ([018e1a8](https://github.com/readmeio/markdown/commit/018e1a85872676a3fcee6dd14cf265faa905c32b))
+
+## Version 16.0.0
+### ⚠ BREAKING CHANGES
+
+* **owlmoji:** CHANGE: `Owlmoji.owlmoji` is removed from the main entry.
+Import the catalog with `import { owlmojiDetails } from
+'@readme/markdown/owlmoji-details'`.
+
+## 🧪 QA tips
+
+<!-- Unique code decisions, code walkthroughs, how to test them -->
+
+- [ ] `npm run build:verify` passes, including the new owlmoji guard (it
+fails against the base bundle).
+- [ ] `:joy:` still renders as 😂 and `:owlbert:` as its image, covered
+by `__tests__/parsers/gemoji.test.ts` and
+`__tests__/lib/owlmoji.test.ts`.
+- [ ] Consumer side (readme monorepo PR to follow): `ui/Owlmoji`,
+`ui/EmojiPicker` and the MdxishEditor `EmojiMenu` switch from
+`Owlmoji.owlmoji` to `owlmojiDetails`.
+
+## 📸 Screenshot or Loom
+
+<!-- all PRs should have a Loom or screenshot! -->
+
+N/A, bundling change only.
+
+* **owlmoji:** keep gemoji's catalog out of the main browser bundle ([#1664](https://github.com/readmeio/markdown/issues/1664)) ([185bb66](https://github.com/readmeio/markdown/commit/185bb6681dce040f32e16132d693ec8aa26b0d80))
+
+### 🛠 Fixes & Updates
+
+* **TailwindStyle:** apply the stylesheet before first paint ([#1661](https://github.com/readmeio/markdown/issues/1661)) ([0ae0382](https://github.com/readmeio/markdown/commit/0ae0382e83bcce4e16872174a378e9f3cbaa5b28))
+
+## Version 15.12.0
+### ✨ New & Improved
+
+* **mermaid:** extract mermaid and add pan and zoom controls ([#1647](https://github.com/readmeio/markdown/issues/1647)) ([4253abd](https://github.com/readmeio/markdown/commit/4253abdcce80e3296b0b5ab96938269241eb1300))
+* **contexts:** move copyButtons into a shared render config context ([#1654](https://github.com/readmeio/markdown/issues/1654)) ([ad67380](https://github.com/readmeio/markdown/commit/ad67380346bb3355dce207295c6e84289c36d84d)), closes [#1647](https://github.com/readmeio/markdown/issues/1647)
+
+## Version 15.11.0
+### ✨ New & Improved
+
+* **mdxish:** add a micromark tokenizer for the <NoTranslate> tag ([#1651](https://github.com/readmeio/markdown/issues/1651)) ([9713447](https://github.com/readmeio/markdown/commit/97134470c70e9362a4f5cfca24b98bc7301fc061)), closes [#1645](https://github.com/readmeio/markdown/issues/1645) [#1652](https://github.com/readmeio/markdown/issues/1652) [#1645](https://github.com/readmeio/markdown/issues/1645)
+* **mdxish:** add inline <NoTranslate> do-not-translate tag ([#1645](https://github.com/readmeio/markdown/issues/1645)) ([374d0b5](https://github.com/readmeio/markdown/commit/374d0b50d0b5c9c8320e93f990587ae24d955d0a)), closes [#1651](https://github.com/readmeio/markdown/issues/1651) [#1652](https://github.com/readmeio/markdown/issues/1652)
+* **mdxish:** parse, render and save the <NoTranslate> tag ([#1652](https://github.com/readmeio/markdown/issues/1652)) ([fbb9223](https://github.com/readmeio/markdown/commit/fbb9223c7e9fc5ac88f678902a3a622f84e79cca)), closes [#1651](https://github.com/readmeio/markdown/issues/1651) [#1645](https://github.com/readmeio/markdown/issues/1645)
+
+## Version 15.10.1
+### 🛠 Fixes & Updates
+
+* **cards:** scroll a fixed-column grid inside itself instead of widening the page ([#1648](https://github.com/readmeio/markdown/issues/1648)) ([46a6fa2](https://github.com/readmeio/markdown/commit/46a6fa2a62848e4ca47a385f20050abe43e10db9)), closes [readmeio/readme#21752](https://github.com/readmeio/readme/issues/21752)
+* stop an empty list line rendering as a doubled bullet in view mode ([#1660](https://github.com/readmeio/markdown/issues/1660)) ([b5aaf71](https://github.com/readmeio/markdown/commit/b5aaf71fa008edec7ced4063d8d8a6f6b51ad375))
+
+## Version 15.10.0
+### ✨ New & Improved
+
+* **mdxish:** RM-18626 support custom heading anchors with {[#id](https://github.com/readmeio/markdown/issues/id)} ([#1640](https://github.com/readmeio/markdown/issues/1640)) ([acac14f](https://github.com/readmeio/markdown/commit/acac14f1e6ba372d728c9407ac713441460af2a9)), closes [readmeio/ai#1309](https://github.com/readmeio/ai/issues/1309)
+
+## Version 15.9.4
+### 🛠 Fixes & Updates
+
+* **variables:** resolve {user.*} syntax in markdown image alt text ([#1639](https://github.com/readmeio/markdown/issues/1639)) ([b132c85](https://github.com/readmeio/markdown/commit/b132c8580801214ee5d209423f6d1aced812b6e4)), closes [#1638](https://github.com/readmeio/markdown/issues/1638) [#1638](https://github.com/readmeio/markdown/issues/1638)
+* **variables:** resolve <<variable>> syntax in markdown image alt text ([#1638](https://github.com/readmeio/markdown/issues/1638)) ([86347af](https://github.com/readmeio/markdown/commit/86347af16f03d8262b794b9cebfae80fa28b9e1b)), closes [#1639](https://github.com/readmeio/markdown/issues/1639)
+
+## Version 15.9.3
+### 🛠 Fixes & Updates
+
+* **mdxish:** resolve variables in composite attribute expressions ([#1646](https://github.com/readmeio/markdown/issues/1646)) ([8bcbe26](https://github.com/readmeio/markdown/commit/8bcbe2668daa74819a7ba2eb500930fc169d2dee))
+
+## Version 15.9.2
+### 🛠 Fixes & Updates
+
+* **deps:** bump source-map-js from 1.2.1 to 1.2.2 ([#1635](https://github.com/readmeio/markdown/issues/1635)) ([849cc34](https://github.com/readmeio/markdown/commit/849cc34f97a1c8dacf8d4d92c8061922b0e3467c))
+* **html-block:** stop rerunning scripts on every rerender ([#1641](https://github.com/readmeio/markdown/issues/1641)) ([66098a5](https://github.com/readmeio/markdown/commit/66098a550be57ac51ab67e309dd27181f75e64e9)), closes [readmeio/readme#21367](https://github.com/readmeio/readme/issues/21367)
+* **accordion:** stop Safari showing a second dropdown arrow ([#1644](https://github.com/readmeio/markdown/issues/1644)) ([895b165](https://github.com/readmeio/markdown/commit/895b1656585f49edcd27eaa2f0d479f7c8284f13))
+
+## Version 15.9.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** keep cleared callout icons cleared and color fa icons in view mode ([#1632](https://github.com/readmeio/markdown/issues/1632)) ([15377f9](https://github.com/readmeio/markdown/commit/15377f9df1ab4fd59543a22349955d5713d90668)), closes [readmeio/readme#21330](https://github.com/readmeio/readme/issues/21330) [readmeio/readme#21330](https://github.com/readmeio/readme/issues/21330)
+* **mdxish:** keep reparseSource stamp on tables nested in components ([#1631](https://github.com/readmeio/markdown/issues/1631)) ([fc5b2ab](https://github.com/readmeio/markdown/commit/fc5b2ab04ea8dadb9d31bb0ebd4dc544a0ab078e))
+* **mdxish:** map table positions through blockquote and list prefixes ([#1634](https://github.com/readmeio/markdown/issues/1634)) ([02ca7d4](https://github.com/readmeio/markdown/commit/02ca7d42a4a637a809849364e6a613fdf548e48d)), closes [#1631](https://github.com/readmeio/markdown/issues/1631)
+
+## Version 15.9.0
+### ✨ New & Improved
+
+* **mdxish:** round-trip table column widths through JSX <Table> ([#1619](https://github.com/readmeio/markdown/issues/1619)) ([76dfe93](https://github.com/readmeio/markdown/commit/76dfe93567cd24b3b5200d9cae7ff0cd18c58fad))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** render html blocks escaped in safeMode ([#1629](https://github.com/readmeio/markdown/issues/1629)) ([c48ce6e](https://github.com/readmeio/markdown/commit/c48ce6e29dab6841ad6b602e003ac39e88b5f2ae))
+
+## Version 15.8.0
+### ✨ New & Improved
+
+* add opt-in sanitize option to strip script tags ([#1574](https://github.com/readmeio/markdown/issues/1574)) ([bf61853](https://github.com/readmeio/markdown/commit/bf61853ed38ac4dce12d9c1d458b60acc9eb0af2)), closes [readmeio/readme#20204](https://github.com/readmeio/readme/issues/20204)
+
+### 🛠 Fixes & Updates
+
+* **callout:** keep code block and columns gap from doubling inside callouts ([#1628](https://github.com/readmeio/markdown/issues/1628)) ([71fb43e](https://github.com/readmeio/markdown/commit/71fb43e9faf8f902d8d84a8aa84bf294a76b5d8f)), closes [#1627](https://github.com/readmeio/markdown/issues/1627)
+
+## Version 15.7.3
+### 🛠 Fixes & Updates
+
+* **callout:** space margin-less blocks like tables inside callouts ([#1627](https://github.com/readmeio/markdown/issues/1627)) ([5668182](https://github.com/readmeio/markdown/commit/5668182667ba3ec7d47a835552e15139d7b184c4))
+
+## Version 15.7.2
+### 🛠 Fixes & Updates
+
+* **callout:** keep list-leading body beside the floated icon ([#1624](https://github.com/readmeio/markdown/issues/1624)) ([fd64bad](https://github.com/readmeio/markdown/commit/fd64bad90c45649eb43b61f78453bf7bfd161f99)), closes [#825](https://github.com/readmeio/markdown/issues/825)
+
+## Version 15.7.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** keep components under list items claimed across lazy lines ([#1621](https://github.com/readmeio/markdown/issues/1621)) ([1a7e823](https://github.com/readmeio/markdown/commit/1a7e823d4af206ba324424153f2d32e577f2581f))
+* **MdxishEditor:** self closing components under a list having its closing tag trimmed  ([#1622](https://github.com/readmeio/markdown/issues/1622)) ([0e1e8fd](https://github.com/readmeio/markdown/commit/0e1e8fdb78bbb0392ce3327d39c6a91663e050c4)), closes [#1621](https://github.com/readmeio/markdown/issues/1621)
+
+## Version 15.7.0
+### ✨ New & Improved
+
+* **MdxishEditor:** retain lowercase <table> syntax during serialization ([#1620](https://github.com/readmeio/markdown/issues/1620)) ([7457885](https://github.com/readmeio/markdown/commit/7457885ebe103fac32919d1cd453920becf9204c))
+* show three heading levels in the table of contents ([#1615](https://github.com/readmeio/markdown/issues/1615)) ([474c005](https://github.com/readmeio/markdown/commit/474c005934c952ce46afea6f4a4cb8c62f200d24))
+
+## Version 15.6.0
+### ✨ New & Improved
+
+* **mdxish:** serialize parser-produced trees through the mdxish dialect ([#1618](https://github.com/readmeio/markdown/issues/1618)) ([7986e7d](https://github.com/readmeio/markdown/commit/7986e7d98785eee18c5a052ca064c702a0e5ce82)), closes [readmeio/ai#1130](https://github.com/readmeio/ai/issues/1130)
+
+## Version 15.5.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** keep multi-line JSX expressions in one block ([#1609](https://github.com/readmeio/markdown/issues/1609)) ([5cbdafd](https://github.com/readmeio/markdown/commit/5cbdafd5d668a10918d7040f61aa51c9223363a7))
+* resolve variables inside single-line block HTML tags ([#1614](https://github.com/readmeio/markdown/issues/1614)) ([08c0b50](https://github.com/readmeio/markdown/commit/08c0b50505223a61f0ee70d5001f2d204b89b2e8))
+
+## Version 15.5.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** keep inline <Image> inline under the tailwind wrapper ([#1616](https://github.com/readmeio/markdown/issues/1616)) ([9e9772f](https://github.com/readmeio/markdown/commit/9e9772f64144e8032380d5c57d98d538527821b8))
+* repair broken table follow-up ([#1613](https://github.com/readmeio/markdown/issues/1613)) ([87b62b8](https://github.com/readmeio/markdown/commit/87b62b8193528aa8ec2ca5e42ebfc8c79ea64625))
+
+## Version 15.5.0
+### ✨ New & Improved
+
+* **tabs:** restart GIF playback when a tab is selected ([#1606](https://github.com/readmeio/markdown/issues/1606)) ([59b7d72](https://github.com/readmeio/markdown/commit/59b7d7270eb419cd1e4b401e12fdbff438b1a032))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** harden mdx attribute regex & removed unused transformers ([#1610](https://github.com/readmeio/markdown/issues/1610)) ([1720cf1](https://github.com/readmeio/markdown/commit/1720cf1a6e2c94d0971253881c9d50e449d11c8c))
+* keep escaped block markers in GFM table cells in roundtrips ([#1607](https://github.com/readmeio/markdown/issues/1607)) ([5f436d5](https://github.com/readmeio/markdown/commit/5f436d53b9650009e4fa6ef4a1e4ad6f0352f0c2)), closes [#1546](https://github.com/readmeio/markdown/issues/1546)
+* **mdxish:** resolve components and user variables in expression scope ([#1603](https://github.com/readmeio/markdown/issues/1603)) ([1f308a7](https://github.com/readmeio/markdown/commit/1f308a7df3f4fcfdd2460efd4f696c02283bee30))
+
+## Version 15.4.0
+### ✨ New & Improved
+
+* support scoping the dark: variant to a root selector in tailwindCompiler ([#1608](https://github.com/readmeio/markdown/issues/1608)) ([df0f409](https://github.com/readmeio/markdown/commit/df0f4092bb2bc4e382cef300d603e17f8c165a50)), closes [#1596](https://github.com/readmeio/markdown/issues/1596)
+
+## Version 15.3.0
+### ✨ New & Improved
+
+* **mdxish:** optional support for new line breaks ([#1602](https://github.com/readmeio/markdown/issues/1602)) ([9c7f6c5](https://github.com/readmeio/markdown/commit/9c7f6c5b7cdb0e59c69904e02bc524b1dcaae7af))
+* **mdxish:** render deprecated html tags instead of dropping them ([#1599](https://github.com/readmeio/markdown/issues/1599)) ([8f76c28](https://github.com/readmeio/markdown/commit/8f76c2806286ad2ed856a122ba31c09452cc7909))
+
+## Version 15.2.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** anchor serialization throwing when there are readme node children ([#1601](https://github.com/readmeio/markdown/issues/1601)) ([635ca8f](https://github.com/readmeio/markdown/commit/635ca8fe4c6dadb8fe14bbe25fea32759063abb4))
+
+## Version 15.2.0
+### ✨ New & Improved
+
+* preserve per-list bullet markers in mdxishMdastToMd ([#1595](https://github.com/readmeio/markdown/issues/1595)) ([2a453bd](https://github.com/readmeio/markdown/commit/2a453bd9adfe91f6c93a21b25eda31fc7906ddde))
+
+### 🛠 Fixes & Updates
+
+* **deps:** patch Dependabot security vulnerabilities ([#1600](https://github.com/readmeio/markdown/issues/1600)) ([14fbea0](https://github.com/readmeio/markdown/commit/14fbea010bc74baca2ecee630595b04bbcb82a2a))
+* **mdxish:** repair mistaken table closers ([#1597](https://github.com/readmeio/markdown/issues/1597)) ([c82dfec](https://github.com/readmeio/markdown/commit/c82dfec92041fbff1bcba30a4ceeb98b5ca64118))
+
+## Version 15.1.0
+### ✨ New & Improved
+
+* update dark mode mixin ([#1596](https://github.com/readmeio/markdown/issues/1596)) ([ee22605](https://github.com/readmeio/markdown/commit/ee226051d78a249e5deba1b48a8b913a265f8607))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** bound loose-emphasis normalization scans to stay linear ([#1594](https://github.com/readmeio/markdown/issues/1594)) ([09f5022](https://github.com/readmeio/markdown/commit/09f502250c032b72689ee9a9b4782b987befe3da))
+
+## Version 15.0.2
+### 🛠 Fixes & Updates
+
+* **editor:** add spacing between items inside of tabs ([#1590](https://github.com/readmeio/markdown/issues/1590)) ([a1dbd12](https://github.com/readmeio/markdown/commit/a1dbd1251012eb4e2586ac64053abc7f4c4f85d8))
+* propagate safeMode thru components ([#1593](https://github.com/readmeio/markdown/issues/1593)) ([87761af](https://github.com/readmeio/markdown/commit/87761afbe4c62d2389f5a27d480ef3ff1db59f6b))
+* resolve attribute expressions without executing them ([#1585](https://github.com/readmeio/markdown/issues/1585)) ([50441cf](https://github.com/readmeio/markdown/commit/50441cf2d18de26f824ecc8849f2687edb990406))
+* support structured user variables ([#1488](https://github.com/readmeio/markdown/issues/1488)) ([279c200](https://github.com/readmeio/markdown/commit/279c200077010290432056d5857e67415080cfd4)), closes [mdx-renderer#317](https://github.com/readmeio/mdx-renderer/issues/317)
+
+## Version 15.0.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** improve perf of parsing large HTMLBlocks ([#1578](https://github.com/readmeio/markdown/issues/1578)) ([def4f92](https://github.com/readmeio/markdown/commit/def4f92a74f9cd4254eed964a6ff5c3e5cab3b69))
+* stripped bullet list indent in a jsx block  ([#1583](https://github.com/readmeio/markdown/issues/1583)) ([feed88f](https://github.com/readmeio/markdown/commit/feed88fe6162e3cf8bdaafead13f4699c9882881))
+
 ## Version 15.0.0
 ### ⚠ BREAKING CHANGES
 

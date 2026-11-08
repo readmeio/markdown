@@ -55,6 +55,28 @@ This is phrasing: <Inline />
     });
   });
 
+  // Tag names never depend on evaluated attribute values, so `tags()` always parses in safeMode
+  // rather than exposing every caller to `new Function`. (GHSA-2prv-4jff-x46g)
+  describe('attribute expressions are never evaluated', () => {
+    // Uses a known component (`Callout`) because the readme-components transformer only reads
+    // attributes off names it recognizes — an arbitrary tag never reaches `getAttrs()`. Its
+    // evaluated attributes were then thrown away, making the eval a pure side effect of parsing.
+    it('does not evaluate an attribute expression', () => {
+      globalThis.rmdxTagCanary = false;
+      tags('<Callout icon={(globalThis.rmdxTagCanary = true)} />');
+
+      expect(globalThis.rmdxTagCanary).toBe(false);
+    });
+
+    it('does not throw when an attribute expression references an undefined global', () => {
+      expect(() => tags('<Callout icon={process.env.SOME_CANARY} />')).not.toThrow();
+    });
+
+    it('still returns tag names for expression-valued attributes', () => {
+      expect(tags('<Component value={1 + 1} />')).toStrictEqual(['Component']);
+    });
+  });
+
   describe('nested components', () => {
     it('captures nested components', () => {
       const mdx = '<Component><NestedComponent /></Component>';

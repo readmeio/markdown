@@ -1,19 +1,21 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Root as HastRoot } from 'hast';
-import type { Node, Root as MdastRoot, Root } from 'mdast';
+import type { Heading, Node, Root as MdastRoot, Root, Text } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression, MdxjsEsm } from 'mdast-util-mdx';
 import type {
   MdxJsxAttribute,
   MdxJsxAttributeValueExpression,
   MdxJsxAttributeValueExpressionData,
 } from 'mdast-util-mdx-jsx';
-import type { Point } from 'unist';
+import type { Position } from 'unist';
 
-import { decodeHTMLStrict } from 'entities';
+import { decodeHTMLStrict } from 'entities/decode';
 import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
+import { HEADING_ID_CHAR } from '../lib/micromark/heading-id/syntax';
 import { jsxAcornParser } from '../lib/utils/jsx-acorn-parser';
+import { evaluateLiteralExpression } from '../lib/utils/literal-expression';
 
 export { jsxAcornParser };
 
@@ -38,22 +40,6 @@ export function evaluate(source: string, scope: Record<string, unknown> = {}) {
   // eslint-disable-next-line no-new-func
   return new Function(...names, `return (${source})`)(...values);
 }
-
-/**
- * Advance a `Point` by the `consumed` substring that follows it, returning the
- * point at the consumed string's end. Lets split-out sub-nodes carry accurate
- * document positions so downstream offset shifting stays correct.
- */
-export const pointAfter = (start: Point, consumed: string): Point => {
-  const newlineIndex = consumed.lastIndexOf('\n');
-  const newlineCount = newlineIndex === -1 ? 0 : consumed.split('\n').length - 1;
-  return {
-    line: start.line + newlineCount,
-    // Same line → advance the base column; a later line → column is the run since its newline.
-    column: newlineCount === 0 ? start.column + consumed.length : consumed.length - newlineIndex,
-    offset: (start.offset ?? 0) + consumed.length,
-  };
-};
 
 /**
  * Formats the hProperties of a node as a string, so they can be compiled back into JSX/MDX.
@@ -104,6 +90,25 @@ export const getHPropKeys = <T>(node: Node): string[] => {
   return Object.keys(hProps) || [];
 };
 
+/** Turn a non-renderable evaluation result into a text node. */
+export const createTextNode = (result: unknown, position: Position | undefined): Text => {
+  if (result === null || result === undefined) return { type: 'text', value: '', position };
+  if (typeof result === 'object') return { type: 'text', value: JSON.stringify(result), position };
+  return { type: 'text', value: String(result), position };
+};
+
+const HEADING_ID_REGEX = new RegExp(`^${HEADING_ID_CHAR}+$`, 'u');
+
+/**
+ * The id a heading's trailing `{#id}` set, when it is one the `{#id}` syntax can spell.
+ *
+ * Ids may use letters, numbers, `-`, `_`, `.` and `:`; anything else, like `x y`, is dropped.
+ */
+export const explicitHeadingId = (node: Heading): string | undefined => {
+  const id = node.data?.hProperties?.id;
+  return typeof id === 'string' && HEADING_ID_REGEX.test(id) ? id : undefined;
+};
+
 /**
  * Gets the attributes of an MDX element and returns them as an object of hProperties.
  *
@@ -119,8 +124,10 @@ export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
       } else if (typeof attr.value === 'string') {
         memo[attr.name] = decodeHTMLStrict(attr.value);
       } else if (attr.value?.value !== undefined) {
+        // Expression values only survive to here when safeMode is off; `flattenAttributeExpressions`
+        // rewrites them to plain strings at the head of the pipeline otherwise.
         try {
-          memo[attr.name] = evaluate(attr.value.value);
+          memo[attr.name] = evaluateLiteralExpression(attr.value.value);
         } catch {
           memo[attr.name] = attr.value.value;
         }
@@ -169,6 +176,8 @@ export const isMDXEsm = (node: Node): node is MdxjsEsm => {
   return node.type === 'mdxjsEsm';
 };
 
+export const isText = (node: Node): node is Text => node.type === 'text';
+
 /**
  * Takes an HTML string and formats it for display in the editor. Removes leading/trailing newlines
  * and unindents the HTML.
@@ -207,8 +216,7 @@ export function formatHtmlForMdxish(html: string, openingTagIndent = 0): string 
   // which is invalid javascript and will cause error
   cleaned = cleaned.replace(
     /(<(pre|code)\b[^>]*>)([\s\S]*?)(<\/\2>)/gi,
-    (_m, open: string, _tag: string, inner: string, close: string) =>
-      open + inner.replace(/\\n/g, '\n') + close,
+    (_m, open: string, _tag: string, inner: string, close: string) => open + inner.replace(/\\n/g, '\n') + close,
   );
 
   // Unescape backticks: \` -> ` (users escape backticks in template literals)
@@ -243,7 +251,6 @@ export const formatHTML = (html: string): string => {
   // Remove leading/trailing backticks if present, since they're used to keep the HTML
   // from being parsed prematurely
   if (html.startsWith('`') && html.endsWith('`')) {
-    // eslint-disable-next-line no-param-reassign
     html = html.slice(1, -1);
   }
   // Removes the leading/trailing newlines
@@ -339,7 +346,6 @@ export const toAttributes = (object: Record<string, unknown>, keys: string[] = [
 export const hasNamedExport = (tree: HastRoot | MdastRoot, name: string): boolean => {
   let hasExport = false;
 
-  // eslint-disable-next-line consistent-return
   visit(tree, 'mdxjsEsm', node => {
     if (
       'declaration' in node.data.estree.body[0] &&
