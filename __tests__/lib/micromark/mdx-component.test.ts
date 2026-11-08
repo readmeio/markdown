@@ -37,7 +37,7 @@ const htmlValues = (doc: string) => {
 };
 
 describe('RM-16375 unquoted native HTML attributes', () => {
-  it.each(['Pass <key=value> to the CLI.', 'Compare <a = b> and <c = d>.'])(
+  it.each(['Pass <key=value> to the CLI.', 'Compare <a = b> and <c = d>.', 'Pass <input.value=foo> to the CLI.'])(
     'does not claim tag-like prose: %s',
     source => {
       expect(claimedComponents(source)).toStrictEqual([]);
@@ -61,6 +61,17 @@ describe('RM-16375 unquoted native HTML attributes', () => {
   ])('claims %s input and emits the expected MDAST shape', (_context, source, claims, types) => {
     expect(claimedComponents(source)).toStrictEqual(claims);
     expect(mdastTypes(parseMdast(source))).toStrictEqual(types);
+  });
+
+  it('keeps a brace-bearing lowercase tag as one JSX element', () => {
+    const source = '<a title={"name"} href=https://example.com?a=b>Example</a>';
+    expect(claimedComponents(source)).toStrictEqual([source]);
+  });
+
+  it.each(['pre', 'script', 'textarea'])('leaves a raw <%s> body to html-flow', tag => {
+    const source = `<${tag} class=x>\`</${tag}>\`\n\n# Heading\n\n</${tag}>`;
+    expect(claimedComponents(source)).toStrictEqual([]);
+    expect(mdastTypes(parseMdast(source))).toContain('heading');
   });
 
   it.each([

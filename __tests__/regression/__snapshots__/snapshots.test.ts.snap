@@ -1376,6 +1376,23 @@ exports[`Render engine regressions tests > unclosed-tags (mdxish) 1`] = `
 "
 `;
 
+exports[`Render engine regressions tests > unquoted-html-attributes (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > unquoted-html-attributes (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="unquoted-html-attributes"></div><div class="heading-text">Unquoted HTML attributes</div><a aria-label="Skip link to Unquoted HTML attributes" class="heading-anchor-icon fa fa-regular fa-anchor" href="#unquoted-html-attributes"></a></h1>
+<p>Read the <a href="https://example.com/docs#start" target="" title="">docs</a> before you start.</p>
+<p><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img  " height="auto" loading="lazy" src="https://example.com/image.png" title="" width="auto"/></span></span></p>
+<p><span class="badge">Beta</span> and <a href="/relative/path" target="" title="">a relative link</a>.</p>
+<div data-url="https://example.com">
+<p>A paragraph inside a block tag.</p>
+</div>
+<p>Pass &lt;input.value=foo&gt; to the CLI, or &lt;key=value&gt;, or compare &lt;a = b&gt;.</p>
+<a href="https://example.com?a=b" target="" title="name">Mixed brace and unquoted</a>
+<pre class="x">\`</pre>\`
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="heading-after-a-raw-tag"></div><div class="heading-text">Heading after a raw tag</div><a aria-label="Skip link to Heading after a raw tag" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading-after-a-raw-tag"></a></h2>
+"
+`;
+
 exports[`Render engine regressions tests > variables-everywhere (mdx) 1`] = `""`;
 
 exports[`Render engine regressions tests > variables-everywhere (mdxish) 1`] = `
