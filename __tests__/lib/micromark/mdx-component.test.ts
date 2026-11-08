@@ -15,7 +15,11 @@ const LINK = `${LINK_OPEN}Example</a>`;
 const FLOW = '<div data-url=https://example.com>\nExample\n</div>';
 
 const claimedComponents = (source: string): string[] =>
-  postprocess(parse({ extensions: [mdxComponent()] }).document().write(preprocess()(source, 'utf8', true)))
+  postprocess(
+    parse({ extensions: [mdxComponent()] })
+      .document()
+      .write(preprocess()(source, 'utf8', true)),
+  )
     .filter(([event, token]: Event) => event === 'enter' && token.type === 'mdxComponent')
     .map(([, token]: Event) => source.slice(token.start.offset, token.end.offset));
 
@@ -33,13 +37,13 @@ const htmlValues = (doc: string) => {
 };
 
 describe('RM-16375 unquoted native HTML attributes', () => {
-  it.each([
-    'Pass <key=value> to the CLI.',
-    'Compare <a = b> and <c = d>.',
-  ])('does not claim tag-like prose: %s', source => {
-    expect(claimedComponents(source)).toStrictEqual([]);
-    expect(mdastTypes(parseMdast(source))).toStrictEqual(['root', 'paragraph', 'text']);
-  });
+  it.each(['Pass <key=value> to the CLI.', 'Compare <a = b> and <c = d>.'])(
+    'does not claim tag-like prose: %s',
+    source => {
+      expect(claimedComponents(source)).toStrictEqual([]);
+      expect(mdastTypes(parseMdast(source))).toStrictEqual(['root', 'paragraph', 'text']);
+    },
+  );
 
   it.each([
     '<Image src=https://example.com/a.png?w=1 align=center />',
@@ -80,13 +84,43 @@ describe('RM-16375 unquoted native HTML attributes', () => {
     ['text * emphasis', `*${LINK}*`, [LINK_OPEN], ['root', 'paragraph', 'emphasis', 'html', 'text', 'html']],
     ['text _ emphasis', `_${LINK}_`, [LINK_OPEN], ['root', 'paragraph', 'emphasis', 'html', 'text', 'html']],
     ['escaped flow opening', '\\<div class=outer>Example</div>', [], ['root', 'paragraph', 'text', 'html']],
-    ['escaped text opening', 'Before \\<span class=inner>Example</span> after', [], ['root', 'paragraph', 'text', 'html', 'text']],
+    [
+      'escaped text opening',
+      'Before \\<span class=inner>Example</span> after',
+      [],
+      ['root', 'paragraph', 'text', 'html', 'text'],
+    ],
     ['flow nesting', `<div class=outer>${LINK}</div>`, [`<div class=outer>${LINK}</div>`], ['root', 'html']],
-    ['text nesting', `Before <span class=outer>${LINK}</span> after`, ['<span class=outer>', LINK_OPEN], ['root', 'paragraph', 'text', 'html', 'html', 'text', 'html', 'html', 'text']],
-    ['flow blank lines', `<div class=outer>\n\n${LINK}\n\n</div>`, [`<div class=outer>\n\n${LINK}\n\n</div>`], ['root', 'html']],
-    ['text blank lines', `Before\n\n${LINK}\n\nAfter`, [LINK_OPEN], ['root', 'paragraph', 'text', 'paragraph', 'html', 'text', 'html', 'paragraph', 'text']],
-    ['flow formatting', '<div\n class = outer>\nExample\n</div>', ['<div\n class = outer>\nExample\n</div>'], ['root', 'html']],
-    ['text formatting', 'Before <a\thref\t=\thttps://example.com>Example</a> after', ['<a\thref\t=\thttps://example.com>'], ['root', 'paragraph', 'text', 'html', 'text', 'html', 'text']],
+    [
+      'text nesting',
+      `Before <span class=outer>${LINK}</span> after`,
+      ['<span class=outer>', LINK_OPEN],
+      ['root', 'paragraph', 'text', 'html', 'html', 'text', 'html', 'html', 'text'],
+    ],
+    [
+      'flow blank lines',
+      `<div class=outer>\n\n${LINK}\n\n</div>`,
+      [`<div class=outer>\n\n${LINK}\n\n</div>`],
+      ['root', 'html'],
+    ],
+    [
+      'text blank lines',
+      `Before\n\n${LINK}\n\nAfter`,
+      [LINK_OPEN],
+      ['root', 'paragraph', 'text', 'paragraph', 'html', 'text', 'html', 'paragraph', 'text'],
+    ],
+    [
+      'flow formatting',
+      '<div\n class = outer>\nExample\n</div>',
+      ['<div\n class = outer>\nExample\n</div>'],
+      ['root', 'html'],
+    ],
+    [
+      'text formatting',
+      'Before <a\thref\t=\thttps://example.com>Example</a> after',
+      ['<a\thref\t=\thttps://example.com>'],
+      ['root', 'paragraph', 'text', 'html', 'text', 'html', 'text'],
+    ],
   ])('handles %s with the expected claim and MDAST shape', (_case, source, claims, types) => {
     expect(claimedComponents(source)).toStrictEqual(claims);
     expect(mdastTypes(parseMdast(source))).toStrictEqual(types);
