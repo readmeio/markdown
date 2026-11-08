@@ -9,6 +9,8 @@ import { defaultHandlers } from 'remark-rehype';
 
 import { NodeTypes } from '../../enums';
 
+const HTML_COMMENT_REGEX = /^<!--[\s\S]*-->$/;
+
 // If hChildren is populated, it means the node holds a renderable value (e.g. React)
 // See evaluate-expressions.ts for more details
 // Otherwise, it's a simple value and we fall back to text
@@ -83,6 +85,24 @@ const embedHandler: Handler = (state, node) => {
 };
 
 /**
+ * Whether a list item child renders as a block that needs space above it.
+ *
+ * Takes a child other than a paragraph or a sublist and returns false for nodes that render
+ * nothing visible: link and footnote definitions, and HTML comments.
+ */
+const rendersBlock = (child: ListItem['children'][number]) => {
+  switch (child.type) {
+    case 'definition':
+    case 'footnoteDefinition':
+      return false;
+    case 'html':
+      return !HTML_COMMENT_REGEX.test(child.value.trim());
+    default:
+      return true;
+  }
+};
+
+/**
  * Renders a list item whose marker sits alone on its line with that line kept empty.
  *
  * `-` over an indented block (a sublist, a code block) parses to the same mdast as the
@@ -92,7 +112,18 @@ const embedHandler: Handler = (state, node) => {
  */
 const listItemHandler: Handler = (state, node, parent) => {
   const item = node as ListItem;
-  const result = defaultHandlers.listItem(state, item, parent);
+  // A tight item unwraps its text from `<p>`, so a block after it (a callout, a code block)
+  // loses the paragraph margin that spaces it. Wrap the text like the editor does, which always
+  // keeps it in a paragraph, see `ListItem` in
+  // readmeio/readme: packages/react/src/ui/MdxishEditor/extensions/document/List/index.ts
+  const hasTextAndBlock =
+    item.children.some(child => child.type === 'paragraph') &&
+    item.children.some(child => child.type !== 'paragraph' && child.type !== 'list' && rendersBlock(child));
+  const result = defaultHandlers.listItem(
+    state,
+    item,
+    hasTextAndBlock && parent?.type === 'list' ? { ...parent, spread: true } : parent,
+  );
   const first = item.children[0];
   if (!first || first.type === 'paragraph') return result;
 
