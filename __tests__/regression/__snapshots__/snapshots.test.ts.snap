@@ -1383,6 +1383,7 @@ exports[`Render engine regressions tests > unquoted-html-attributes (mdxish) 1`]
 <p>Read the <a href="https://example.com/docs#start" target="" title="">docs</a> before you start.</p>
 <p><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img  " height="auto" loading="lazy" src="https://example.com/image.png" title="" width="auto"/></span></span></p>
 <p><span class="badge">Beta</span> and <a href="/relative/path" target="" title="">a relative link</a>.</p>
+<p>Open <a href="https://example.com/users/{id}" target="" title=""><strong>your profile</strong></a> to continue.</p>
 <div data-url="https://example.com">
 <p>A paragraph inside a block tag.</p>
 </div>

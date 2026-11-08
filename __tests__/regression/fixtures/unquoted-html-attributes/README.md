@@ -15,6 +15,8 @@ that must stay text.
 ## What it proves
 
 - Inline and self-closing tags keep URL / path values as attributes.
+- A literal `{…}` inside an unquoted value doesn't make the tag a JSX claim, so
+  `**bold**` in the link body still renders.
 - A block tag with a URL value still wraps its blank-line separated content.
 - `<input.value=foo>`, `<key=value>` and `<a = b>` stay visible text.
 - A brace-bearing lowercase tag still renders as a single link.

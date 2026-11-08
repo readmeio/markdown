@@ -68,6 +68,12 @@ describe('RM-16375 unquoted native HTML attributes', () => {
     expect(claimedComponents(source)).toStrictEqual([source]);
   });
 
+  it.each(['https://example.com/{id}', 'x{id}'])('treats a mid-value brace as literal text: href=%s', value => {
+    const opener = `<a href=${value}>`;
+    expect(claimedComponents(`Before ${opener}**Example**</a> after`)).toStrictEqual([opener]);
+    expect(mdastTypes(parseMdast(`Before ${opener}**Example**</a> after`))).toContain('strong');
+  });
+
   it.each(['pre', 'script', 'textarea'])('leaves a raw <%s> body to html-flow', tag => {
     const source = `<${tag} class=x>\`</${tag}>\`\n\n# Heading\n\n</${tag}>`;
     expect(claimedComponents(source)).toStrictEqual([]);

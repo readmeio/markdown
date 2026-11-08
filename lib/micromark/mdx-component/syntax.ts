@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeContext } from 'micromark-util-types';
 
-import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
+import { markdownLineEnding, markdownLineEndingOrSpace, markdownSpace } from 'micromark-util-character';
 import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
@@ -245,9 +245,10 @@ function createTokenize(mode: 'flow' | 'text') {
         return inQuotedAttr;
       }
 
-      // JSX expression attribute
+      // JSX expression attribute. A `{` mid-value (`href=https://x/{id}`) is
+      // literal text, so it mustn't make the whole element a JSX claim.
       if (code === codes.leftCurlyBrace) {
-        sawBraceAttr = true;
+        if (self.previous === codes.equalsTo || markdownLineEndingOrSpace(self.previous)) sawBraceAttr = true;
         return regions.braceExpression(code, afterOpenTagName);
       }
 

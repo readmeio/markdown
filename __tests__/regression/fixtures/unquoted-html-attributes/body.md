@@ -6,6 +6,8 @@ Read the <a href=https://example.com/docs#start>docs</a> before you start.
 
 <span class=badge>Beta</span> and <a href=/relative/path>a relative link</a>.
 
+Open <a href=https://example.com/users/{id}>**your profile**</a> to continue.
+
 <div data-url=https://example.com>
 
 A paragraph inside a block tag.
