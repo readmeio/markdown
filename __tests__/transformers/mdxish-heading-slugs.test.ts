@@ -7,7 +7,7 @@ import { mdxish } from '../../lib';
 import { mdastV6Wrapper } from '../helpers';
 
 function findAllHeadings(tree: Root): { id: string }[] {
-  const headings: { id: string; }[] = [];
+  const headings: { id: string }[] = [];
   visit(tree, 'element', (node: Element) => {
     if (/^h[1-6]$/.test(node.tagName) && node.properties?.id) {
       headings.push({ id: String(node.properties.id) });
@@ -16,8 +16,8 @@ function findAllHeadings(tree: Root): { id: string }[] {
   return headings;
 }
 
-function findAllHeadingsInMdast(tree: Root): { id: string; }[] {
-  const headings: { id: string; }[] = [];
+function findAllHeadingsInMdast(tree: Root): { id: string }[] {
+  const headings: { id: string }[] = [];
   visit(tree, 'heading', (node: Heading) => {
     if (node.data?.hProperties?.id) {
       headings.push({ id: String(node.data.hProperties.id) });
@@ -309,6 +309,18 @@ describe('heading slugs', () => {
       expect(headings[0].id).toBe('hello-name');
       expect(headings[1].id).toBe('hello-name-1');
       expect(headings[2].id).toBe('hello-name-2');
+    });
+  });
+
+  describe('explicit {#id} anchors (RM-18626)', () => {
+    it.each([false, true])('never gives an auto slug an explicit id (safeMode: %s)', safeMode => {
+      const headings = findAllHeadings(mdxish('## Setup\n\n## Configuration {#setup}\n\n## Setup', { safeMode }));
+      expect(headings).toStrictEqual([{ id: 'setup-1' }, { id: 'setup' }, { id: 'setup-2' }]);
+    });
+
+    it('leaves raw HTML heading ids out of the reservation, as before', () => {
+      const headings = findAllHeadings(mdxish('## Setup\n\n<h2 id="setup">Setup</h2>'));
+      expect(headings).toStrictEqual([{ id: 'setup' }, { id: 'setup' }]);
     });
   });
 });

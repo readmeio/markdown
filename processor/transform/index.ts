@@ -3,6 +3,7 @@ import codeTabsTransformer from './code-tabs';
 import compatabilityTransfomer from './compatability';
 import divTransformer from './div';
 import embedTransformer from './embeds';
+import flattenAttributeExpressions from './flatten-attribute-expressions';
 import gemojiTransformer from './gemoji+';
 import handleMissingComponents from './handle-missing-components';
 import imageTransformer from './images';
@@ -20,6 +21,7 @@ import variablesTransformer from './variables';
 export {
   compatabilityTransfomer,
   divTransformer,
+  flattenAttributeExpressions,
   injectComponents,
   mdxToHast,
   mdxishTables,
@@ -41,10 +43,6 @@ export const defaultTransforms = {
   gemojiTransformer,
 };
 
-export const mdxishTransformers = [
-  [calloutTransformer, { isMdxish: true }],
-  codeTabsTransformer,
-  imageTransformer,
-];
+export const mdxishTransformers = [[calloutTransformer, { isMdxish: true }], codeTabsTransformer, imageTransformer];
 
 export default Object.values(defaultTransforms);

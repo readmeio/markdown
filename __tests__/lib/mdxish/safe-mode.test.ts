@@ -5,8 +5,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { mix } from '../../../lib';
 import * as utils from '../../../processor/utils';
 
-
-vi.mock('../../../processor/utils', async importOriginal => {
+vi.mock(import('../../../processor/utils'), async importOriginal => {
   const actual = (await importOriginal()) as Record<string, unknown> & { evaluate: (source: string) => unknown };
   return {
     ...actual,
@@ -53,7 +52,8 @@ Inline: {"hi".toUpperCase()}
   it('DOES call evaluate() without safeMode (sanity check that the spy is wired up)', () => {
     const component = {} as CustomComponents[string];
     const html = mix('<Component value={5 * 10} />', { components: { Component: component } });
-    expect(evaluateSpy).toHaveBeenCalledWith(expect.any(String));
+    // Attribute expressions now evaluate past rehypeRaw's clone, with the export scope passed in.
+    expect(evaluateSpy).toHaveBeenCalledWith(expect.any(String), expect.any(Object));
     expect(html).not.toContain('5 * 10');
   });
 });

@@ -2,6 +2,8 @@ import { render, act } from '@testing-library/react';
 import React from 'react';
 
 import TableOfContents from '../../components/TableOfContents';
+// `reactProcessor` and `reactTOC` are legacy names this entry no longer exports.
+// oxlint-disable-next-line import/named
 import { utils, reactProcessor, reactTOC } from '../../index';
 
 const { GlossaryContext, VariablesContext } = utils;
@@ -27,6 +29,7 @@ describe('Table of Contents', () => {
     expect(container.querySelector('.toc-children')).toHaveTextContent('Heading 1');
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('generates TOC from headings', () => {
     const txt = '# Heading Zed\n\n# Heading One';
     const ast = reactProcessor().parse(txt);
@@ -36,6 +39,7 @@ describe('Table of Contents', () => {
     expect(container.querySelectorAll('li > a[href]:not([href="#"])')).toHaveLength(2);
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('includes two heading levels', () => {
     const txt = '# Heading Zed\n\n## Subheading One\n\n### Deep Heading Two';
     const ast = reactProcessor().parse(txt);
@@ -46,6 +50,7 @@ describe('Table of Contents', () => {
     expect(container.innerHTML).toMatchSnapshot();
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('normalizes root depth level', () => {
     const txt = '##### Heading Zed\n\n###### Subheading Zed';
     const ast = reactProcessor().parse(txt);
@@ -55,6 +60,7 @@ describe('Table of Contents', () => {
     expect(container.querySelectorAll('li > a[href]:not([href="#"])')).toHaveLength(2);
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('includes variables', () => {
     const txt = '# Heading <<test>>';
     const ast = reactProcessor().parse(txt);
@@ -64,6 +70,7 @@ describe('Table of Contents', () => {
     expect(container.querySelector('li > a[href]:not([href="#"])')).toHaveTextContent(`Heading ${variables.user.test}`);
   });
 
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('includes glossary items', () => {
     const txt = '# Heading <<glossary:demo>>';
     const ast = reactProcessor().parse(txt);
@@ -88,7 +95,9 @@ describe('Table of Contents', () => {
         constructor(callback) {
           observerCallback = callback;
         }
-        observe(el) { observedElements.push(el); }
+        observe(el) {
+          observedElements.push(el);
+        }
         disconnect() {}
       };
 
@@ -135,9 +144,7 @@ describe('Table of Contents', () => {
 
       // Simulate the first heading entering the viewport
       act(() => {
-        observerCallback([
-          { target: document.getElementById('heading-1'), isIntersecting: true },
-        ]);
+        observerCallback([{ target: document.getElementById('heading-1'), isIntersecting: true }]);
       });
 
       const links = container.querySelectorAll('a');
@@ -181,9 +188,7 @@ describe('Table of Contents', () => {
 
       // Observer fires with heading-1 visible — should update since click lock is released
       act(() => {
-        observerCallback([
-          { target: document.getElementById('heading-1'), isIntersecting: true },
-        ]);
+        observerCallback([{ target: document.getElementById('heading-1'), isIntersecting: true }]);
       });
 
       const firstLink = [...links].find(a => a.getAttribute('href') === '#heading-1');
@@ -236,6 +241,89 @@ describe('Table of Contents', () => {
       expect(newLink.classList.contains('active')).toBe(true);
     });
 
+    describe('active link auto-scroll', () => {
+      it('scrolls the TOC-local scroll container when the active link is out of view, without scrollIntoView', async () => {
+        // The TOC has its own scroll area (separate from the content scroller).
+        const tocScrollContainer = document.createElement('div');
+        Object.defineProperties(tocScrollContainer, {
+          scrollTop: { value: 100, writable: true },
+          clientHeight: { value: 200, writable: true },
+          scrollHeight: { value: 600, writable: true },
+        });
+        tocScrollContainer.style.overflow = 'auto';
+        tocScrollContainer.scrollTo = vi.fn();
+        tocScrollContainer.getBoundingClientRect = () => ({ top: 0, bottom: 200, height: 200 });
+        document.body.appendChild(tocScrollContainer);
+
+        const { container } = render(
+          <TableOfContents>
+            <a href="#heading-1">Heading 1</a>
+            <a href="#heading-2">Heading 2</a>
+            <a href="#heading-3">Heading 3</a>
+          </TableOfContents>,
+          { container: tocScrollContainer },
+        );
+
+        await act(async () => {});
+
+        // The link for heading-2 sits below the TOC scroller's viewport.
+        const secondLink = [...container.querySelectorAll('a')].find(a => a.hash === '#heading-2');
+        secondLink.getBoundingClientRect = () => ({ top: 250, bottom: 270, height: 20 });
+        secondLink.scrollIntoView = vi.fn();
+
+        act(() => {
+          observerCallback([{ target: document.getElementById('heading-2'), isIntersecting: true }]);
+        });
+
+        // Scrolled just far enough to reveal the link (block: 'nearest' semantics),
+        // on the TOC's own scroller only.
+        expect(tocScrollContainer.scrollTo).toHaveBeenCalledWith({ top: 100 + (270 - 200), behavior: 'smooth' });
+        // scrollIntoView walks every scrollable ancestor and cancels in-flight
+        // smooth scrolls on the page's content scroller (CX-3667) — it must not be used.
+        expect(secondLink.scrollIntoView).not.toHaveBeenCalled();
+
+        tocScrollContainer.remove();
+      });
+
+      it('never scrolls a container that holds the page content (CX-3667)', async () => {
+        // No TOC-local scroll area: the TOC lives directly inside the content
+        // scroller, so the link's nearest scrollable ancestor is the same
+        // scroller the page animates during navigation. Auto-scrolling it would
+        // cancel the hub's scroll-to-top reset.
+        scrollContainer.scrollTo = vi.fn();
+        scrollContainer.getBoundingClientRect = () => ({ top: 0, bottom: 800, height: 800 });
+
+        // Render into a plain wrapper inside the content scroller (rendering
+        // straight into scrollContainer would wipe the headings from the DOM).
+        const wrapper = document.createElement('div');
+        scrollContainer.appendChild(wrapper);
+
+        const { container } = render(
+          <TableOfContents>
+            <a href="#heading-1">Heading 1</a>
+            <a href="#heading-2">Heading 2</a>
+            <a href="#heading-3">Heading 3</a>
+          </TableOfContents>,
+          { container: wrapper },
+        );
+
+        await act(async () => {});
+
+        // Even with the active link far out of view, the shared scroller stays put.
+        const secondLink = [...container.querySelectorAll('a')].find(a => a.hash === '#heading-2');
+        secondLink.getBoundingClientRect = () => ({ top: 5000, bottom: 5020, height: 20 });
+        secondLink.scrollIntoView = vi.fn();
+
+        act(() => {
+          observerCallback([{ target: document.getElementById('heading-2'), isIntersecting: true }]);
+        });
+
+        expect(secondLink.classList.contains('active')).toBe(true);
+        expect(scrollContainer.scrollTo).not.toHaveBeenCalled();
+        expect(secondLink.scrollIntoView).not.toHaveBeenCalled();
+      });
+    });
+
     it('should work when hrefs contain query params (frame preview mode)', async () => {
       // In frame preview mode, links may include query params before the hash,
       // e.g. href="?isFramePreview=true#heading-1" instead of "#heading-1".
@@ -253,15 +341,13 @@ describe('Table of Contents', () => {
       await act(async () => {});
 
       // Observer should be watching the headings
-      expect(observedElements.map(el => el.id)).toEqual(
+      expect(observedElements.map(el => el.id)).toStrictEqual(
         expect.arrayContaining(['heading-1', 'heading-2', 'heading-3']),
       );
 
       // Simulate a heading entering the viewport
       act(() => {
-        observerCallback([
-          { target: document.getElementById('heading-1'), isIntersecting: true },
-        ]);
+        observerCallback([{ target: document.getElementById('heading-1'), isIntersecting: true }]);
       });
 
       const links = container.querySelectorAll('a');

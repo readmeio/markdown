@@ -1,0 +1,121 @@
+.MermaidDiagram {
+  display: flow-root; // narrows beside floats like the pre, so the absolute controls stay on the diagram
+  position: relative;
+  // Carry the block margin on the wrapper so container :last-child margin resets still apply
+  margin-bottom: var(--markdown-spacing, 15px);
+
+  > pre.mermaid-render {
+    margin-bottom: 0;
+    overflow: hidden;
+  }
+
+  > pre:has(> svg) {
+    cursor: grab;
+
+    // Excludes presses on labels and links, which select text or navigate instead of panning
+    &:active:not(:has(:is(a, text, foreignObject):active)) {
+      cursor: grabbing;
+
+      > svg {
+        transition: none;
+      }
+    }
+  }
+
+  // Child combinator: icon svgs nested in the diagram inherit the variable but must not transform
+  > pre > svg {
+    transform: var(--MermaidDiagram-transform, none);
+    transform-origin: center;
+    transition: transform var(--transition-fast, 0.15s) var(--transition-timing, ease-out);
+
+    :is(text, foreignObject) {
+      cursor: text;
+    }
+  }
+
+  // Touch pans only once zoomed, so an untouched diagram never blocks page scrolling
+  &_zoomed > pre {
+    touch-action: none;
+  }
+
+  &-controls {
+    position: absolute;
+    right: var(--size-8, 8px);
+    bottom: var(--size-8, 8px);
+    display: flex;
+    gap: var(--size-2, 2px);
+    padding: var(--size-4, 4px);
+    border-radius: var(--theme-button-radius, var(--border-radius-full, 999px));
+    background: var(--color-bg-page, white);
+    color: var(--color-text-default, #384248);
+    outline: var(--border-width, 1px) solid var(--color-border-default, #{rgba(black, 0.1)});
+    outline-offset: calc(var(--border-width, 1px) * -1);
+    transition: opacity var(--transition-fast, 0.15s) var(--transition-timing, ease-out);
+
+    // Only shown once mermaid has swapped in its svg: hidden while loading and on render errors
+    pre:not(:has(> svg)) + & {
+      display: none;
+    }
+
+    button {
+      appearance: none;
+      display: grid;
+      place-items: center;
+      width: var(--size-28, 28px);
+      height: var(--size-28, 28px);
+      padding: 0;
+      border: 0;
+      border-radius: var(--theme-button-radius, var(--border-radius-full, 999px));
+      background: transparent;
+      color: inherit;
+      font-size: var(--icon-sm, 12px);
+      cursor: pointer;
+
+      &:hover:not([aria-disabled='true']) {
+        background: var(--color-bg-hover, #{rgba(black, 0.05)});
+      }
+
+      &:active:not([aria-disabled='true']) {
+        background: var(--color-bg-active, #{rgba(black, 0.1)});
+      }
+
+      &[aria-disabled='true'] {
+        cursor: default;
+        opacity: 0.4;
+      }
+
+      &:focus-visible {
+        outline: var(--size-2, 2px) solid var(--color-focus-ring, currentColor);
+        outline-offset: calc(var(--size-2, 2px) * -1);
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    > pre > svg,
+    &-controls {
+      transition: none;
+    }
+  }
+
+  // Like the copy button, reveal on hover/focus so the pill doesn't cover the diagram at rest
+  @media (hover: hover) {
+    &:not(:hover, :focus-within) &-controls {
+      opacity: 0;
+    }
+  }
+
+  &.theme-dark &-controls {
+    background: var(--color-bg-page, #242e34);
+    color: var(--color-text-default, white);
+    outline-color: var(--color-border-default, #{rgba(white, 0.1)});
+
+    button:hover:not([aria-disabled='true']) {
+      background: var(--color-bg-hover, #{rgba(white, 0.05)});
+    }
+
+    button:active:not([aria-disabled='true']) {
+      background: var(--color-bg-active, #{rgba(white, 0.075)});
+    }
+  }
+}

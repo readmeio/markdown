@@ -4,22 +4,25 @@ import { remark } from 'remark';
 import { visit } from 'unist-util-visit';
 
 import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
+import mdxishTables from '../processor/transform/mdxish/tables/mdxish-tables';
 import { isMDXElement } from '../processor/utils';
 
-import { magicBlockFromMarkdown } from './mdast-util/magic-block';
-import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
-import { magicBlock } from './micromark/magic-block';
-import { mdxComponent } from './micromark/mdx-component';
+import { FEATURES, mdxishExtensions } from './micromark/mdxish-extensions';
+
+const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.tags, { safeMode: true });
 
 const tags = (doc: string) => {
   const set = new Set<string>();
+
   const processor = remark()
-    .data('micromarkExtensions', [magicBlock(), mdxComponent()])
-    .data('fromMarkdownExtensions', [magicBlockFromMarkdown(), mdxComponentFromMarkdown()])
-    .use(mdxishMdxComponentBlocks);
+    .data('micromarkExtensions', micromarkExtensions)
+    .data('fromMarkdownExtensions', fromMarkdownExtensions)
+    // Tag names never depend on evaluated attribute values, so always parse in safeMode.
+    .use(mdxishMdxComponentBlocks, { safeMode: true })
+    .use(mdxishTables);
   const tree = processor.parse(doc);
 
-  visit(processor.runSync(tree), isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {
+  visit(processor.runSync(tree, doc), isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (node.name?.match(/^[A-Z]/)) {
       set.add(node.name);
     }

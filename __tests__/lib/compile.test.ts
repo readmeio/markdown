@@ -23,6 +23,18 @@ describe('compile', () => {
       const tree = compile(md, { hardBreaks: true });
       expect(tree).toMatch(/br/);
     });
+
+    it('converts CRLF line endings to hard breaks when enabled', () => {
+      const md = 'hello\r\nthere';
+      const tree = compile(md, { hardBreaks: true });
+      expect(tree).toMatch(/br/);
+    });
+
+    it('does not convert standalone carriage returns to hard breaks', () => {
+      const md = 'hello\rthere';
+      const tree = compile(md, { hardBreaks: true });
+      expect(tree).not.toMatch(/br/);
+    });
   });
 
   describe("{ format: 'md' }", () => {
@@ -50,6 +62,8 @@ describe('compile', () => {
     it('sanitizes unsafe protocols on raw HTML anchors', () => {
       const anchor = renderMarkdown('<a href="javascript:alert(1)">test</a>');
 
+      // The assertion is that this protocol is stripped.
+      // oxlint-disable-next-line no-script-url
       expect(anchor).not.toHaveAttribute('href', 'javascript:alert(1)');
     });
   });

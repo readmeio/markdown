@@ -11,18 +11,20 @@ export interface RepairResult {
   value: string;
 }
 
+export const tableTags = new Set(['thead', 'tbody', 'tfoot', 'caption', 'colgroup', 'col', 'tr', 'th', 'td']);
 
-export const tableTags = new Set([
-  'thead',
-  'tbody',
-  'tfoot',
-  'caption',
-  'colgroup',
-  'col',
-  'tr',
-  'th',
-  'td',
-]);
+/**
+ * Replaces every paragraph node with its inline children. Used where paragraphs
+ * are parser artifacts (remarkMdx wrapping inline JSX), not real content.
+ */
+export const unwrapParagraphNodes = (children: Node[]): Node[] => {
+  return children.flatMap(child => {
+    if (child.type === 'paragraph' && 'children' in child && Array.isArray(child.children)) {
+      return child.children as Node[];
+    }
+    return [child];
+  });
+};
 
 /**
  * If the cell has exactly one paragraph child, unwrap it so its inline children sit
@@ -35,12 +37,7 @@ export const unwrapSoleParagraph = (children: Node[]): Node[] => {
   const paragraphCount = children.filter(c => c.type === 'paragraph').length;
   if (paragraphCount !== 1) return children;
 
-  return children.flatMap(child => {
-    if (child.type === 'paragraph' && 'children' in child && Array.isArray(child.children)) {
-      return child.children as Node[];
-    }
-    return [child];
-  });
+  return unwrapParagraphNodes(children);
 };
 
 /**
@@ -65,4 +62,3 @@ export const applyInserts = (html: string, inserts: Insert[]): RepairResult => {
   });
   return { value: out + html.slice(cursor), inserts: sorted };
 };
-

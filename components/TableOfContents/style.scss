@@ -19,22 +19,28 @@
       position: absolute;
       left: 0;
       top: 0;
-      transition:
-        height var(--transition-slow),
-        top var(--transition-slow);
-      transition-timing-function: var(--transition-timing);
       width: 0.154em; // 2px
     }
 
     &::before {
       background-color: var(--ToC-border-color);
       height: 100%;
+      transition: height var(--transition-slow);
+      transition-timing-function: var(--transition-timing);
     }
 
     &::after {
       background-color: var(--ToC-border-active-color);
       height: var(--ToC-border-active-height);
       top: var(--ToC-border-active-top);
+    }
+
+    // to avoid animating on page page
+    &[data-toc-ready]::after {
+      transition:
+        height var(--transition-slow),
+        top var(--transition-slow);
+      transition-timing-function: var(--transition-timing);
     }
 
     .active {

@@ -3,6 +3,11 @@
 /* stylelint-disable declaration-block-no-duplicate-properties */
 /* stylelint-disable custom-property-pattern */
 /* stylelint-disable scss/selector-no-redundant-nesting-selector */
+
+// A block `<NoTranslate>` renders as `<div class="readme-no-translate">`. A class, not `[translate='no']`,
+// since the editor root (ProseMirror) carries that attribute too.
+$block-no-translate: '.readme-no-translate';
+
 @mixin gfm {
   @include markdown-defaults;
   @include markdown-overrides;
@@ -268,6 +273,24 @@
     margin-bottom: 0 !important;
   }
 
+  // When a TailwindRoot-wrapped custom block sits at the document edge, its
+  // inner margins would collapse through the zeroed wrapper — trim them too.
+  // A block `<NoTranslate>` adds one more wrapper (`translate="no"`), so reach through it as well.
+  & > .readme-tailwind:first-child > :first-child,
+  & > .readme-tailwind:nth-child(1 of :not(style)) > :first-child,
+  & > #{$block-no-translate}:first-child > :first-child,
+  & > #{$block-no-translate}:nth-child(1 of :not(style)) > :first-child,
+  & > .readme-tailwind:first-child > #{$block-no-translate} > :first-child,
+  & > .readme-tailwind:nth-child(1 of :not(style)) > #{$block-no-translate} > :first-child {
+    margin-top: 0 !important;
+  }
+
+  & > .readme-tailwind:last-child > :last-child,
+  & > #{$block-no-translate}:last-child > :last-child,
+  & > .readme-tailwind:last-child > #{$block-no-translate} > :last-child {
+    margin-bottom: 0 !important;
+  }
+
   blockquote,
   dl,
   p,
@@ -275,6 +298,21 @@
   table {
     margin-bottom: var(--markdown-spacing, 15px);
     margin-top: 0;
+  }
+
+  // no margins where we’ll likely have inline images or they might break layout
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  figcaption,
+  ol,
+  ul,
+  p,
+  table {
+    --markdown-img-margin: 0;
   }
 
   ol,
@@ -377,7 +415,13 @@
     border-bottom: 0;
   }
 
-  > * {
+  // Custom blocks (e.g. reusable content) render inside a flow TailwindRoot
+  // div, and a block `<NoTranslate>` inside a `translate="no"` div, so spacing must
+  // pierce the wrappers to reach their block children.
+  > *,
+  > .readme-tailwind > *,
+  > #{$block-no-translate} > *,
+  > .readme-tailwind > #{$block-no-translate} > * {
     margin-bottom: var(--markdown-spacing, 15px);
     margin-top: var(--markdown-spacing, 15px);
   }

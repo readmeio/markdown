@@ -1,3 +1,4 @@
+import type { MagicBlockNode } from '../../../../lib/mdast-util/magic-block/types';
 /**
  * Unified plugin that transforms `magicBlock` MDAST nodes into final nodes.
  *
@@ -18,11 +19,11 @@ import type {
   RecipeJson,
   MagicBlockTransformerOptions,
 } from './types';
-import type { MagicBlockNode } from '../../../../lib/mdast-util/magic-block/types';
 import type { Root as HastRoot, Text as HastText, Element as HastElement, ElementContent } from 'hast';
 import type { Root as MdastRoot, RootContent, Parent, Paragraph, PhrasingContent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
+import type { Position } from 'unist';
 
 import { VARIABLE_REGEXP } from '@readme/variable';
 import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
@@ -30,7 +31,6 @@ import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
 import { htmlBlockNames } from 'micromark-util-html-tag-name';
 import rehypeParse from 'rehype-parse';
 import rehypeStringify from 'rehype-stringify';
-import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -38,21 +38,18 @@ import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
-import { emptyTaskListItemFromMarkdown } from '../../../../lib/mdast-util/empty-task-list-item';
-import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
-import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
-import { gemoji } from '../../../../lib/micromark/gemoji';
-import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
-import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from '../../../../lib/micromark/loose-html-entities';
+import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {
+  BLANK_LINE_RE,
   CLOSE_BLOCK_TAG_BOUNDARY_RE,
   HTML_ELEMENT_BLOCK_RE,
   HTML_TAG_RE,
   HTML_TAG_STRIP_RE,
+  NEWLINE_RE,
   NEWLINE_WITH_WHITESPACE_RE,
 } from './patterns';
 import {
@@ -108,21 +105,20 @@ const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(tex
 /**
  * Converts leading newlines in magic block content to `<br>` tags.
  * Leading newlines are stripped by remark-parse before they become soft break nodes,
- * so remark-breaks cannot handle them. We convert them to HTML `<br>` tags instead.
+ * so the hard-breaks plugin cannot handle them. We convert them to HTML `<br>` tags instead.
  */
 const ensureLeadingBreaks = (text: string): string => text.replace(/^\n+/, match => '<br>'.repeat(match.length));
 
 /** Preprocesses magic block body content before parsing. */
-const preprocessBody = (text: string): string => {
-  return ensureLeadingBreaks(text);
-};
+const preprocessBody = (text: string, hardBreaks: boolean): string => (hardBreaks ? ensureLeadingBreaks(text) : text);
+
+const bodyExtensions = mdxishExtensions(FEATURES.magicBlockBody);
 
 /** Markdown parser */
 const contentParser = unified()
-  .data('micromarkExtensions', [gemoji(), legacyVariable(), looseHtmlEntity()])
-  .data('fromMarkdownExtensions', [gemojiFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('micromarkExtensions', bodyExtensions.micromarkExtensions)
+  .data('fromMarkdownExtensions', bodyExtensions.fromMarkdownExtensions)
   .use(remarkParse)
-  .use(remarkBreaks)
   .use(remarkGfm)
   .use(normalizeEmphasisAST);
 
@@ -134,8 +130,8 @@ const contentParser = unified()
  * such as `<ul><li>https://a</li>\n</ul>` due to subtokenizing recursion for URLs
  */
 const markdownToHtml = unified()
-  .data('micromarkExtensions', [gfmStrikethrough(), gemoji(), legacyVariable(), looseHtmlEntity()])
-  .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), gemojiFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('micromarkExtensions', [...bodyExtensions.micromarkExtensions, gfmStrikethrough()])
+  .data('fromMarkdownExtensions', [...bodyExtensions.fromMarkdownExtensions, gfmStrikethroughFromMarkdown()])
   .use(remarkParse)
   .use(normalizeEmphasisAST)
   .use(remarkRehype)
@@ -238,36 +234,49 @@ const processMarkdownInHtmlString = (html: string): string => {
 /**
  * Separate a closing block-level tag from the content that follows it.
  *
- * Each \n in the original text becomes a <br> tag to preserve spacing, then a
- * blank line (\n\n) is appended so CommonMark ends the HTML block and parses
- * the following content as markdown.
+ * A blank line (\n\n) is appended so CommonMark ends the HTML block and parses the
+ * following content as markdown; with hard breaks each \n also becomes a <br> to keep its spacing.
  */
-const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: string, nextLineChar?: string) => {
+const separateBlockTagFromContent = (
+  hardBreaks: boolean,
+  match: string,
+  tag: string,
+  inlineChar?: string,
+  nextLineChar?: string,
+) => {
   if (!BLOCK_LEVEL_TAGS.has(tag.toLowerCase())) return match;
 
-  const newlineCount = (match.match(/\n/g) ?? []).length;
+  const newlineCount = hardBreaks ? (match.match(NEWLINE_RE) ?? []).length : 0;
   const breaks = '<br>'.repeat(newlineCount);
 
   return `</${tag}>${breaks}\n\n${inlineChar || nextLineChar}`;
 };
 
 /**
+ * Newlines inside an HTML block become <br> so CommonMark doesn't end the block on a blank
+ * line. Without hard breaks only blank lines break, but they still have to be replaced.
+ */
+const collapseHtmlBlockNewlines = (html: string, hardBreaks: boolean): string =>
+  html.replace(hardBreaks ? NEWLINE_WITH_WHITESPACE_RE : BLANK_LINE_RE, '<br>');
+
+/** Escape a leading (possibly indented) `-`/`*`/`+` so cells don't become bullet lists. */
+const escapeLeadingListMarkers = (text: string): string => text.replace(/^([ \t]*)([-*+])(?=[ \t]|$)/gm, '$1\\$2');
+
+/**
  * CommonMark doesn't process markdown inside HTML blocks -
  * so `<ul><li>_text_</li></ul>` won't convert underscores to emphasis.
  * We parse first, then visit html nodes and process their text content.
  */
-const parseTableCell = (text: string): MdastNode[] => {
+const parseTableCell = (text: string, hardBreaks: boolean): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
-  // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
-  // CommonMark doesn't split them on blank lines.
-  // Then strip leading whitespace to prevent indented code blocks.
   const escaped = processBackslashEscapes(text);
   const normalized = escaped
-    .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
-    .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
-  const trimmedLines = normalized.split('\n').map(line => line.trimStart());
-  const processed = trimmedLines.join('\n');
+    .replace(HTML_ELEMENT_BLOCK_RE, match => collapseHtmlBlockNewlines(match, hardBreaks))
+    .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, (match, tag, inlineChar, nextLineChar) =>
+      separateBlockTagFromContent(hardBreaks, match, tag, inlineChar, nextLineChar),
+    );
+  const processed = escapeLeadingListMarkers(normalized);
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
 
   // Process markdown inside HTML blocks that have non-tag inner text (e.g. `<div>**x**`
@@ -282,11 +291,12 @@ const parseTableCell = (text: string): MdastNode[] => {
     }
   });
 
-  const result = tree.children.length > 1
-    ? (tree.children as MdastNode[])
-    : tree.children.flatMap(n =>
-        n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
-      );
+  const result =
+    tree.children.length > 1
+      ? (tree.children as MdastNode[])
+      : tree.children.flatMap(n =>
+          n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
+        );
 
   return result;
 };
@@ -299,25 +309,16 @@ const parseBlock = (text: string): MdastNode[] => {
 
 /**
  * Minimal parser for api-header titles.
- * Disables markdown constructs that are not parsed in legacy (headings, lists)
+ * Disables markdown constructs that are not parsed in legacy (headings, lists),
+ * on top of the base set rather than in place of it.
  */
+const titleExtensions = mdxishExtensions(FEATURES.apiHeaderTitle, {
+  disable: ['blockQuote', 'headingAtx', 'list', 'thematicBreak'],
+});
+
 const apiHeaderTitleParser = unified()
-  .data('micromarkExtensions', [
-    gemoji(),
-    legacyVariable(),
-    looseHtmlEntity(),
-    {
-      disable: {
-        null: [
-          'blockQuote',
-          'headingAtx',
-          'list',
-          'thematicBreak',
-        ],
-      },
-    },
-  ])
-  .data('fromMarkdownExtensions', [gemojiFromMarkdown(), legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('micromarkExtensions', titleExtensions.micromarkExtensions)
+  .data('fromMarkdownExtensions', titleExtensions.fromMarkdownExtensions)
   .use(remarkParse)
   .use(remarkGfm);
 
@@ -338,26 +339,27 @@ function transformMagicBlock(
   rawValue: string,
   options: MagicBlockTransformerOptions = {},
 ): MdastNode[] {
-  const { compatibilityMode = false, safeMode = false } = options;
+  const { compatibilityMode = false, hardBreaks = true, safeMode = false } = options;
 
   // Handle empty data by returning placeholder nodes for known block types
-  // This allows the editor to show appropriate placeholder UI instead of nothing
+  // This allows the editor to show appropriate placeholder UI instead of nothing.
+  // Each is cloned, since every block's output gets that block's position.
   if (Object.keys(data).length < 1) {
     switch (blockType) {
       case 'image':
-        return [EMPTY_IMAGE_PLACEHOLDER];
+        return [structuredClone(EMPTY_IMAGE_PLACEHOLDER)];
       case 'embed':
-        return [EMPTY_EMBED_PLACEHOLDER];
+        return [structuredClone(EMPTY_EMBED_PLACEHOLDER)];
       case 'code':
-        return [EMPTY_CODE_PLACEHOLDER];
+        return [structuredClone(EMPTY_CODE_PLACEHOLDER)];
       case 'callout':
-        return [EMPTY_CALLOUT_PLACEHOLDER];
+        return [structuredClone(EMPTY_CALLOUT_PLACEHOLDER)];
       case 'parameters':
       case 'table':
-        return [EMPTY_TABLE_PLACEHOLDER];
+        return [structuredClone(EMPTY_TABLE_PLACEHOLDER)];
       case 'recipe':
       case 'tutorial-tile':
-        return [EMPTY_RECIPE_PLACEHOLDER];
+        return [structuredClone(EMPTY_RECIPE_PLACEHOLDER)];
       default:
         return [{ type: 'paragraph', children: [{ type: 'text', value: rawValue }] }];
     }
@@ -493,7 +495,7 @@ function transformMagicBlock(
       }
 
       if (hasBody) {
-        const bodyBlocks = parseBlock(preprocessBody(calloutJson.body || ''));
+        const bodyBlocks = parseBlock(preprocessBody(calloutJson.body || '', hardBreaks));
         children.push(...bodyBlocks);
       }
 
@@ -529,12 +531,12 @@ function transformMagicBlock(
         return mapped;
       }, [] as string[][]);
 
-      const tokenizeCell = compatibilityMode
-        ? textToBlock
-        : parseTableCell;
+      const tokenizeCell = compatibilityMode ? textToBlock : (text: string) => parseTableCell(text, hardBreaks);
       const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
-          children: sparseData[y]?.[x] ? tokenizeCell(preprocessBody(sparseData[y][x])) : [{ type: 'text', value: '' }],
+          children: sparseData[y]?.[x]
+            ? tokenizeCell(preprocessBody(sparseData[y][x], hardBreaks))
+            : [{ type: 'text', value: '' }],
           type: y === 0 ? 'tableHead' : 'tableCell',
         })),
         type: 'tableRow',
@@ -542,7 +544,11 @@ function transformMagicBlock(
 
       return [
         wrapPinnedBlocks(
-          { align: paramsJson.align ?? new Array(cols).fill('left'), children: tableChildren, type: 'table' },
+          {
+            align: paramsJson.align ?? Array.from({ length: cols }, () => 'left'),
+            children: tableChildren,
+            type: 'table',
+          },
           data,
         ),
       ];
@@ -660,6 +666,17 @@ const isWhitespacePhrasing = (node: PhrasingContent): boolean =>
   node.type === 'break' || (node.type === 'text' && !node.value.trim());
 
 /**
+ * Magic block output is built from JSON fields, whose offsets don't index the document, so
+ * every node takes the whole `[block:…]` range.
+ */
+const assignBlockPosition = (nodes: RootContent[], blockPosition: Position | undefined) =>
+  nodes.forEach(root =>
+    visit(root, node => {
+      node.position = blockPosition && { start: { ...blockPosition.start }, end: { ...blockPosition.end } };
+    }),
+  );
+
+/**
  * Unified plugin that transforms magicBlock nodes into final MDAST nodes.
  */
 const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> =
@@ -685,6 +702,7 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         parent.children.splice(index, 1);
         return;
       }
+      assignBlockPosition(children, node.position);
 
       // If parent is a paragraph and we're inserting block nodes (which must not be in paragraphs)
       // it means we need to lift them out
@@ -724,8 +742,15 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
       const parentSiblingsAfter = parentParagraph.children.slice(nodePosition + 1);
 
       // Remove split-edge whitespace so lifted blocks do not render with extra blank lines.
-      while (parentSiblingsBefore.length > 0 && isWhitespacePhrasing(parentSiblingsBefore[parentSiblingsBefore.length - 1])) parentSiblingsBefore.pop();
-      while (parentSiblingsAfter.length > 0 && isWhitespacePhrasing(parentSiblingsAfter[0])) parentSiblingsAfter.shift();
+      while (
+        parentSiblingsBefore.length > 0 &&
+        isWhitespacePhrasing(parentSiblingsBefore[parentSiblingsBefore.length - 1])
+      ) {
+        parentSiblingsBefore.pop();
+      }
+      while (parentSiblingsAfter.length > 0 && isWhitespacePhrasing(parentSiblingsAfter[0])) {
+        parentSiblingsAfter.shift();
+      }
 
       const splitOffContentFromParent: RootContent[] = [...blockNodes];
       if (parentSiblingsAfter.length > 0) {

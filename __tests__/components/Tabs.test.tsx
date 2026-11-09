@@ -2,14 +2,15 @@ import type { Element } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
 
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import React from 'react';
 
 import Tabs, { Tab } from '../../components/Tabs';
 import { mdxish } from '../../lib';
 import { mdxishAstProcessor, mdxishMdastToMd } from '../../lib/mdxish';
+import { gifRestartWrites, spyOnImageSrc } from '../helpers';
 
-import { renderingEngines } from './utils';
+import { captureMdxishProps, renderingEngines } from './utils';
 
 describe('Tabs', () => {
   describe.each(renderingEngines)('%s', (_label, renderContent) => {
@@ -29,6 +30,35 @@ describe('Tabs', () => {
       expect(buttons[0]).toHaveTextContent('First');
       expect(buttons[1]).toHaveTextContent('Second');
       expect(container).toHaveTextContent('First tab content');
+    });
+
+    it('keeps inactive tabs mounted in the DOM but hidden, and swaps visibility on click', () => {
+      const md = `
+<Tabs>
+  <Tab title="First">First tab content</Tab>
+  <Tab title="Second">
+    <Accordion title="Random">Second tab content</Accordion>
+  </Tab>
+</Tabs>
+`;
+      const Component = renderContent(md);
+      const { container } = render(<Component />);
+
+      const panels = container.querySelectorAll('.TabGroup section > div');
+      expect(panels).toHaveLength(2);
+      // Inactive panel stays in the DOM so runtime Tailwind can scan its classes on first paint
+      expect(panels[1].querySelector('.Accordion')).toBeInTheDocument();
+      expect(panels[0]).toBeVisible();
+      expect(panels[1]).not.toBeVisible();
+
+      const buttons = container.querySelectorAll('.TabGroup-nav button');
+      fireEvent.click(buttons[1]);
+
+      // Panel visibility swaps, and the custom component stays mounted and rendered
+      expect(panels[0]).not.toBeVisible();
+      expect(panels[1]).toBeVisible();
+      expect(panels[1].querySelector('.Accordion')).toBeInTheDocument();
+      expect(panels[1]).toHaveTextContent('Second tab content');
     });
 
     it('renders a single Tab without crashing', () => {
@@ -100,6 +130,51 @@ describe('Tabs', () => {
       expect(container.querySelector('a')).toHaveTextContent('link');
     });
 
+    it('restarts GIF playback when a tab becomes active', () => {
+      const md = `
+<Tabs>
+  <Tab title="First">First tab content</Tab>
+  <Tab title="Second">![demo](https://example.com/demo.gif)</Tab>
+</Tabs>
+`;
+      const Component = renderContent(md);
+      const { container } = render(<Component />);
+
+      const gif = container.querySelector('img[src$=".gif"]') as HTMLImageElement;
+      expect(gif).toBeInTheDocument();
+      const srcSpy = spyOnImageSrc(gif);
+
+      fireEvent.click(container.querySelectorAll('.TabGroup-nav button')[1]);
+
+      expect(srcSpy.writes).toStrictEqual(gifRestartWrites('https://example.com/demo.gif'));
+      expect(gif.src).toBe('https://example.com/demo.gif');
+      srcSpy.restore();
+    });
+
+    it.each([
+      ['png', 'https://example.com/still.png'],
+      // .webp and .png are almost always static, so they're left alone even though
+      // both formats can hold an animation
+      ['webp', 'https://example.com/still.webp'],
+      ['jpg with a query string', 'https://example.com/still.jpg?w=200'],
+    ])('leaves a %s alone when a tab becomes active', (_, src) => {
+      const md = `
+<Tabs>
+  <Tab title="First">First tab content</Tab>
+  <Tab title="Second">![still](${src})</Tab>
+</Tabs>
+`;
+      const Component = renderContent(md);
+      const { container } = render(<Component />);
+
+      const srcSpy = spyOnImageSrc(container.querySelector('img') as HTMLImageElement);
+
+      fireEvent.click(container.querySelectorAll('.TabGroup-nav button')[1]);
+
+      expect(srcSpy.writes).toStrictEqual([]);
+      srcSpy.restore();
+    });
+
     it('renders Tabs after sibling content without crashing', () => {
       const md = `
 Hello
@@ -110,6 +185,143 @@ Hello
 `;
       const Component = renderContent(md);
       expect(() => render(<Component />)).not.toThrow();
+    });
+
+    describe('when the URL hash targets a heading inside a tab', () => {
+      const md = `
+[Jump to the heading](#second-tab-heading)
+
+<Tabs>
+  <Tab title="First">First content</Tab>
+  <Tab title="Second">
+
+### Second tab heading
+
+Second content
+
+  </Tab>
+</Tabs>
+`;
+
+      let scrollIntoView: ReturnType<typeof vi.fn>;
+
+      beforeEach(() => {
+        scrollIntoView = vi.fn();
+        Element.prototype.scrollIntoView = scrollIntoView;
+        vi.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
+          cb(0);
+          return 0;
+        });
+      });
+
+      afterEach(() => {
+        window.location.hash = '';
+        vi.restoreAllMocks();
+      });
+
+      it.each([
+        ['an anchor hash', '#second-tab-heading'],
+        ['a hash router-prefixed hash', '#/second-tab-heading'],
+      ])('activates the tab holding it on load with %s', (_, hash) => {
+        window.location.hash = hash;
+        const Component = renderContent(md);
+        const { container } = render(<Component />);
+
+        const panels = container.querySelectorAll('.TabGroup section > div');
+        expect(panels[0]).not.toBeVisible();
+        expect(panels[1]).toBeVisible();
+        expect(scrollIntoView).toHaveBeenCalledWith();
+      });
+
+      it('activates the tab holding it on hash change', () => {
+        const Component = renderContent(md);
+        const { container } = render(<Component />);
+        const panels = container.querySelectorAll('.TabGroup section > div');
+        expect(panels[1]).not.toBeVisible();
+
+        act(() => {
+          window.location.hash = '#second-tab-heading';
+          window.dispatchEvent(new HashChangeEvent('hashchange'));
+        });
+
+        expect(panels[0]).not.toBeVisible();
+        expect(panels[1]).toBeVisible();
+      });
+
+      it('activates the tab holding it when a link to the current hash is clicked', () => {
+        window.location.hash = '#second-tab-heading';
+        const Component = renderContent(md);
+        const { container, getByRole, getByText } = render(<Component />);
+        const panels = container.querySelectorAll('.TabGroup section > div');
+
+        fireEvent.click(getByRole('button', { name: 'First' }));
+        expect(panels[1]).not.toBeVisible();
+
+        // The hash doesn't change, so only the click can reveal the tab
+        fireEvent.click(getByText('Jump to the heading'));
+        expect(panels[0]).not.toBeVisible();
+        expect(panels[1]).toBeVisible();
+      });
+
+      describe('when the link points at the current page by path', () => {
+        // Cancel below `document`, the way a router does on its root, which also keeps jsdom from following the link
+        const cancelNavigation = (event: MouseEvent) => event.preventDefault();
+
+        beforeEach(() => {
+          window.history.replaceState(null, '', '/docs/this-page#second-tab-heading');
+          document.body.addEventListener('click', cancelNavigation);
+        });
+
+        afterEach(() => {
+          document.body.removeEventListener('click', cancelNavigation);
+          window.history.replaceState(null, '', '/');
+        });
+
+        it.each([
+          ['a doc link', 'doc:this-page#second-tab-heading'],
+          ['a path link', '/docs/this-page#second-tab-heading'],
+          ['a full url', `${window.location.origin}/docs/this-page#second-tab-heading`],
+        ])('activates the tab holding it when %s to the current hash is clicked', (_, href) => {
+          const Component = renderContent(`[Path link](${href})\n\n${md}`);
+          const { container, getByRole, getByText } = render(<Component />);
+          const panels = container.querySelectorAll('.TabGroup section > div');
+
+          fireEvent.click(getByRole('button', { name: 'First' }));
+          fireEvent.click(getByText('Path link'));
+          expect(panels[1]).toBeVisible();
+        });
+
+        it('leaves the tab alone when the link points at another page', () => {
+          const Component = renderContent(`[Path link](/docs/other-page#second-tab-heading)\n\n${md}`);
+          const { container, getByRole, getByText } = render(<Component />);
+          const panels = container.querySelectorAll('.TabGroup section > div');
+
+          fireEvent.click(getByRole('button', { name: 'First' }));
+          fireEvent.click(getByText('Path link'));
+          expect(panels[0]).toBeVisible();
+          expect(panels[1]).not.toBeVisible();
+        });
+      });
+
+      it('leaves the tab alone when a link is cmd-clicked to open elsewhere', () => {
+        const Component = renderContent(md);
+        const { container, getByText } = render(<Component />);
+        const panels = container.querySelectorAll('.TabGroup section > div');
+
+        fireEvent.click(getByText('Jump to the heading'), { metaKey: true });
+        expect(panels[0]).toBeVisible();
+        expect(panels[1]).not.toBeVisible();
+      });
+
+      it('leaves the first tab active when the hash targets nothing inside the tabs', () => {
+        window.location.hash = '#somewhere-else';
+        const Component = renderContent(md);
+        const { container } = render(<Component />);
+
+        const panels = container.querySelectorAll('.TabGroup section > div');
+        expect(panels[0]).toBeVisible();
+        expect(scrollIntoView).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -169,7 +381,7 @@ Hello
   describe('roundtrip (mdxish)', () => {
     const roundtrip = (md: string) => {
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
-      const mdast = processor.runSync(processor.parse(parserReadyContent)) as MdastRoot;
+      const mdast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as MdastRoot;
       return mdxishMdastToMd(mdast);
     };
 
@@ -261,15 +473,25 @@ Hello
       expect(buttons[1]).toHaveTextContent('B');
     });
 
-    it('displays only the active tab content', () => {
+    it('keeps every tab mounted but shows only the active one, and swaps on click', () => {
       const { container } = render(
         <Tabs>
           <Tab title="A">aaa</Tab>
           <Tab title="B">bbb</Tab>
         </Tabs>,
       );
-      expect(container).toHaveTextContent('aaa');
-      expect(container).not.toHaveTextContent('bbb');
+      const panels = container.querySelectorAll('.TabGroup section > div');
+      expect(panels).toHaveLength(2);
+      expect(panels[0]).toBeVisible();
+      expect(panels[0]).toHaveTextContent('aaa');
+      expect(panels[1]).not.toBeVisible();
+      expect(panels[1]).toHaveTextContent('bbb');
+
+      const buttons = container.querySelectorAll('.TabGroup-nav button');
+      fireEvent.click(buttons[1]);
+
+      expect(panels[0]).not.toBeVisible();
+      expect(panels[1]).toBeVisible();
     });
 
     it('renders a single Tab without crashing', () => {
@@ -293,13 +515,27 @@ Hello
     it('renders icon and iconColor when provided', () => {
       const { container } = render(
         <Tabs>
-          <Tab icon="fa-gear" iconColor="#FF0000" title="Settings">x</Tab>
+          <Tab icon="fa-gear" iconColor="#FF0000" title="Settings">
+            x
+          </Tab>
         </Tabs>,
       );
       const icon = container.querySelector('i.TabGroup-icon');
       expect(icon).toBeInTheDocument();
       expect(icon).toHaveClass('fa-gear');
       expect(icon).toHaveStyle({ color: 'rgb(255, 0, 0)' });
+    });
+
+    it('mdxish: <Tab style="..."> renders without crashing and receives style as an object', () => {
+      const md = '<Tabs>\n  <Tab title="Styled" style="color: red">body</Tab>\n</Tabs>';
+      const [, renderMdxishContent] = renderingEngines.find(([label]) => label === 'mdxish')!;
+      const Content = renderMdxishContent(md);
+
+      expect(() => render(<Content />)).not.toThrow();
+
+      const captured = captureMdxishProps(md, 'Tab');
+      expect(captured.style).toBeTypeOf('object');
+      expect(captured.style).toMatchObject({ color: 'red' });
     });
   });
 });

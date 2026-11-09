@@ -475,9 +475,7 @@ const x = 1;
       expect(outerRows.length).toBeGreaterThanOrEqual(1);
 
       const outerRow = outerRows[0];
-      const outerTds = outerRow.children.filter(
-        (c): c is Element => c.type === 'element' && c.tagName === 'td',
-      );
+      const outerTds = outerRow.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'td');
       expect(outerTds).toHaveLength(2);
 
       const nestedTables = findAllElementsByTagName(outerTds[0], 'table');
@@ -534,6 +532,105 @@ None of the following content will get rendered!`;
       const textContent = JSON.stringify(hast);
       expect(textContent).toContain('None of the following content will get rendered!');
       expect(paragraphs.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('brace expressions inside table cells', () => {
+    const bodyRowsOf = (hast: ReturnType<typeof mdxish>) =>
+      findAllElementsByTagName(findAllElementsByTagName(hast, 'tbody')[0], 'tr');
+
+    it('preserves an identifier expression inside inline code without collapsing rows', () => {
+      const doc = `<table>
+    <thead>
+    <tr>
+        <th>Command</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>hello</td>
+        <td><code>--split-depth={nesting-level-number-value}</code></td>
+    </tr>
+    <tr>
+        <td>YOOO</td>
+        <td>YOO</td>
+    </tr>
+</tbody>
+</table>`;
+
+      const hast = mdxish(doc);
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(1);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+
+      const code = findAllElementsByTagName(bodyRowsOf(hast)[0], 'code');
+      expect(code).toHaveLength(1);
+      const codeText = code[0].children[0];
+      expect(codeText.type === 'text' && codeText.value).toBe('--split-depth={nesting-level-number-value}');
+    });
+
+    it('keeps rows separate in condensed single-line table markup', () => {
+      const doc =
+        '<table><thead><tr><th>Command</th></tr></thead><tbody><tr><td><code>--depth={n}</code></td></tr><tr><td>next</td></tr></tbody></table>';
+
+      const hast = mdxish(doc);
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(1);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+    });
+
+    it('keeps a bare identifier expression in a cell as literal text', () => {
+      const doc =
+        '<table><thead><tr><th>H</th></tr></thead><tbody><tr><td>value is {your-property-name}</td></tr><tr><td>next</td></tr></tbody></table>';
+
+      const hast = mdxish(doc);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+      expect(toHtml(hast)).toContain('<td>value is {your-property-name}</td>');
+    });
+
+    it('still evaluates a self-contained expression inside a cell', () => {
+      const doc =
+        '<table><thead><tr><th>H</th></tr></thead><tbody><tr><td><code>x={1 + 2}</code></td></tr><tr><td>next</td></tr></tbody></table>';
+
+      const hast = mdxish(doc);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+      expect(toHtml(hast)).toContain('<code>x=3</code>');
+    });
+
+    it('resolves a quoted string expression inside inline code', () => {
+      const doc =
+        '<table><thead><tr><th>H</th></tr></thead><tbody><tr><td><code>--r-format {"your-rule-format"}</code></td></tr><tr><td>next</td></tr></tbody></table>';
+
+      const hast = mdxish(doc);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+      expect(toHtml(hast)).toContain('<code>--r-format your-rule-format</code>');
+    });
+
+    it('preserves escaped braces inside a code cell', () => {
+      const doc =
+        '<table><thead><tr><th>H</th></tr></thead><tbody><tr><td><code>literal \\{"not-expr"\\}</code></td></tr><tr><td>next</td></tr></tbody></table>';
+
+      const hast = mdxish(doc);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+      const code = findAllElementsByTagName(bodyRowsOf(hast)[0], 'code');
+      const codeText = code[0].children[0];
+      expect(codeText.type === 'text' && codeText.value).toBe('literal {"not-expr"}');
+    });
+
+    it('handles multiple code spans with expressions across a line break in one cell', () => {
+      const doc = `<table><thead><tr><th>H</th></tr></thead><tbody><tr><td>
+<code>a --version {v-number}</code> <br /><br />
+<code>a {p-name}</code>
+</td></tr><tr><td>next</td></tr></tbody></table>`;
+
+      const hast = mdxish(doc);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+
+      const codes = findAllElementsByTagName(bodyRowsOf(hast)[0], 'code');
+      expect(codes).toHaveLength(2);
+      expect(codes.map(code => (code.children[0].type === 'text' ? code.children[0].value : ''))).toStrictEqual([
+        'a --version {v-number}',
+        'a {p-name}',
+      ]);
     });
   });
 
@@ -953,9 +1050,13 @@ None of the following content will get rendered!`;
   </tbody>
 </table>`;
 
-      const bodyRows = findAllElementsByTagName(mdxish(doc) as unknown as Element, 'tbody')[0].children
-        .filter((c): c is Element => (c as Element).tagName === 'tr')
-        .map(tr => tr.children.filter((c): c is Element => (c as Element).tagName === 'td').map(td => (td.children[0] as { value: string }).value));
+      const bodyRows = findAllElementsByTagName(mdxish(doc) as unknown as Element, 'tbody')[0]
+        .children.filter((c): c is Element => (c as Element).tagName === 'tr')
+        .map(tr =>
+          tr.children
+            .filter((c): c is Element => (c as Element).tagName === 'td')
+            .map(td => (td.children[0] as { value: string }).value),
+        );
 
       expect(bodyRows).toStrictEqual([
         ['Hello', 'Globe'],
@@ -973,9 +1074,13 @@ None of the following content will get rendered!`;
 </tbody>
 </Table>`;
 
-      const bodyRows = findAllElementsByTagName(mdxish(doc) as unknown as Element, 'tbody')[0].children
-        .filter((c): c is Element => (c as Element).tagName === 'tr')
-        .map(tr => tr.children.filter((c): c is Element => (c as Element).tagName === 'td').map(td => (td.children[0] as { value: string }).value));
+      const bodyRows = findAllElementsByTagName(mdxish(doc) as unknown as Element, 'tbody')[0]
+        .children.filter((c): c is Element => (c as Element).tagName === 'tr')
+        .map(tr =>
+          tr.children
+            .filter((c): c is Element => (c as Element).tagName === 'td')
+            .map(td => (td.children[0] as { value: string }).value),
+        );
 
       expect(bodyRows).toStrictEqual([['1'], ['2'], ['3']]);
     });
@@ -1169,5 +1274,43 @@ None of the following content will get rendered!`;
       expect(html).toContain('<code>snake_case_value</code>');
       expect(html).toContain('<code>another_name_here</code>');
     });
+  });
+
+  describe('tables with no <tbody> wrapper', () => {
+    it.each([['Table'], ['table']])('still renders all the body rows in a <%s> but <thead> exists', tag => {
+      const doc = `<${tag}>
+  <thead><tr><th>col</th></tr></thead>
+  <tr><td>row 1</td></tr>
+  <tr><td>row 2</td></tr>
+</${tag}>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const rows = findAllElementsByTagName(tables[0], 'tr');
+      expect(rows).toHaveLength(3);
+    });
+
+    it.each([['Table'], ['table']])(
+      'still renders all the body rows in a <%s> when <thead> also does not exist',
+      tag => {
+        const doc = `<${tag}>
+  <tr><th>col</th></tr>
+  <tr><td>row 1</td></tr>
+  <tr><td>row 2</td></tr>
+</${tag}>`;
+
+        const hast = mdxish(doc);
+        const tables = findAllElementsByTagName(hast, 'table');
+        expect(tables).toHaveLength(1);
+
+        const rows = findAllElementsByTagName(tables[0], 'tr');
+        expect(rows).toHaveLength(3);
+
+        const headerRow = findAllElementsByTagName(tables[0], 'th');
+        expect(headerRow).toHaveLength(1);
+      },
+    );
   });
 });

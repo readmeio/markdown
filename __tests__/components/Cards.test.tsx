@@ -4,7 +4,7 @@ import React from 'react';
 
 import CardsGrid, { Card } from '../../components/Cards';
 
-import { renderingEngines } from './utils';
+import { captureMdxishProps, renderingEngines } from './utils';
 
 describe('Cards', () => {
   describe('general component rendering', () => {
@@ -32,12 +32,47 @@ describe('Cards', () => {
     it('renders Card as an anchor when href is provided', () => {
       const { container } = render(
         <CardsGrid>
-          <Card href="https://example.com" title="Link">Linked</Card>
+          <Card href="https://example.com" title="Link">
+            Linked
+          </Card>
         </CardsGrid>,
       );
       const card = container.querySelector('a.Card');
       expect(card).toHaveAttribute('href', 'https://example.com');
       expect(container.querySelector('.Card-arrow')).toBeInTheDocument();
+    });
+
+    it('renders the link with LinkComponent when one is given', () => {
+      const LinkComponent = ({
+        children,
+        className,
+        href,
+        target,
+      }: React.PropsWithChildren<{ className?: string; href?: string; target?: string }>) => (
+        <a className={className} href={`/ai-ml${href}`} target={target}>
+          {children}
+        </a>
+      );
+      const { container } = render(
+        <CardsGrid>
+          <Card href="/docs/f" LinkComponent={LinkComponent} title="Link">
+            Linked
+          </Card>
+        </CardsGrid>,
+      );
+      expect(container.querySelector('a.Card')).toHaveAttribute('href', '/ai-ml/docs/f');
+    });
+
+    it('ignores LinkComponent when there is no href', () => {
+      const LinkComponent = ({ children }: React.PropsWithChildren) => <a href="/nope">{children}</a>;
+      const { container } = render(
+        <CardsGrid>
+          <Card LinkComponent={LinkComponent} title="Static">
+            Static
+          </Card>
+        </CardsGrid>,
+      );
+      expect(container.querySelector('div.Card')).toBeInTheDocument();
     });
 
     it('renders Card as a div when no href', () => {
@@ -49,10 +84,31 @@ describe('Cards', () => {
       expect(container.querySelector('div.Card')).toBeInTheDocument();
     });
 
+    it('only wraps a fixed column count when cardWidth is a length or math expression', () => {
+      const grid = (props: React.ComponentProps<typeof CardsGrid>) =>
+        render(
+          <CardsGrid {...props}>
+            <Card title="First">Content</Card>
+          </CardsGrid>,
+        ).container.querySelector('.CardsGrid');
+
+      expect(grid({ columns: 4 })).toHaveClass('CardsGrid_wrap');
+      expect(grid({ columns: '3', cardWidth: '10em' })).toHaveClass('CardsGrid_wrap');
+      expect(grid({ columns: 4, cardWidth: '.5rem' })).toHaveClass('CardsGrid_wrap');
+      expect(grid({ columns: 4, cardWidth: 'calc(100px + 100px)' })).toHaveClass('CardsGrid_wrap');
+      expect(grid({ columns: 4, cardWidth: 'clamp(150px, 20vw, 250px)' })).toHaveClass('CardsGrid_wrap');
+      expect(grid({})).not.toHaveClass('CardsGrid_wrap');
+      expect(grid({ columns: 'auto-fit' })).not.toHaveClass('CardsGrid_wrap');
+      expect(grid({ columns: 3, cardWidth: 'auto' })).not.toHaveClass('CardsGrid_wrap');
+      expect(grid({ columns: 3, cardWidth: 'min-content' })).not.toHaveClass('CardsGrid_wrap');
+    });
+
     it('renders icon and badge props', () => {
       const { container } = render(
         <CardsGrid>
-          <Card badge="New" icon="fa-star" title="Featured">Content</Card>
+          <Card badge="New" icon="fa-star" title="Featured">
+            Content
+          </Card>
         </CardsGrid>,
       );
       expect(container.querySelector('.Card-icon')).toBeInTheDocument();
@@ -60,7 +116,7 @@ describe('Cards', () => {
     });
   });
 
-  describe('given a Cards with Card children', () => {
+  describe('given Cards with Card children', () => {
     const md = `
 <Cards>
   <Card title="First">First content</Card>
@@ -76,6 +132,37 @@ describe('Cards', () => {
       expect(container.querySelectorAll('.Card')).toHaveLength(2);
       expect(container.querySelectorAll('.Card-title')).toHaveLength(2);
       expect(container).toMatchSnapshot();
+    });
+  });
+
+  describe('given the props in Cards', () => {
+    const md = `
+<Cards cardWidth="400px" columns="2">
+  <Card title="Card One">
+
+  </Card>
+  <Card title="Card Two">
+
+  </Card>
+</Cards>
+    `;
+
+    it.each(renderingEngines)('%s: applies cardWidth as the grid CSS variable', (_label, renderContent) => {
+      const Content = renderContent(md);
+      const { container } = render(<Content />);
+
+      const grid = container.querySelector<HTMLElement>('.CardsGrid');
+      expect(grid).toBeInTheDocument();
+      expect(grid?.style.getPropertyValue('--CardsGrid-cardWidth')).toBe('400px');
+    });
+
+    it.each(renderingEngines)('%s: applies columns as the grid CSS variable', (_label, renderContent) => {
+      const Content = renderContent(md);
+      const { container } = render(<Content />);
+
+      const grid = container.querySelector<HTMLElement>('.CardsGrid');
+      expect(grid).toBeInTheDocument();
+      expect(grid?.style.getPropertyValue('--CardsGrid-columns')).toBe('2');
     });
   });
 
@@ -130,15 +217,29 @@ describe('Cards', () => {
     });
   });
 
+  it('mdxish: <Card style="..."> renders without crashing and receives style as an object', () => {
+    const md = '<Cards>\n  <Card title="Styled" style="color: red">body</Card>\n</Cards>';
+    const [, renderMdxishContent] = renderingEngines.find(([label]) => label === 'mdxish')!;
+    const Content = renderMdxishContent(md);
+
+    expect(() => render(<Content />)).not.toThrow();
+
+    const captured = captureMdxishProps(md, 'Card');
+    expect(captured.style).toBeTypeOf('object');
+    expect(captured.style).toMatchObject({ color: 'red' });
+  });
+
   describe('given various card structures', () => {
-    it.each(renderingEngines)('%s: should parse where there is space after the opening tag and before the closing tag', (_label, renderContent) => {
-      const mdWithSpaces = `
+    it.each(renderingEngines)(
+      '%s: should parse where there is space after the opening tag and before the closing tag',
+      (_label, renderContent) => {
+        const mdWithSpaces = `
 <Cards>
   <Card title="First">Content</Card>
   <Card title="Second">More</Card>
 </Cards>
       `;
-      const mdWithoutSpaces = `
+        const mdWithoutSpaces = `
 
 <Cards>
 
@@ -148,13 +249,14 @@ describe('Cards', () => {
 </Cards>
       `;
 
-      const ContentWithSpaces = renderContent(mdWithSpaces);
-      const { container: containerWithSpaces } = render(<ContentWithSpaces />);
-      const ContentWithoutSpaces = renderContent(mdWithoutSpaces);
-      const { container: containerWithoutSpaces } = render(<ContentWithoutSpaces />);
+        const ContentWithSpaces = renderContent(mdWithSpaces);
+        const { container: containerWithSpaces } = render(<ContentWithSpaces />);
+        const ContentWithoutSpaces = renderContent(mdWithoutSpaces);
+        const { container: containerWithoutSpaces } = render(<ContentWithoutSpaces />);
 
-      expect(containerWithSpaces.innerHTML).toBe(containerWithoutSpaces.innerHTML);
-    });
+        expect(containerWithSpaces.innerHTML).toBe(containerWithoutSpaces.innerHTML);
+      },
+    );
 
     it.each(renderingEngines)('%s: should parse when the code is in one line', (_label, renderContent) => {
       const md = '<Cards><Card title="First">Content</Card><Card title="Second">More</Card></Cards>';

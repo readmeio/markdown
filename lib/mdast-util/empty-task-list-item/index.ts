@@ -13,11 +13,7 @@ import type { CompileContext, Extension as FromMarkdownExtension, Handle } from 
 function exitListItemWithEmptyTaskListItem(this: CompileContext, token: Parameters<Handle>[0]): void {
   const node = this.stack[this.stack.length - 1];
 
-  if (
-    node &&
-    node.type === 'listItem' &&
-    typeof (node as ListItem).checked !== 'boolean'
-  ) {
+  if (node && node.type === 'listItem' && typeof (node as ListItem).checked !== 'boolean') {
     const listItem = node as ListItem;
     const head = listItem.children[0];
 

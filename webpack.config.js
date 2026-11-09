@@ -1,14 +1,18 @@
-/* eslint-disable import/no-extraneous-dependencies */
 const ExtractCSS = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 const { merge } = require('webpack-merge');
+
+const gemojiCatalogGuardPlugin = require('./scripts/gemoji-catalog-guard-plugin');
 
 const env = process.env.NODE_ENV || 'development';
 const isDev = env === 'development';
 
 const getConfig = ({ target }) => ({
   target,
-  entry: './index',
+  entry: {
+    main: './index',
+    'owlmoji-details': './lib/owlmoji-details',
+  },
   plugins: [
     new ExtractCSS({
       filename: '[name].css',
@@ -58,7 +62,16 @@ const getConfig = ({ target }) => ({
       },
       {
         test: /\.scss$/,
-        use: [ExtractCSS.loader, 'css-loader', 'sass-loader'],
+        use: [
+          ExtractCSS.loader,
+          'css-loader',
+          {
+            loader: 'sass-loader',
+            // Compressed output with non-ASCII (e.g. Font Awesome glyphs) gets a BOM that lands mid-bundle
+            // and breaks the selector after it (RM-19250).
+            options: { sassOptions: { charset: false } },
+          },
+        ],
       },
       {
         test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
@@ -91,7 +104,10 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
     '@readme/variable': '@readme/variable',
     '@tippyjs/react': '@tippyjs/react',
     acorn: 'acorn',
-    mermaid: 'mermaid',
+    // 'import' (not a plain umd external) keeps import('mermaid') lazy in
+    // dist/main.js, so consumers only download mermaid when a diagram renders.
+    // Guarded by scripts/verify-lazy-mermaid.cjs.
+    mermaid: 'import mermaid',
     react: {
       amd: 'react',
       commonjs: 'react',
@@ -107,9 +123,14 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
       umd: 'react-dom',
     },
   },
+  plugins: [gemojiCatalogGuardPlugin],
   output: {
     library: {
       type: 'umd',
+    },
+    // Required for the 'import mermaid' external
+    environment: {
+      dynamicImport: true,
     },
   },
   resolve: {
@@ -122,6 +143,10 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
 });
 
 const serverConfig = merge(getConfig({ target: 'node' }), {
+  entry: {
+    'render-diff': './lib/render-diff',
+    'render-fixture': './lib/render-fixture',
+  },
   output: {
     filename: '[name].node.js',
   },

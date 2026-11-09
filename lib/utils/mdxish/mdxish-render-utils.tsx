@@ -1,4 +1,5 @@
 import type { GlossaryTerm } from '../../../contexts/GlossaryTerms';
+import type { RenderConfig } from '../../../contexts/RenderConfig';
 import type { CustomComponents, IndexableElements, RMDXModule, TocList, Variables } from '../../../types';
 import type { Element } from 'hast';
 
@@ -9,18 +10,23 @@ import { unified } from 'unified';
 
 import * as Components from '../../../components';
 import Contexts from '../../../contexts';
+import User from '../../../utils/user';
+import { RAW_HTML_PROP_NAMES } from '../../constants';
 import makeUseMDXComponents from '../makeUseMdxComponents';
 
-export interface RenderOpts {
+import { resolveAttributeVariables } from './mdxish-variables';
+
+export interface RenderOpts extends RenderConfig {
   baseUrl?: string;
   components?: CustomComponents;
-  copyButtons?: boolean;
   imports?: Record<string, unknown>;
   terms?: GlossaryTerm[];
   theme?: 'dark' | 'light';
   useTailwind?: boolean;
   variables?: Variables;
 }
+
+type ContextOpts = Pick<RenderOpts, 'baseUrl' | 'copyButtons' | 'mermaidControls' | 'terms' | 'theme' | 'variables'>;
 
 /** Flatten CustomComponents into a component map for rehype-react */
 export function exportComponentsForRehype(components: CustomComponents): Record<string, React.ComponentType> {
@@ -62,33 +68,71 @@ export function exportComponentsForRehype(components: CustomComponents): Record<
 type PropsWithHastNode = Record<string, unknown> & { node?: Element };
 
 /**
+ * Code rides on a `value` prop, and `variablesCodeResolver` owns it at parse time where it
+ * deliberately leaves mermaid alone; resolving it again here would override that.
+ */
+const CODE_TAG_NAMES = new Set(['code']);
+
+const isImageAlt = (tagName: string | undefined, key: string) => tagName === 'img' && key === 'alt';
+
+/**
+ * Resolve `{user.*}` in string-valued props, plus legacy `<<...>>` in img alt, where markdown flattens
+ * body variables to text (RM-10865). Body text is handled by the `Variable` component, but
+ * attributes are plain strings, so they are substituted here — at render time, so that a
+ * server-parsed (user-agnostic) tree resolves against the current reader's variables.
+ */
+function resolveVariablesInProps(
+  props: Record<string, unknown>,
+  user: Record<string, unknown>,
+  tagName?: string,
+): Record<string, unknown> {
+  const isCodeTag = Boolean(tagName && CODE_TAG_NAMES.has(tagName));
+
+  const resolvedEntries = Object.entries(props).map(([key, value]): [string, unknown] => {
+    const isDocumentContent = RAW_HTML_PROP_NAMES.has(key) || (isCodeTag && key === 'value');
+    if (typeof value !== 'string' || isDocumentContent) return [key, value];
+    return [key, resolveAttributeVariables(value, user, isImageAlt(tagName, key))];
+  });
+
+  return Object.fromEntries(resolvedEntries);
+}
+
+/**
  * Custom React.createElement wrapper that recovers real JS prop values for
  * custom components. rehype-react v6 uses hast-to-hyperscript, which stringifies
  * array-valued hast properties to space-separated strings (for className-style
  * semantics). That breaks any component prop that is genuinely an array. With
  * `passNode: true` we get the original hast node in `props.node` for components
  * and can read the raw properties directly.
+ *
+ * Only arrays win over `rest`, overwriting other shapes would undo correct
+ * React conversions like `style="color:red"` → `{ color: 'red' }`.
  */
-function createElementPreservingHastProps(
-  type: React.ElementType,
-  props: PropsWithHastNode | null,
-  ...children: React.ReactNode[]
-): React.ReactElement {
-  if (props?.node?.properties) {
-    const { node, ...rest } = props;
-    const mergedProps = { ...rest, ...node.properties };
-    // Strip undefined so positional args don't shadow node.properties.children
-    const definedChildren = children.filter(c => c !== undefined);
-    return React.createElement(type, mergedProps, ...definedChildren);
-  }
-  return React.createElement(type, props, ...children);
-}
+const makeCreateElementPreservingHastProps = (user: Record<string, unknown>) =>
+  function createElementPreservingHastProps(
+    type: React.ElementType,
+    props: PropsWithHastNode | null,
+    ...children: React.ReactNode[]
+  ): React.ReactElement {
+    if (props?.node?.properties) {
+      const { node, ...rest } = props;
+      const mergedProps: Record<string, unknown> = { ...rest };
+      Object.entries(node.properties).forEach(([key, value]) => {
+        if (Array.isArray(value)) mergedProps[key] = value;
+      });
+      // Strip undefined so positional args don't shadow node.properties.children
+      const definedChildren = children.filter(c => c !== undefined);
+      const withVariables = resolveVariablesInProps(mergedProps, user, node.tagName);
+      return React.createElement(type, withVariables, ...definedChildren);
+    }
+    return React.createElement(type, props && resolveVariablesInProps(props, user), ...children);
+  };
 
 /** Create a rehype-react processor */
-export function createRehypeReactProcessor(components: Record<string, React.ComponentType>) {
+export function createRehypeReactProcessor(components: Record<string, React.ComponentType>, variables?: Variables) {
   // @ts-expect-error - rehype-react types are incompatible with React.Fragment return type
   return unified().use(rehypeReact, {
-    createElement: createElementPreservingHastProps,
+    createElement: makeCreateElementPreservingHastProps(User(variables)),
     Fragment: React.Fragment,
     components,
     passNode: true,
@@ -106,22 +150,24 @@ export function createTocComponent(tocHast: TocList): React.FC {
   const tocReactElement = tocProcessor.stringify(tocHast) as React.ReactNode;
 
   const TocComponent = () =>
-    tocReactElement ? (
-      <Components.TableOfContents>{tocReactElement}</Components.TableOfContents>
-    ) : null;
+    tocReactElement ? <Components.TableOfContents>{tocReactElement}</Components.TableOfContents> : null;
   TocComponent.displayName = 'Toc';
 
   return TocComponent;
 }
 
 /** Create the default wrapper component with contexts */
-export function createDefaultComponent(
-  content: React.ReactNode,
-  opts: Pick<RenderOpts, 'baseUrl' | 'copyButtons' | 'terms' | 'theme' | 'variables'>,
-): React.FC {
-  const { baseUrl, copyButtons, terms, theme, variables } = opts;
+export function createDefaultComponent(content: React.ReactNode, opts: ContextOpts): React.FC {
+  const { baseUrl, copyButtons, mermaidControls, terms, theme, variables } = opts;
   const DefaultComponent = () => (
-    <Contexts baseUrl={baseUrl} copyButtons={copyButtons} terms={terms} theme={theme} variables={variables}>
+    <Contexts
+      baseUrl={baseUrl}
+      copyButtons={copyButtons}
+      mermaidControls={mermaidControls}
+      terms={terms}
+      theme={theme}
+      variables={variables}
+    >
       {content}
     </Contexts>
   );
@@ -134,7 +180,7 @@ export function buildRMDXModule(
   content: React.ReactNode,
   headings: IndexableElements[],
   tocHast: TocList | null,
-  opts: Pick<RenderOpts, 'baseUrl' | 'copyButtons' | 'terms' | 'theme' | 'variables'>,
+  opts: ContextOpts,
 ): RMDXModule {
   const DefaultComponent = createDefaultComponent(content, opts);
   const Toc = tocHast ? createTocComponent(tocHast) : () => null;

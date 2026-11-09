@@ -3,6 +3,9 @@
  */
 export const componentTagPattern = /<(\/?[A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>/g;
 
+/** A bare component name, the same shape `componentTagPattern` accepts inside `<…>`. */
+export const componentNamePattern = /^[A-Z][A-Za-z0-9_]*$/;
+
 /**
  * MDAST flow (block-level) content types that cannot be represented
  * inside GFM table cells. Used to decide whether a table should be
@@ -10,15 +13,7 @@ export const componentTagPattern = /<(\/?[A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>/g;
  *
  * @see https://github.com/syntax-tree/mdast#flowcontent
  */
-export const FLOW_TYPES = new Set([
-  'blockquote',
-  'code',
-  'heading',
-  'html',
-  'list',
-  'table',
-  'thematicBreak',
-]);
+export const FLOW_TYPES = new Set(['blockquote', 'code', 'heading', 'html', 'list', 'table', 'thematicBreak']);
 
 /**
  * MDAST parent types whose children are restricted to inline content. A block-level
@@ -58,11 +53,12 @@ export const INLINE_ONLY_PARENT_TYPES = new Set([
  *
  * @see processor/transform/mdxish/components/inline-mdx-blocks.ts
  */
-export const INLINE_COMPONENT_TAGS = new Set(['Anchor', 'Glossary']);
+export const INLINE_COMPONENT_TAGS = new Set(['Anchor', 'NoTranslate', 'Glossary']);
 
 /**
  * PascalCase tags that have their own dedicated tokenizer / transformer
  * and must not be claimed by the generic `mdxComponent` construct.
+ * Subject to change as we add more dedicated tokenizers.
  */
 const DEDICATED_COMPONENT_TAGS = ['HTMLBlock', 'Table'] as const;
 
@@ -76,9 +72,18 @@ export const GENERIC_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>([
 ]);
 
 /**
+ * Tags the micromark `mdxComponent` tokenizer must not claim: inline components,
+ * plus `Table` (whose rows `jsxTable` has to keep together). `HTMLBlock` is absent
+ * on purpose — claiming it yields the same `html` node, and the transforms skip it
+ * by name via {@link GENERIC_MDX_COMPONENT_EXCLUDED_TAGS}.
+ */
+export const TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>(['Table', ...INLINE_COMPONENT_TAGS]);
+
+/**
  * Lowercased variant of {@link INLINE_COMPONENT_TAGS} for consumers that
  * run after rehype (where hast `tagName` is normalized to lowercase).
  */
-export const INLINE_COMPONENT_TAGS_LOWER = new Set(
-  [...INLINE_COMPONENT_TAGS].map(t => t.toLowerCase()),
-);
+export const INLINE_COMPONENT_TAGS_LOWER = new Set([...INLINE_COMPONENT_TAGS].map(t => t.toLowerCase()));
+
+/** Raw markup props injected with `dangerouslySetInnerHTML` by HTMLBlock and Embed; never interpolate reader values. */
+export const RAW_HTML_PROP_NAMES = new Set(['html']);

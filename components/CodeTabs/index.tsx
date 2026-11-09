@@ -1,55 +1,10 @@
-import type { Mermaid } from 'mermaid';
-
 import syntaxHighlighterUtils from '@readme/syntax-highlighter/utils';
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useContext } from 'react';
 
 import ThemeContext from '../../contexts/Theme';
-import useHydrated from '../../hooks/useHydrated';
-
-let mermaid: Mermaid;
+import MermaidDiagram from '../MermaidDiagram';
 
 const { uppercase } = syntaxHighlighterUtils;
-
-// Module-level queue that batches mermaid nodes across all CodeTabs instances into a
-// single mermaid.run() call. This is necessary because mermaid generates SVG element IDs
-// using Date.now(), which collides when multiple diagrams render in the same millisecond.
-// Colliding IDs cause diagrams to overlap or break layout.
-//
-// Why not use `deterministicIDSeed` with a unique ID per diagram? Mermaid's implementation
-// only uses seed.length (not the seed value) to compute the starting ID, so every UUID
-// (36 chars) produces the same `mermaid-36` prefix — the collision remains.
-// See: https://github.com/mermaid-js/mermaid/blob/mermaid%4011.12.0/packages/mermaid/src/utils.ts#L755-L761
-//
-// These vars must be module-scoped (not per-instance refs) because the batching requires
-// cross-instance coordination. They are short-lived: the queue drains on the next macrotask
-// and cleanup clears everything on unmount.
-let mermaidQueue: HTMLPreElement[] = [];
-let mermaidFlushTimer: ReturnType<typeof setTimeout> | null = null;
-let currentTheme: string | undefined;
-
-function queueMermaidNode(node: HTMLPreElement, theme: string) {
-  mermaidQueue.push(node);
-  currentTheme = theme;
-
-  if (!mermaidFlushTimer) {
-    // setTimeout(0) defers to a macrotask, after all useEffects have queued their nodes
-    mermaidFlushTimer = setTimeout(async () => {
-      const nodes = [...mermaidQueue];
-      mermaidQueue = [];
-      mermaidFlushTimer = null;
-
-      const module = await import('mermaid');
-      mermaid = module.default;
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: currentTheme === 'dark' ? 'dark' : 'default',
-        deterministicIds: true,
-      });
-
-      await mermaid.run({ nodes });
-    }, 0);
-  }
-}
 
 interface Props {
   children: JSX.Element | JSX.Element[];
@@ -58,8 +13,6 @@ interface Props {
 const CodeTabs = (props: Props) => {
   const { children } = props;
   const theme = useContext(ThemeContext);
-  const isHydrated = useHydrated();
-  const mermaidRef = useRef<HTMLPreElement>(null);
 
   // Handle both array (from rehype-react in rendering mdxish) and single element (MDX/JSX runtime) cases
   // The children here is the individual code block objects
@@ -71,25 +24,6 @@ const CodeTabs = (props: Props) => {
   const getCodeComponent = (pre: JSX.Element) => {
     return Array.isArray(pre?.props?.children) ? pre.props.children[0] : pre?.props?.children;
   };
-
-  const containAtLeastOneMermaid = childrenArray.some(pre => getCodeComponent(pre)?.props?.lang === 'mermaid');
-
-  useEffect(() => {
-    // Wait for hydration so mermaid's DOM mutations don't cause mismatches
-    if (typeof window !== 'undefined' && containAtLeastOneMermaid && isHydrated && mermaidRef.current) {
-      queueMermaidNode(mermaidRef.current, theme);
-    }
-
-    return () => {
-      // Clear the batch timer on unmount to prevent mermaid from running
-      // after the DOM is torn down
-      if (mermaidFlushTimer) {
-        clearTimeout(mermaidFlushTimer);
-        mermaidFlushTimer = null;
-        mermaidQueue = [];
-      }
-    };
-  }, [containAtLeastOneMermaid, theme, isHydrated]);
 
   function handleClick({ target }, index: number) {
     const $wrap = target.parentElement.parentElement;
@@ -107,12 +41,7 @@ const CodeTabs = (props: Props) => {
   if (childrenArray.length === 1) {
     const codeComponent = getCodeComponent(childrenArray[0]);
     if (codeComponent?.props?.lang === 'mermaid') {
-      const value = codeComponent?.props?.value;
-      return (
-        <pre ref={mermaidRef} className="mermaid-render mermaid_single">
-          {value}
-        </pre>
-      );
+      return <MermaidDiagram value={codeComponent.props.value} />;
     }
   }
 

@@ -2,7 +2,6 @@ import { EXIT, visit } from 'unist-util-visit';
 
 import { mdast, mdx, mdxish } from '../../index';
 
-
 import {
   jsxTableWithInlineCodeWithPipe,
   tableWithInlineCodeWithPipe,
@@ -545,7 +544,7 @@ describe('mdxish table compiler', () => {
       ?.children.find(child => child.type === 'element' && child.tagName === 'td');
 
     expect(td).toBeDefined();
-    const findValue = (node) => {
+    const findValue = node => {
       if (node.value?.includes('foo | bar')) return true;
       return node.children?.some(c => findValue(c)) ?? false;
     };
@@ -719,7 +718,7 @@ describe('mdxish table compiler', () => {
     const firstRowCells = rows[0].children.filter(child => child.type === 'element' && child.tagName === 'td');
     expect(firstRowCells).toHaveLength(2);
 
-    const getTextContent = (node) => {
+    const getTextContent = node => {
       if (node.type === 'text') return node.value;
       if (node.children) return node.children.map(getTextContent).join('');
       return '';
@@ -772,7 +771,7 @@ describe('mdxish table compiler', () => {
 
     const tbody = table.children.find(child => child.type === 'element' && child.tagName === 'tbody');
     expect(tbody).toBeDefined();
-    
+
     const rows = tbody.children.filter(child => child.type === 'element' && child.tagName === 'tr');
     expect(rows).toHaveLength(2);
   });

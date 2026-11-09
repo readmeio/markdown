@@ -97,6 +97,6 @@ hello there [something]
         </Table>
         "
       `);
-    })
-  })
+    });
+  });
 });

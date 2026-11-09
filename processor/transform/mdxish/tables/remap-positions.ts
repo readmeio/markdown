@@ -37,6 +37,21 @@ const buildOffsetMapper = (inserts: Insert[]): ((repaired: number) => number) =>
 };
 
 /**
+ * Compose the per-repair offset mappers into one that maps an offset in the
+ * fully-repaired string back to the original. `layers` are in application
+ * order; each maps its own output space to its input space, so we apply them
+ * last-repair-first to peel every edit back to the original coordinates.
+ */
+const composeOffsetMapper = (layers: Insert[][]): ((repaired: number) => number) => {
+  const mappers = layers.map(buildOffsetMapper);
+  return (repaired: number): number => {
+    let offset = repaired;
+    for (let i = mappers.length - 1; i >= 0; i -= 1) offset = mappers[i](offset);
+    return offset;
+  };
+};
+
+/**
  * Map an offset in `source` to its 1-based `{ line, column }`. `lineStarts`
  * is the precomputed array of offsets where each line begins.
  */
@@ -62,13 +77,11 @@ const computeLineStarts = (source: string): number[] => {
 
 /**
  * Walk `tree`, translating every node's position from the repaired source's
- * coordinate space back to the original source. Offsets are remapped via the
- * insert list; line/column are recomputed from the original source so they
- * remain accurate even if repairs introduced newlines.
+ * coordinate space back to the original source via `mapOffset`. Line/column
+ * are recomputed from the original source so they remain accurate even if
+ * repairs introduced newlines.
  */
-export const remapPositionsToOriginal = (tree: Node, originalSource: string, inserts: Insert[]): void => {
-  if (inserts.length === 0) return;
-  const mapOffset = buildOffsetMapper(inserts);
+const remapWithMapper = (tree: Node, originalSource: string, mapOffset: (repaired: number) => number): void => {
   const lineStarts = computeLineStarts(originalSource);
 
   visit(tree, child => {
@@ -87,4 +100,13 @@ export const remapPositionsToOriginal = (tree: Node, originalSource: string, ins
       child.position.end.column = column;
     }
   });
+};
+
+/**
+ * Remap positions produced after a chain of repairs (each applied to the prior
+ * one's output) back to the original source coordinates.
+ */
+export const remapPositionsThroughLayers = (tree: Node, originalSource: string, layers: Insert[][]): void => {
+  if (layers.length === 0) return;
+  remapWithMapper(tree, originalSource, composeOffsetMapper(layers));
 };

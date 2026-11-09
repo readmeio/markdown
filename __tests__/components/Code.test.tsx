@@ -4,7 +4,7 @@ import React from 'react';
 
 import Code from '../../components/Code';
 
-import { renderingEngines } from './utils';
+import { captureMdxishProps, renderingEngines } from './utils';
 
 describe('Code', () => {
   describe('general component rendering', () => {
@@ -34,11 +34,32 @@ const x = 1;
     expect(container.textContent).toContain('const x = 1;');
   });
 
+  it.each(renderingEngines)('%s: adds copy buttons only when copyButtons is set', (_label, renderContent) => {
+    const md = '```js\nconst x = 1;\n```';
+    const copyButtonsIn = (Content: React.ComponentType) =>
+      render(<Content />).container.querySelectorAll('button[aria-label="Copy Code"]');
+
+    expect(copyButtonsIn(renderContent(md))).toHaveLength(0);
+    expect(copyButtonsIn(renderContent(md, { copyButtons: true }))).toHaveLength(1);
+  });
+
   it.each(renderingEngines)('%s: renders inline code', (_label, renderContent) => {
     const md = 'Use `console.log()` to debug';
     const Content = renderContent(md);
     const { container } = render(<Content />);
     expect(container.querySelector('code')).toBeInTheDocument();
     expect(container.textContent).toContain('console.log()');
+  });
+
+  it('mdxish: inline <code style="..."> renders without crashing and receives style as an object', () => {
+    const md = 'Use <code style="color: red">console.log()</code> to debug';
+    const [, renderMdxishContent] = renderingEngines.find(([label]) => label === 'mdxish')!;
+    const Content = renderMdxishContent(md);
+
+    expect(() => render(<Content />)).not.toThrow();
+
+    const captured = captureMdxishProps(md, 'code');
+    expect(captured.style).toBeTypeOf('object');
+    expect(captured.style).toMatchObject({ color: 'red' });
   });
 });

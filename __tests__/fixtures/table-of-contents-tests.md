@@ -156,3 +156,25 @@ from example_sdk import Client
 client = Client(api_key="your-api-key")
 projects = client.projects.list()
 ```
+
+## Inline Images
+
+After the relevant date, control elements referenced as parameters in SQL that are wrapped by a single quote or backtick will no longer be replaced with the value of the control. Instead, values inside of a single quote or backtick character will be treated as a string or alias in the SQL.
+
+<Image src="https://files.readme.io/ecf8cb0a91ddea75a9079afbd91119f57246b8a673a234e4db338910f5695f83-search-sql-lineage.png" alt="Search bar in the lineage view with the search term SQL, showing 4 results, 2 tables called Custom SQL and 2 custom SQL elements directly." align="center" />
+
+For each document in the referenced list:
+
+1. Open the document for editing.
+
+2. Click **Lineage** (![](https://sigma-docs-screenshots.s3.us-west-2.amazonaws.com/Icons/lineage.svg)), then search for **SQL**.
+
+   <Image src="https://files.readme.io/ecf8cb0a91ddea75a9079afbd91119f57246b8a673a234e4db338910f5695f83-search-sql-lineage.png" alt="Search bar in the lineage view with the search term SQL, showing 4 results, 2 tables called Custom SQL and 2 custom SQL elements directly." align="center" />
+
+3. For each **Custom SQL** ![](https://sigma-docs-screenshots.s3.us-west-2.amazonaws.com/Icons/sql-editor.svg) element in your document, select the custom SQL element and review the SQL query.
+
+   <Image src="https://files.readme.io/07da3dd46aafd8e748d48ba0d5b470645dbe3ca73af41aaeab29a0ca7b0ac244-custom-sql-lineage.png" alt="After selecting the custom SQL element in the lineage view, review the summary of the connection and the SQL query itself, with options to copy query, focus the element in lineage, or edit the SQL." align="center" />
+
+4. If the SQL query contains invalid syntax, click **Edit SQL** to open the element for editing in the canvas.
+
+5. If the SQL statement is more than a few lines, copy the SQL from the custom SQL element and paste it into a plain text editor, then search for the control ID mentioned in the email.

@@ -1,0 +1,74 @@
+## Markdown Nested In HTML
+
+Markdown living inside plain HTML wrappers — headings, links, emphasis, inline
+code, lists, blockquotes, and tables — must parse in both engines (`mdx` and
+`mdxish`), even when the author indents it for readability.
+
+<Columns layout="auto">
+  <Column>
+    <div className="simple-list" data-testid="column-card-1">
+      ## Learn By Example
+
+      Use the API Simulator alongside step-by-step [Guides](https://example.com/docs) to get up and running quickly.
+    </div>
+  </Column>
+
+  <Column>
+    <div className="simple-list" data-testid="column-card-2">
+      ## Stay Informed
+
+      Review [Release Notes](https://example.com/changelog) to learn about **new features** and upcoming changes.
+    </div>
+  </Column>
+</Columns>
+
+<div className="top-level-wrapper" data-testid="top-level-wrapper">
+  ### Indented Markdown After The Opening Tag
+
+  This heading and paragraph are indented two columns yet still parse, with `inline code` and [a link](https://example.com/indented).
+</div>
+
+<section data-testid="island-section">
+
+#### A Blank-Line Separated Island
+
+- List item one
+- List item two
+
+</section>
+
+<div data-testid="glossary-links">
+        <a className="glossary-letter" href="#a">A</a> |
+        <a className="glossary-letter" href="#b">B</a> |
+</div>
+
+<div className="steps" data-testid="ordered-steps">
+  ###### Quickstart Steps
+
+  1. Install the SDK
+  2. Configure your **API key**
+  3. Make your first request
+</div>
+
+<aside data-testid="quote-aside">
+  ###### Words Of Wisdom
+
+  > Documentation is a love letter that you write to your future self.
+</aside>
+
+<div data-testid="table-wrapper">
+
+| Method | Path         |
+| ------ | ------------ |
+| GET    | /v1/examples |
+| POST   | /v1/tokens   |
+
+</div>
+
+<div className="outer-wrapper" data-testid="nested-wrappers">
+  <div className="inner-wrapper">
+  ##### Markdown After A Nested Opening Tag
+
+  Stacked plain wrappers still parse ~~strikethrough~~ and *emphasis*.
+  </div>
+</div>

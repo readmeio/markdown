@@ -3,7 +3,7 @@ import type { Element, Parent, RootContent, Text } from 'hast';
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish } from '../../../lib';
-import { findElementByTagName, parseMdxish } from '../../helpers';
+import { findElementByTagName, parseMdxish, parseMdxishWithSlices, sourceSlicesUnder } from '../../helpers';
 
 describe('mdxish magic blocks', () => {
   describe('image block', () => {
@@ -484,6 +484,39 @@ ${JSON.stringify(
         expect(cellHtml).toContain('<a');
         expect(cellHtml).toContain('You can also configure');
         // Text adjacent to lists is flattened (no <p> wrapper) to prevent margin issues
+      });
+
+      it('does not render a lone leading dash as a bullet list in a cell', () => {
+        const html = getCellHtml('- foo');
+        expect(html).not.toContain('<ul>');
+        expect(html).not.toContain('<li>');
+        expect(html).toContain('- foo');
+      });
+
+      it('does not render leading asterisk or plus followed by space as a bullet list in a cell', () => {
+        expect(getCellHtml('* foo')).not.toContain('<ul>');
+        expect(getCellHtml('* foo')).toContain('* foo');
+        expect(getCellHtml('+ foo')).not.toContain('<ul>');
+        expect(getCellHtml('+ foo')).toContain('+ foo');
+      });
+
+      it('still parses emphasis when an asterisk hugs the text (no space after the marker)', () => {
+        const html = getCellHtml('*foo*');
+        expect(html).toContain('<em>foo</em>');
+      });
+
+      it('renders a 4-space-indented cell line as prose, not a code block (CX-3739)', () => {
+        const html = getCellHtml('Detail.\n\n    const value = 1;');
+        expect(html).not.toContain('<pre>');
+        expect(html).not.toContain('<code>');
+        expect(html).toContain('const value = 1;');
+      });
+
+      it('does not render an indented leading dash as a bullet list in a cell', () => {
+        const html = getCellHtml('Intro\n\n    - foo');
+        expect(html).not.toContain('<ul>');
+        expect(html).not.toContain('<li>');
+        expect(html).toContain('- foo');
       });
 
       it('renders block-level HTML as list when it appears inline after text (e.g. "Note: <ul><li>...</li></ul>")', () => {
@@ -1937,12 +1970,17 @@ asdasdasd
       expect(() => mdxish(md)).not.toThrow();
     });
 
+    // CPU-bound robustness guard (no latency assertion): parsing 10k chars
+    // takes ~2s in isolation but can exceed the 5s default under full-suite
+    // parallel contention in CI. A generous explicit timeout still catches a
+    // genuine hang/catastrophic-backtracking regression while tolerating
+    // worker contention.
     it('should handle very long content without crashing', () => {
       const longContent = 'a'.repeat(10000);
       const md = `[block:callout]{"body":"${longContent}"}[/block]`;
 
       expect(() => mdxish(md)).not.toThrow();
-    });
+    }, 30000);
 
     it('should handle multiple blocks in sequence', () => {
       const md = '[block:callout]{}[/block][block:callout]{}[/block]';
@@ -2092,7 +2130,9 @@ asdasdasd
 
   describe('api-header block', () => {
     const apiHeader = (title: string, level?: number) => {
-      const json = level ? `{ "title": ${JSON.stringify(title)}, "level": ${level} }` : `{ "title": ${JSON.stringify(title)} }`;
+      const json = level
+        ? `{ "title": ${JSON.stringify(title)}, "level": ${level} }`
+        : `{ "title": ${JSON.stringify(title)} }`;
       return `[block:api-header]\n${json}\n[/block]`;
     };
 
@@ -2227,10 +2267,9 @@ asdasdasd
                     type: 'element',
                     tagName: 'li',
                     children: [
-                      {
-                        type: 'text',
-                        value: 'Baz\n',
-                      },
+                      { type: 'text', value: '\n' },
+                      { type: 'element', tagName: 'p', children: [{ type: 'text', value: 'Baz' }] },
+                      { type: 'text', value: '\n' },
                       {
                         type: 'element',
                         tagName: 'img',
@@ -2345,6 +2384,49 @@ asdasdasd
 
       const htmlBlockNode = findElementByTagName(ast, 'html-block');
       expect(htmlBlockNode).not.toBeNull();
+    });
+  });
+
+  // RM-18923: magic block output had no position, or offsets into its JSON fields. It is built
+  // from JSON, so every node now takes the whole `[block:…]` range.
+  describe('positions', () => {
+    const callout = '[block:callout]\n{"type":"info","title":"T","body":"**b**"}\n[/block]';
+
+    it.each([
+      ['editor', true, 'rdme-callout'],
+      ['renderer', false, 'Callout'],
+    ])('gives every node of a callout the block range (%s path)', (_, newEditorTypes, rootLabel) => {
+      const isCallout = (node: { name?: string; type: string }) => node.type === rootLabel || node.name === rootLabel;
+      const slices = sourceSlicesUnder(`Intro\n\n${callout}`, isCallout, { newEditorTypes });
+
+      expect(slices.map(([label]) => label)).toStrictEqual([
+        rootLabel,
+        'heading',
+        'text',
+        'paragraph',
+        'strong',
+        'text',
+      ]);
+      expect(slices.every(([, slice]) => slice === callout)).toBe(true);
+    });
+
+    it('gives each empty block its own range', () => {
+      const empty = '[block:parameters]\n{}\n[/block]';
+      const md = `${empty}\n\nMid\n\n${empty}`;
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+      const [first, second] = tree.children.filter(child => child.type === 'table');
+
+      expect(first).not.toBe(second);
+      expect([first.position?.start.offset, second.position?.start.offset]).toStrictEqual([0, md.lastIndexOf(empty)]);
+      expect(sliceOf(first)).toBe(empty);
+    });
+
+    it('gives every node of a parameters table the block range', () => {
+      const parameters = '[block:parameters]\n{"data":{"h-0":"A","0-0":"**x**"},"cols":1,"rows":1}\n[/block]';
+      const slices = sourceSlicesUnder(parameters, ({ type }) => type === 'table');
+
+      expect(slices.map(([label]) => label)).toStrictEqual(['table', 'tableRow', 'tableHead', 'text', 'tableRow', 'tableCell', 'strong', 'text']); // prettier-ignore
+      expect(slices.every(([, slice]) => slice === parameters)).toBe(true);
     });
   });
 });

@@ -88,7 +88,7 @@ ${mermaidCode}
       const { container } = render(<mod.default />);
 
       // The mermaid-render class is used to identify the mermaid diagrams elements for the
-      // mermaid library to transform. See components/CodeTabs/index.tsx for context
+      // mermaid library to transform. See components/MermaidDiagram/index.tsx for context
       expect(container.querySelector('pre.mermaid-render')).toBeInTheDocument();
       expect(container.querySelector('div.CodeTabs')).not.toBeInTheDocument();
       expect(container.querySelector('pre.mermaid-render')?.textContent).toBe(mermaidCode);

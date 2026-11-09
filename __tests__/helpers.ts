@@ -3,7 +3,6 @@ import type { Node, Root as MdastRoot } from 'mdast';
 
 import * as rdmd from '@readme/markdown-legacy';
 import { visit } from 'unist-util-visit';
-
 import { vi } from 'vitest';
 
 import { run, compile, migrate as baseMigrate, mdastV6 } from '../index';
@@ -77,26 +76,32 @@ export function findAllElementsByTagName(node: HastNode | HastRoot, tagName: str
  * actually parsed. Useful for position-based assertions that need to slice
  * the exact string the parser saw.
  */
-export const parseMdxishWithSource = (
-  doc: string,
-  opts: MdxishOpts = {},
-): { source: string; tree: MdastRoot } => {
+export const parseMdxishWithSource = (doc: string, opts: MdxishOpts = {}): { source: string; tree: MdastRoot } => {
   const { processor, parserReadyContent } = mdxishAstProcessor(doc, opts);
-  const tree = processor.runSync(processor.parse(parserReadyContent)) as MdastRoot;
+  // Pass the source as the file, as the editor's `processSync` does, so source-aware transforms run.
+  const tree = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as MdastRoot;
   return { source: parserReadyContent, tree };
 };
 
 /**
  * Parses markdown through the full mdxish pipeline and returns only the MDAST.
  */
-export const parseMdxish = (doc: string, opts: MdxishOpts = {}): MdastRoot =>
-  parseMdxishWithSource(doc, opts).tree;
+export const parseMdxish = (doc: string, opts: MdxishOpts = {}): MdastRoot => parseMdxishWithSource(doc, opts).tree;
+
+/** Parses markdown and returns a `sliceOf` reading each node's text from the document by its position. */
+export const parseMdxishWithSlices = (doc: string, opts: MdxishOpts = {}) => {
+  const { source, tree } = parseMdxishWithSource(doc, opts);
+  return {
+    tree,
+    sliceOf: (node: Node): string | undefined =>
+      node.position && source.slice(node.position.start.offset, node.position.end.offset),
+  };
+};
 
 /**
  * Round-trips markdown: parse → MDAST → serialize back to markdown.
  */
-export const roundTripMdxish = (doc: string, opts: MdxishOpts = {}): string =>
-  mdxishMdastToMd(parseMdxish(doc, opts));
+export const roundTripMdxish = (doc: string, opts: MdxishOpts = {}): string => mdxishMdastToMd(parseMdxish(doc, opts));
 
 /**
  * Walks a unist tree (mdast or hast) and returns every node that matches.
@@ -105,10 +110,7 @@ export const roundTripMdxish = (doc: string, opts: MdxishOpts = {}): string =>
  * The `test` argument can be either a type string (`collectNodes(tree, 'table')`)
  * or a predicate (`collectNodes(tree, n => n.type === 'foo' && n.name === 'bar')`).
  */
-export const collectNodes = <T extends Node = Node>(
-  tree: Node,
-  test: string | ((node: Node) => boolean),
-): T[] => {
+export const collectNodes = <T extends Node = Node>(tree: Node, test: string | ((node: Node) => boolean)): T[] => {
   const out: T[] = [];
   const match = typeof test === 'string' ? (node: Node) => node.type === test : test;
   visit(tree, node => {
@@ -116,3 +118,45 @@ export const collectNodes = <T extends Node = Node>(
   });
   return out;
 };
+
+/**
+ * `[label, slice]` for the first node matching `test` and every positioned node under it, sliced
+ * from the document. Labels are the JSX name or type.
+ */
+export const sourceSlicesUnder = (
+  doc: string,
+  test: (node: Node) => boolean,
+  opts: MdxishOpts = { newEditorTypes: true },
+): [string, string | undefined][] => {
+  const { tree, sliceOf } = parseMdxishWithSlices(doc, opts);
+  const [match] = collectNodes(tree, test);
+  const slices: [string, string | undefined][] = [];
+  if (!match) return slices;
+  visit(match, node => {
+    if (!node.position) return;
+    const label = 'name' in node && typeof node.name === 'string' ? node.name : node.type;
+    slices.push([label, sliceOf(node)]);
+  });
+  return slices;
+};
+
+/**
+ * Spies on an <img>'s `src` setter so tests can assert whether `useRestartAnimatedImages`
+ * rewound it (see `gifRestartWrites`) or left it untouched (no writes).
+ */
+export const spyOnImageSrc = (img: HTMLImageElement) => {
+  const spy = vi.spyOn(img, 'src', 'set');
+  return {
+    /** Every value written to `src`, in order. */
+    get writes(): string[] {
+      return spy.mock.calls.map(([value]) => value);
+    },
+    restore: () => spy.mockRestore(),
+  };
+};
+
+/**
+ * The `src` writes a GIF restart produces: cleared, then restored. Reassigning `src` is the
+ * only way to rewind an animated image to frame 0.
+ */
+export const gifRestartWrites = (src: string) => ['', src];

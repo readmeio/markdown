@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeContext } from 'micromark-util-types';
 
-import { markdownLineEnding } from 'micromark-util-character';
+import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
+import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
-import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
+import { FOREIGN_CONTENT_TAGS, HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
+import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
+import { createOpaqueRegions } from '../util/opaque-regions';
+
+import { markupOnlyContinuation } from './continuation-checks';
 
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
@@ -13,10 +18,27 @@ declare module 'micromark-util-types' {
   }
 }
 
-const nonLazyContinuationStart: Construct = {
-  tokenize: tokenizeNonLazyContinuationStart,
-  partial: true,
-};
+// Raw tags (type-1: pre/script/style/textarea) and block tags (type-6: div,
+// section, …) always start a block, so they stay flow even with trailing
+// content. Other lowercase tags (i, span, …) follow the type-7 rule and only
+// stay flow when nothing trails the close tag.
+const htmlFlowTagNames = new Set([...htmlRawNames, ...htmlBlockNames]);
+
+// Lowercase type-6 block tags claimable in flow even without a `{…}` attribute, so
+// blank lines between nested JSX siblings don't fragment the block. Excludes table
+// tags (mdxishTables owns their blank lines) and voids (never close).
+const plainBlockClaimTagNames = new Set(
+  [...htmlBlockNames].filter(tag => !HTML_TABLE_STRUCTURE_TAGS.has(tag) && !HTML_VOID_ELEMENTS.has(tag)),
+);
+
+const foreignContentTags = new Set<string>(FOREIGN_CONTENT_TAGS);
+
+// Type-7 lowercase tags (a, span, button, unknown names): CommonMark ends their block
+// at a blank line, so the wrapper's children don't re-nest into one element. Only
+// claimable in block-wrapper shape (see `blockWrapperOpenerRest`), and never for voids
+// or raw/foreign-content bodies, which have dedicated owners.
+const isBlockWrapperClaimTagName = (tag: string): boolean =>
+  !htmlFlowTagNames.has(tag) && !HTML_VOID_ELEMENTS.has(tag) && !foreignContentTags.has(tag);
 
 function resolveToMdxComponent(events: Parameters<Resolver>[0]) {
   let index = events.length;
@@ -56,11 +78,12 @@ const mdxComponentTextConstruct: Construct = {
  * lowercase HTML tags that carry at least one `{…}` attribute expression.
  * Multi-line, concrete, `afterClose` consumes the rest of the line.
  *
- * **Text** — runs inside paragraphs / inline context. Claims *only* lowercase
- * tags with brace attributes (PascalCase is intentionally flow-only, matching
- * how ReadMe's custom components are authored). Aborts on line endings (inline
- * constructs don't span lines) and exits immediately after `</tag>` so the
- * paragraph's inline parser picks up the trailing text.
+ * **Text** — runs inside paragraphs / inline context. Claims lowercase tags and
+ * inline PascalCase components (`INLINE_COMPONENT_TAGS` — Anchor, Glossary), both
+ * gated on at least one `{…}` brace attribute. All other PascalCase stays
+ * flow-only, matching how ReadMe's custom components are authored. Aborts on line
+ * endings (inline constructs don't span lines) and exits immediately after
+ * `</tag>` so the paragraph's inline parser picks up the trailing text.
  */
 function createTokenize(mode: 'flow' | 'text') {
   const isFlow = mode === 'flow';
@@ -73,20 +96,24 @@ function createTokenize(mode: 'flow' | 'text') {
     let closingTagName = '';
     // For lowercase tags we only want to claim the block if it uses JSX
     // attribute expression syntax (`attr={...}`). Plain HTML should fall
-    // through to CommonMark html-flow. Uppercase tags are always claimed
-    // (flow only — PascalCase is not accepted in text mode).
+    // through to CommonMark html-flow. Flow mode claims any PascalCase block
+    // component; text mode claims only inline PascalCase components
+    // (INLINE_COMPONENT_TAGS — Anchor, Glossary), also brace-gated.
     let isLowercaseTag = false;
     let sawBraceAttr = false;
 
-    // Code span tracking
-    let codeSpanOpenSize = 0;
-    let codeSpanCloseSize = 0;
+    // A plain lowercase block tag claimed without a `{…}` attribute, gated by
+    // `plainClaimLineStart`: after a blank line it may only continue on a tag line.
+    let isPlainBlockClaim = false;
+    let pendingBlankLine = false;
+    // Type-7 tag claimed pending the block-wrapper (opener alone on its line) check.
+    let pendingBlockWrapperClaim = false;
 
-    // Fenced code block tracking
-    let fenceChar: Code = null;
-    let fenceLength = 0;
-    let fenceCloseLength = 0;
     let atLineStart = false;
+
+    // True once this construct consumes any line ending; lets `afterClose`
+    // treat only single-line lowercase tags as inline candidates.
+    let sawLineEnding = false;
 
     // Bail when the opener line has unmatched tag-like tokens in its body.
     // `<Foo>_<Bar>.csv` leaves opens > closes; matched shapes like
@@ -99,166 +126,17 @@ function createTokenize(mode: 'flow' | 'text') {
 
     // Attribute parsing state
     let quoteChar: Code = null;
-    let braceDepth = 0;
-    let inTemplateLit = false; // true when inside a template literal (for line continuation)
-    // Stack of braceDepth values at each ${...} interpolation entry point.
-    // When a } brings braceDepth back to a saved value, we return to the
-    // template literal instead of continuing in the brace expression.
-    const templateStack: number[] = [];
 
     const isAlpha = (code: number) =>
-      (code >= codes.uppercaseA && code <= codes.uppercaseZ) ||
-      (code >= codes.lowercaseA && code <= codes.lowercaseZ);
+      (code >= codes.uppercaseA && code <= codes.uppercaseZ) || (code >= codes.lowercaseA && code <= codes.lowercaseZ);
 
     const isSameCaseAsTag = (code: number) =>
       isLowercaseTag
         ? code >= codes.lowercaseA && code <= codes.lowercaseZ
         : code >= codes.uppercaseA && code <= codes.uppercaseZ;
 
-    // Shared brace-expression state machine. The two call sites differ only in where
-    // to continue after a line ending and where to return when braceDepth reaches zero.
-    function createBraceExprStates(continuationStart: State, afterBraceClose: State) {
-      function braceExpr(code: Code): State | undefined {
-        if (code === null) return nok(code);
-
-        if (markdownLineEnding(code)) {
-          if (!isFlow) return nok(code);
-          effects.exit('mdxComponentData');
-          return continuationStart(code);
-        }
-
-        if (code === codes.quotationMark || code === codes.apostrophe) {
-          quoteChar = code;
-          effects.consume(code);
-          return braceString;
-        }
-
-        if (code === codes.graveAccent) {
-          inTemplateLit = true;
-          effects.consume(code);
-          return braceTemplateLiteral;
-        }
-
-        if (code === codes.leftCurlyBrace) {
-          braceDepth += 1;
-          effects.consume(code);
-          return braceExpr;
-        }
-
-        if (code === codes.rightCurlyBrace) {
-          braceDepth -= 1;
-          effects.consume(code);
-
-          if (templateStack.length > 0 && braceDepth === templateStack[templateStack.length - 1]) {
-            templateStack.pop();
-            inTemplateLit = true;
-            return braceTemplateLiteral;
-          }
-
-          if (braceDepth === 0) {
-            return afterBraceClose;
-          }
-          return braceExpr;
-        }
-
-        effects.consume(code);
-        return braceExpr;
-      }
-
-      function braceString(code: Code): State | undefined {
-        if (code === null) return nok(code);
-
-        if (markdownLineEnding(code)) {
-          if (!isFlow) return nok(code);
-          effects.exit('mdxComponentData');
-          return continuationStart(code);
-        }
-
-        if (code === codes.backslash) {
-          effects.consume(code);
-          return braceStringEscape;
-        }
-
-        if (code === quoteChar) {
-          effects.consume(code);
-          quoteChar = null;
-          return braceExpr;
-        }
-
-        effects.consume(code);
-        return braceString;
-      }
-
-      function braceStringEscape(code: Code): State | undefined {
-        if (code === null || markdownLineEnding(code)) {
-          return braceString(code);
-        }
-        effects.consume(code);
-        return braceString;
-      }
-
-      function braceTemplateLiteral(code: Code): State | undefined {
-        if (code === null) return nok(code);
-
-        if (markdownLineEnding(code)) {
-          if (!isFlow) return nok(code);
-          effects.exit('mdxComponentData');
-          return continuationStart(code);
-        }
-
-        if (code === codes.graveAccent) {
-          inTemplateLit = false;
-          effects.consume(code);
-          return braceExpr;
-        }
-
-        if (code === codes.backslash) {
-          effects.consume(code);
-          return braceTemplateLiteralEscape;
-        }
-
-        if (code === codes.dollarSign) {
-          effects.consume(code);
-          return braceTemplateLiteralDollar;
-        }
-
-        effects.consume(code);
-        return braceTemplateLiteral;
-      }
-
-      function braceTemplateLiteralEscape(code: Code): State | undefined {
-        if (code === null || markdownLineEnding(code)) {
-          return braceTemplateLiteral(code);
-        }
-        effects.consume(code);
-        return braceTemplateLiteral;
-      }
-
-      function braceTemplateLiteralDollar(code: Code): State | undefined {
-        if (code === codes.leftCurlyBrace) {
-          templateStack.push(braceDepth);
-          braceDepth += 1;
-          inTemplateLit = false;
-          effects.consume(code);
-          return braceExpr;
-        }
-        return braceTemplateLiteral(code);
-      }
-
-      return { braceExpr, braceString, braceTemplateLiteral };
-    }
-
-    const {
-      braceExpr: inBraceExpr,
-      braceString: inBraceString,
-      braceTemplateLiteral: inBraceTemplateLiteral,
-    } = createBraceExprStates(openTagContinuationStart, afterOpenTagName);
-
-    const {
-      braceExpr: inBodyBraceExpr,
-      braceString: inBodyBraceString,
-      braceTemplateLiteral: inBodyBraceTemplateLiteral,
-    } = createBraceExprStates(bodyContinuationStart, body);
+    let regionResume: State = nok;
+    const regions = createOpaqueRegions({ effects, nok, consume: effects.consume, lineEnding: regionLineEnding });
 
     return start;
 
@@ -275,12 +153,13 @@ function createTokenize(mode: 'flow' | 'text') {
     // ── Tag name parsing ───────────────────────────────────────────────────
 
     function tagNameFirst(code: Code): State | undefined {
-      // Uppercase A-Z → PascalCase MDX component. Flow-only — PascalCase
-      // components are block elements in ReadMe's authoring model.
+      // Uppercase A-Z → PascalCase MDX component. Flow mode claims block
+      // components; text mode only claims inline components (Anchor, Glossary),
+      // which is enforced once the full name is known in `tagNameRest`.
       if (code !== null && code >= codes.uppercaseA && code <= codes.uppercaseZ) {
-        if (!isFlow) return nok(code);
         tagName = String.fromCharCode(code);
         isLowercaseTag = false;
+        sawBraceAttr = false;
         effects.consume(code);
         return tagNameRest;
       }
@@ -311,10 +190,17 @@ function createTokenize(mode: 'flow' | 'text') {
         return tagNameRest;
       }
 
-      // Tag name complete — check exclusions
-      if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName)) {
-        return nok(code);
-      }
+      // Tag name complete — decide whether this tokenizer claims the tag.
+      // Three cases: lowercase tags are always candidates (brace-gated later in
+      // `afterOpenTagName`); flow-mode PascalCase claims any block component
+      // except those with a dedicated tokenizer; text-mode PascalCase claims
+      // only inline components (Anchor, Glossary).
+      const claimable = isLowercaseTag
+        ? true
+        : isFlow
+          ? !TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName)
+          : INLINE_COMPONENT_TAGS.has(tagName);
+      if (!claimable) return nok(code);
 
       depth = 1;
       return afterOpenTagName(code);
@@ -325,6 +211,11 @@ function createTokenize(mode: 'flow' | 'text') {
     function afterOpenTagName(code: Code): State | undefined {
       if (code === null) return nok(code);
 
+      // Everything except a flow-mode PascalCase block component must carry a
+      // `{…}` brace attribute to be claimed; plain HTML falls through to
+      // CommonMark.
+      const requiresBraceAttr = isLowercaseTag || !isFlow;
+
       if (markdownLineEnding(code)) {
         if (!isFlow) return nok(code);
         effects.exit('mdxComponentData');
@@ -333,17 +224,17 @@ function createTokenize(mode: 'flow' | 'text') {
 
       // Self-closing />
       if (code === codes.slash) {
-        if (isLowercaseTag && !sawBraceAttr) return nok(code);
+        if (requiresBraceAttr && !sawBraceAttr) return nok(code);
         effects.consume(code);
         return selfCloseGt;
       }
 
       // End of opening tag
       if (code === codes.greaterThan) {
-        if (isLowercaseTag && !sawBraceAttr) return nok(code);
+        if (requiresBraceAttr && !sawBraceAttr && !claimBraceLessTag()) return nok(code);
         effects.consume(code);
         onOpenerLine = isFlow;
-        return body;
+        return pendingBlockWrapperClaim ? blockWrapperOpenerRest : body;
       }
 
       // Quoted attribute value
@@ -355,11 +246,13 @@ function createTokenize(mode: 'flow' | 'text') {
 
       // JSX expression attribute
       if (code === codes.leftCurlyBrace) {
-        braceDepth = 1;
         sawBraceAttr = true;
-        effects.consume(code);
-        return inBraceExpr;
+        return regions.braceExpression(code, afterOpenTagName);
       }
+
+      // A raw `<` can't sit in an opening tag (quotes/braces are handled above);
+      // bailing bounds each attempt to the next `<` instead of rescanning the line.
+      if (code === codes.lessThan) return nok(code);
 
       effects.consume(code);
       return afterOpenTagName;
@@ -407,16 +300,37 @@ function createTokenize(mode: 'flow' | 'text') {
       return afterOpenTagName(code);
     }
 
-    // Continuation for multi-line opening tags
-    function openTagContinuationStart(code: Code): State | undefined {
-      return effects.check(nonLazyContinuationStart, openTagContinuationNonLazy, continuationAfter)(code);
+    // Whether a brace-less lowercase flow tag is claimable: type-6 tags immediately,
+    // type-7 tags pending the block-wrapper check; anything else is CommonMark's.
+    function claimBraceLessTag(): boolean {
+      if (!isFlow) return false;
+      if (plainBlockClaimTagNames.has(tagName)) {
+        isPlainBlockClaim = true;
+        return true;
+      }
+      if (isBlockWrapperClaimTagName(tagName)) {
+        pendingBlockWrapperClaim = true;
+        return true;
+      }
+      return false;
     }
 
-    function openTagContinuationNonLazy(code: Code): State | undefined {
-      effects.enter(types.lineEnding);
-      effects.consume(code);
-      effects.exit(types.lineEnding);
-      return openTagContinuationBefore;
+    // A type-7 tag is claimed only as a block wrapper: opener alone on its line
+    // (trailing spaces ok). Inline content after the opener bails to CommonMark.
+    function blockWrapperOpenerRest(code: Code): State | undefined {
+      if (markdownSpace(code)) {
+        effects.consume(code);
+        return blockWrapperOpenerRest;
+      }
+      if (!markdownLineEnding(code)) return nok(code);
+      pendingBlockWrapperClaim = false;
+      isPlainBlockClaim = true;
+      return body(code);
+    }
+
+    // Continuation for multi-line opening tags
+    function openTagContinuationStart(code: Code): State | undefined {
+      return continueOnNextLine(code, openTagContinuationBefore);
     }
 
     function openTagContinuationBefore(code: Code): State | undefined {
@@ -426,11 +340,6 @@ function createTokenize(mode: 'flow' | 'text') {
       effects.enter('mdxComponentData');
 
       // Resume the correct state after a line ending in the opening tag.
-      if (inTemplateLit) return inBraceTemplateLiteral(code);
-      if (braceDepth > 0) {
-        if (quoteChar !== null) return inBraceString(code);
-        return inBraceExpr(code);
-      }
       if (quoteChar !== null) return inQuotedAttr(code);
       return afterOpenTagName(code);
     }
@@ -467,20 +376,17 @@ function createTokenize(mode: 'flow' | 'text') {
         return bodyLessThan;
       }
 
-      // Code span tracking
       if (code === codes.graveAccent) {
-        codeSpanOpenSize = 0;
-        return countOpenTicks(code);
+        const mayFence = atLineStart;
+        atLineStart = false;
+        return regions.backticks(code, body, mayFence);
       }
 
       // JSX expression child — track braces/template literals so the closing
       // backtick of `{`...`}` is not misread as a code span opener
       if (code === codes.leftCurlyBrace) {
-        braceDepth = 1;
-        inTemplateLit = false;
-        effects.consume(code);
         atLineStart = false;
-        return inBodyBraceExpr;
+        return regions.braceExpression(code, body);
       }
 
       effects.consume(code);
@@ -496,153 +402,18 @@ function createTokenize(mode: 'flow' | 'text') {
       return body;
     }
 
-    // ── Code span handling ─────────────────────────────────────────────────
-
-    function countOpenTicks(code: Code): State | undefined {
-      if (code === codes.graveAccent) {
-        codeSpanOpenSize += 1;
-        effects.consume(code);
-        return countOpenTicks;
-      }
-
-      // 3+ backticks at line start = fenced code block
-      if (atLineStart && codeSpanOpenSize >= 3) {
-        fenceChar = codes.graveAccent;
-        fenceLength = codeSpanOpenSize;
-        return inFencedCode(code);
-      }
-
-      return inCodeSpan(code);
-    }
-
-    function inCodeSpan(code: Code): State | undefined {
-      if (code === null || markdownLineEnding(code)) return body(code);
-      if (code === codes.graveAccent) {
-        codeSpanCloseSize = 0;
-        return countCloseTicks(code);
-      }
-      effects.consume(code);
-      return inCodeSpan;
-    }
-
-    function countCloseTicks(code: Code): State | undefined {
-      if (code === codes.graveAccent) {
-        codeSpanCloseSize += 1;
-        effects.consume(code);
-        return countCloseTicks;
-      }
-      return codeSpanCloseSize === codeSpanOpenSize ? body(code) : inCodeSpan(code);
-    }
-
-    // ── Fenced code block handling ─────────────────────────────────────────
-
-    function inFencedCode(code: Code): State | undefined {
-      if (code === null) return nok(code);
-
-      if (markdownLineEnding(code)) {
-        effects.exit('mdxComponentData');
-        return fencedCodeContinuationStart(code);
-      }
-
-      effects.consume(code);
-      return inFencedCode;
-    }
-
-    function fencedCodeContinuationStart(code: Code): State | undefined {
-      return effects.check(nonLazyContinuationStart, fencedCodeContinuationNonLazy, continuationAfter)(code);
-    }
-
-    function fencedCodeContinuationNonLazy(code: Code): State | undefined {
-      effects.enter(types.lineEnding);
-      effects.consume(code);
-      effects.exit(types.lineEnding);
-      return fencedCodeContinuationBefore;
-    }
-
-    function fencedCodeContinuationBefore(code: Code): State | undefined {
-      if (code === null || markdownLineEnding(code)) {
-        return fencedCodeContinuationStart(code);
-      }
-      effects.enter('mdxComponentData');
-      fenceCloseLength = 0;
-
-      // Check for closing fence
-      if (code === fenceChar) {
-        fenceCloseLength = 1;
-        effects.consume(code);
-        return fenceCloseCheck;
-      }
-
-      return inFencedCode(code);
-    }
-
-    function fenceCloseCheck(code: Code): State | undefined {
-      if (code === fenceChar) {
-        fenceCloseLength += 1;
-        effects.consume(code);
-        return fenceCloseCheck;
-      }
-
-      if (fenceCloseLength >= fenceLength) {
-        // Valid closing fence — consume rest of line and return to body
-        fenceChar = null;
-        fenceLength = 0;
-        return fenceCloseTrailing(code);
-      }
-
-      // Not enough fence chars, still in code
-      return inFencedCode(code);
-    }
-
-    function fenceCloseTrailing(code: Code): State | undefined {
-      if (code === null || markdownLineEnding(code)) {
-        atLineStart = true;
-        return body(code);
-      }
-
-      // Only spaces/tabs allowed after closing fence
-      if (code === codes.space || code === codes.horizontalTab) {
-        effects.consume(code);
-        return fenceCloseTrailing;
-      }
-
-      // Non-whitespace after fence chars — not actually a closing fence
-      return inFencedCode(code);
-    }
-
-    // ── Tilde fenced code detection ────────────────────────────────────────
-
-    function bodyAfterLineStart(code: Code): State | undefined {
-      if (code === codes.tilde) {
-        fenceCloseLength = 1;
-        effects.consume(code);
-        return countTildes;
-      }
-      atLineStart = false;
-      return body(code);
-    }
-
-    function countTildes(code: Code): State | undefined {
-      if (code === codes.tilde) {
-        fenceCloseLength += 1;
-        effects.consume(code);
-        return countTildes;
-      }
-
-      if (fenceCloseLength >= 3) {
-        fenceChar = codes.tilde;
-        fenceLength = fenceCloseLength;
-        return inFencedCode(code);
-      }
-
-      // Less than 3 tildes, not a fence
-      atLineStart = false;
-      return body(code);
-    }
-
     // ── Tag detection inside body ──────────────────────────────────────────
 
     function bodyLessThan(code: Code): State | undefined {
+      // A second `<` means legacy variable syntax (`<<var>>`), not a tag: the name that
+      // follows belongs to the variable. Counting it as a nested opener would leave the
+      // body unbalanced and lose the claim on this block.
+      if (code === codes.lessThan) {
+        effects.consume(code);
+        atLineStart = false;
+        return bodyAngleRun;
+      }
+
       if (code === codes.slash) {
         if (onOpenerLine) openerLineCloses += 1;
         effects.consume(code);
@@ -669,6 +440,16 @@ function createTokenize(mode: 'flow' | 'text') {
       return body(code);
     }
 
+    function bodyAngleRun(code: Code): State | undefined {
+      if (code === codes.lessThan) {
+        effects.consume(code);
+        return bodyAngleRun;
+      }
+
+      atLineStart = false;
+      return body(code);
+    }
+
     // ── Nested opening tag ─────────────────────────────────────────────────
 
     function nestedOpenTagName(code: Code): State | undefined {
@@ -684,8 +465,16 @@ function createTokenize(mode: 'flow' | 'text') {
         return nestedOpenTagName;
       }
 
-      // Only increment depth for same-name tags that are followed by valid tag-end chars
-      if (closingTagName === tagName && (code === codes.greaterThan || code === codes.slash || code === codes.space || code === codes.horizontalTab)) {
+      // Same-name opener followed by a tag-end char bumps depth. A line ending
+      // counts too: Prettier puts a newline right after the name (`<div\n …\n>`).
+      if (
+        closingTagName === tagName &&
+        (code === codes.greaterThan ||
+          code === codes.slash ||
+          code === codes.space ||
+          code === codes.horizontalTab ||
+          markdownLineEnding(code))
+      ) {
         depth += 1;
       }
 
@@ -741,6 +530,12 @@ function createTokenize(mode: 'flow' | 'text') {
         effects.exit('mdxComponent');
         return ok(code);
       }
+      // A single-line type-7 lowercase tag with content trailing its close is
+      // inline, so `<i …></i> <a>…</a>` stays on one line instead of splitting
+      // into separate blocks. Raw/block tags (pre, div, …) stay flow.
+      if (isLowercaseTag && !sawLineEnding && !htmlFlowTagNames.has(tagName)) {
+        return afterCloseInlineCandidate(code);
+      }
       if (code === null || markdownLineEnding(code)) {
         effects.exit('mdxComponentData');
         effects.exit('mdxComponent');
@@ -752,82 +547,116 @@ function createTokenize(mode: 'flow' | 'text') {
       return afterClose;
     }
 
+    // Whitespace-only to the line ending keeps the flow block; any other
+    // trailing char means inline content, so refuse and let inline parsing run.
+    function afterCloseInlineCandidate(code: Code): State | undefined {
+      if (code === null || markdownLineEnding(code)) {
+        effects.exit('mdxComponentData');
+        effects.exit('mdxComponent');
+        return ok(code);
+      }
+      if (markdownSpace(code)) {
+        effects.consume(code);
+        return afterCloseInlineCandidate;
+      }
+      return nok(code);
+    }
+
     // ── Body continuation (line endings) ───────────────────────────────────
 
     function bodyContinuationStart(code: Code): State | undefined {
-      return effects.check(nonLazyContinuationStart, bodyContinuationNonLazy, continuationAfter)(code);
-    }
-
-    function bodyContinuationNonLazy(code: Code): State | undefined {
-      effects.enter(types.lineEnding);
-      effects.consume(code);
-      effects.exit(types.lineEnding);
-      return bodyContinuationBefore;
+      return continueOnNextLine(code, bodyContinuationBefore);
     }
 
     function bodyContinuationBefore(code: Code): State | undefined {
       if (code === null || markdownLineEnding(code)) {
+        // Empty line: outside any `{…}` expression this is CommonMark's html-block
+        // terminator, so a plain block claim must pass the guard below to continue.
+        if (isPlainBlockClaim) pendingBlankLine = true;
         return bodyContinuationStart(code);
       }
       effects.enter('mdxComponentData');
+      if (isPlainBlockClaim) return plainClaimLineStart(code);
+      return bodyLineStart(code);
+    }
 
-      // Resume inside a body brace expression if a line ending interrupted one
-      if (braceDepth > 0) {
-        if (inTemplateLit) return inBodyBraceTemplateLiteral(code);
-        if (quoteChar !== null) return inBodyBraceString(code);
-        return inBodyBraceExpr(code);
+    // Dispatch a non-blank continuation line: fenced code at line start, else body.
+    function bodyLineStart(code: Code): State | undefined {
+      // Skip leading indentation while staying "at line start" so an indented
+      // fence is still recognized. Otherwise the first space clears `atLineStart`
+      // and its content — including any unbalanced `{` — stays live text (CX-3704).
+      if (atLineStart && markdownSpace(code)) {
+        effects.consume(code);
+        return bodyLineStart;
       }
-
-      // Detect tilde fences at line start
       if (atLineStart && code === codes.tilde) {
-        return bodyAfterLineStart(code);
-      }
-
-      // Detect backtick fences at line start
-      if (atLineStart && code === codes.graveAccent) {
-        codeSpanOpenSize = 0;
         atLineStart = false;
-        return countOpenTicks(code);
+        return regions.tildes(code, body);
       }
-
+      if (atLineStart && code === codes.graveAccent) {
+        atLineStart = false;
+        return regions.backticks(code, body, true);
+      }
       atLineStart = false;
       return body(code);
     }
 
-    // ── Shared lazy continuation failure ───────────────────────────────────
-
-    function continuationAfter(code: Code): State | undefined {
-      if (code === null) {
-        return nok(code);
+    // Line-start gate for plain block claims. After a blank line the block may only
+    // continue on a markup-only tag line (`<…`); anything else refuses, so CommonMark
+    // reparses it as markdown and rehype-raw re-nests it into the wrapper.
+    function plainClaimLineStart(code: Code): State | undefined {
+      // Leading whitespace only → treat as a blank line, matching CommonMark.
+      if (markdownSpace(code)) {
+        effects.consume(code);
+        return plainClaimLineStart;
       }
-      effects.exit('mdxComponent');
-      return ok(code);
+      if (code === null || markdownLineEnding(code)) {
+        pendingBlankLine = true;
+        effects.exit('mdxComponentData');
+        return bodyContinuationStart(code);
+      }
+      if (pendingBlankLine) {
+        if (code !== codes.lessThan) return nok(code);
+        return effects.check(markupOnlyContinuation, plainClaimContinue, nok)(code);
+      }
+      return bodyLineStart(code);
     }
-  };
-}
 
-function tokenizeNonLazyContinuationStart(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const self = this;
+    function plainClaimContinue(code: Code): State | undefined {
+      pendingBlankLine = false;
+      return bodyLineStart(code);
+    }
 
-  return start;
+    // ── Opaque regions: code spans, fences, `{…}` ──────────────────────────
 
-  function start(code: Code): State | undefined {
-    if (markdownLineEnding(code)) {
+    // Inline tags stay on one line. In flow a region runs on, blank lines included.
+    function regionLineEnding(code: Code, resume: State): State | undefined {
+      if (!isFlow) return nok(code);
+      regionResume = resume;
+      effects.exit('mdxComponentData');
+      return continueOnNextLine(code, regionContinuationBefore);
+    }
+
+    function regionContinuationBefore(code: Code): State | undefined {
+      if (code === null || markdownLineEnding(code)) return continueOnNextLine(code, regionContinuationBefore);
+      effects.enter('mdxComponentData');
+      return regionResume(code);
+    }
+
+    // ── Shared line-ending continuation ────────────────────────────────────
+
+    // Consumes one line ending and resumes at `nextLine`. Lazy lines (under-indented
+    // under a list item or blockquote) continue too: a claim only ends at its closing
+    // tag, and an unclosed one fails whole at EOF instead of leaving a truncated opener (CX-3940).
+    function continueOnNextLine(code: Code, nextLine: State): State | undefined {
+      if (!markdownLineEnding(code)) return nok(code);
+      sawLineEnding = true;
       effects.enter(types.lineEnding);
       effects.consume(code);
       effects.exit(types.lineEnding);
-      return after;
+      return nextLine;
     }
-    return nok(code);
-  }
-
-  function after(code: Code): State | undefined {
-    if (self.parser.lazy[self.now().line]) {
-      return nok(code);
-    }
-    return ok(code);
-  }
+  };
 }
 
 /**
@@ -838,15 +667,18 @@ function tokenizeNonLazyContinuationStart(this: TokenizeContext, effects: Effect
  * self-closing `<Component />`). Prevents CommonMark from fragmenting them
  * across multiple HTML / paragraph nodes.
  *
- * **Text (inline)** — registers only for lowercase tags with brace attrs
- * (e.g. `Start <a href={url}>here</a> end`). Picks them up during inline
- * parsing so they render inline inside their paragraph, then are rewritten
- * to `mdxJsxTextElement` by the `components/inline-html` transformer.
- * PascalCase is intentionally flow-only; ReadMe's custom components are
- * authored as block-level elements.
+ * **Text (inline)** — registers for lowercase tags and inline PascalCase
+ * components (Anchor, Glossary) that carry brace attrs (e.g.
+ * `Start <a href={url}>here</a> end`, `<Anchor href={url}>x</Anchor>`). Picks
+ * them up during inline parsing so they render inline inside their paragraph,
+ * then are rewritten to `mdxJsxTextElement` by the `components/inline-html`
+ * transformer. All other PascalCase is flow-only; ReadMe's custom components
+ * are authored as block-level elements.
  *
- * Excludes tags handled by dedicated tokenizers: Table, HTMLBlock, Glossary,
- * Anchor.
+ * Excludes Table, Glossary and Anchor (`TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS`).
+ * `HTMLBlock` is deliberately *not* excluded — this claims it into the same
+ * opaque `html` node `htmlBlockComponent` would, and the transforms skip it by
+ * name via `GENERIC_MDX_COMPONENT_EXCLUDED_TAGS`.
  *
  * The resulting `html` mdast node is later restructured into an
  * `mdxJsxFlowElement` (block) or `mdxJsxTextElement` (inline) by the

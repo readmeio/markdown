@@ -1,4 +1,4 @@
-@import '../../styles/mixins/dark-mode.scss';
+@import '../../styles/mixins/when-color-mode-dark.scss';
 
 @mixin callout($l-offset: 1.25rem) {
   --Callout-bg: var(--background);
@@ -21,7 +21,7 @@
     --Callout-border: var(--border, #{lighten(#6a737d, 12.5%)});
     --Callout-title: var(--title, var(--text, var(--color-text-default)));
 
-    @include dark-mode {
+    @include when-color-mode-dark('.rm-ReadMe') {
       --Callout-bg: rgba(var(--gray100-rgb), 0.05);
     }
   }
@@ -31,7 +31,7 @@
     --Callout-border: var(--border, rgba(var(--blue-rgb), 1));
     --Callout-title: var(--title, var(--blue20));
 
-    @include dark-mode {
+    @include when-color-mode-dark('.rm-ReadMe') {
       --Callout-bg: var(--background, rgba(var(--blue-rgb), 0.075));
       --Callout-title: var(--title, var(--blue90));
     }
@@ -43,7 +43,7 @@
     --Callout-border: var(--border, rgba(var(--yellow-rgb), 1));
     --Callout-title: var(--title, var(--yellow10));
 
-    @include dark-mode {
+    @include when-color-mode-dark('.rm-ReadMe') {
       --Callout-bg: var(--background, rgba(var(--yellow-rgb), 0.075));
       --Callout-title: var(--title, var(--yellow70));
     }
@@ -56,7 +56,7 @@
     --Callout-border: var(--border, rgba(var(--green-rgb), 1));
     --Callout-title: var(--title, var(--green10));
 
-    @include dark-mode {
+    @include when-color-mode-dark('.rm-ReadMe') {
       --Callout-bg: var(--background, rgba(var(--green-rgb), 0.075));
       --Callout-title: var(--title, var(--green80));
     }
@@ -68,7 +68,7 @@
     --Callout-border: var(--border, rgba(var(--red-rgb), 1));
     --Callout-title: var(--title, var(--red20));
 
-    @include dark-mode {
+    @include when-color-mode-dark('.rm-ReadMe') {
       --Callout-bg: var(--background, rgba(var(--red-rgb), 0.05));
       --Callout-title: var(--title, var(--red90));
     }
@@ -78,9 +78,20 @@
     margin-left: $l-offset;
   }
 
+  // No floated icon to clear, so the content doesn't need the reserved gutter.
+  &:not(:has(.callout-icon)) > * {
+    margin-left: 0;
+  }
+
   ul,
   ol {
     padding-left: 1.3em;
+  }
+
+  // A column (grid item) holds its last child's margin inside, which would stack on
+  // the gap below Columns; not every column has one (e.g. bare text), so drop it instead.
+  > .Columns > .Column > :last-child {
+    margin-bottom: 0;
   }
 
   h3 a,
@@ -161,6 +172,11 @@
     }
   }
 
+  > .callout-icon + :is(ul, ol) > li:first-child,
+  > .callout-heading.empty + :is(ul, ol) > li:first-child {
+    clear: none;
+  }
+
   .callout-icon + .heading {
     color: var(--Callout-title);
   }
@@ -173,6 +189,9 @@
     --fa-primary-color: var(--Callout-title);
     --fa-secondary-color: var(--Callout-title);
 
+    // Non-duotone icons ignore the vars above; `!important` beats `calloutCustomIcons`
+    color: var(--icon-color, var(--Callout-title)) !important;
+
     margin-top: 0.25rem;
   }
 }
@@ -184,7 +203,9 @@
     font-size: var(--emoji, 0);
     color: var(--icon-color, inherit) !important;
   }
-  &-icon::before {
+  // Emoji icons render as <span>; Font Awesome icons render as <i> and manage their
+  // own ::before/::after pseudo-elements. Only apply the legacy icon-font ::before to spans.
+  span#{&}-icon::before {
     content: var(--icon);
     font-family: var(--icon-font);
     font-size: var(--icon-size, 1rem);
@@ -195,13 +216,6 @@
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-  &-icon_fa::before,
-  &-icon_fa::after {
-    font-family: inherit;
-    font-size: inherit;
-    top: unset;
-    transform: none;
   }
   @at-root .rdmdCallouts--useIconFont & {
     --emoji: unset;
@@ -236,4 +250,13 @@
   @include calloutCustomIcons;
   border-top-right-radius: var(--markdown-radius);
   border-bottom-right-radius: var(--markdown-radius);
+}
+
+// Zero specificity (like TabContent) so it only spaces blocks without their own
+// margin, e.g. the table wrapper that relies on the top-level `> *` rule.
+// Code blocks are skipped: gfm's `pre` margin already leaves 15px inside their box,
+// so spacing them again would double the gap. NOTE: if that margin is ever removed,
+// drop `.CodeTabs` here so code blocks keep their spacing.
+:where(.callout > :not(.callout-icon, .CodeTabs, :last-child)) {
+  margin-bottom: var(--markdown-spacing, 15px);
 }

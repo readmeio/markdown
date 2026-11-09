@@ -2,6 +2,7 @@ import type { Element } from 'hast';
 import type { Root } from 'mdast';
 
 import { mdast, mdx, mdxish } from '../../index';
+import { parseMdxish, roundTripMdxish } from '../helpers';
 
 describe('callouts compiler', () => {
   it('compiles callouts', () => {
@@ -286,5 +287,45 @@ describe('mdxish callout compiler', () => {
     expect(callout.tagName).toBe('Callout');
     expect(callout.properties?.icon).toBe('🚧');
     expect(callout.properties?.theme).toBe('warn'); // defaults based on icon
+  });
+});
+
+describe('mdxish callout JSX round-trip', () => {
+  const reparseProperties = (md: string) => {
+    const tree = parseMdxish(md, { newEditorTypes: true });
+    return (tree.children[0] as { data?: { hProperties?: Record<string, unknown> } }).data?.hProperties;
+  };
+
+  it('serializes legacy blockquote callouts to JSX', () => {
+    const out = roundTripMdxish('> 🚧 It works!\n>\n> And, it no longer deletes your content!\n');
+
+    expect(out).toContain('<Callout icon="🚧" theme="warn">');
+    expect(out).toContain('### It works!');
+    expect(out).toContain('</Callout>');
+    expect(out).not.toMatch(/^>/m);
+  });
+
+  it('round-trips icon + theme through serialize → re-parse', () => {
+    const out = roundTripMdxish('> 🚧 It works!\n>\n> body\n', { newEditorTypes: true });
+
+    expect(reparseProperties(out)).toMatchObject({ icon: '🚧', theme: 'warn', empty: false });
+  });
+
+  it('re-derives empty for a body-only callout', () => {
+    const out = roundTripMdxish('> 🚧\n>\n> body only\n', { newEditorTypes: true });
+
+    expect(out).toContain('<Callout icon="🚧" theme="warn">');
+    expect(out).not.toContain('###');
+    expect(reparseProperties(out)).toMatchObject({ icon: '🚧', theme: 'warn', empty: true });
+  });
+
+  it('round-trips an authored JSX callout unchanged in shape', () => {
+    const out = roundTripMdxish('<Callout icon="📘" theme="info">\nContent here\n</Callout>\n', {
+      newEditorTypes: true,
+    });
+
+    expect(out).toContain('<Callout icon="📘" theme="info">');
+    expect(out).toContain('Content here');
+    expect(reparseProperties(out)).toMatchObject({ icon: '📘', theme: 'info', empty: true });
   });
 });
