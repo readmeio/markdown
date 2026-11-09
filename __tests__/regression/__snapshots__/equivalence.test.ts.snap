@@ -387,6 +387,22 @@ exports[`MDX↔MDXish equivalence > expressions-in-tables 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > html-opener-trailing-text 1`] = `
+{
+  "changes": [
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/li[0]",
+      "right": "<li>…(3 children)…</li>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > htmlblock 1`] = `
 {
   "status": "match",

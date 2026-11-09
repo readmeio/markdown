@@ -258,6 +258,43 @@ text at column 0`);
     });
   });
 
+  // RM-16379: a type-6 opener with trailing text still opens an HTML block.
+  describe('block-level tag followed by text on the same line', () => {
+    it.each([
+      ['<li> test', '[block:parameters]'],
+      ['<div> hi', '**bold**'],
+      ['<div class="x"> hi', '## Heading'],
+      ['</li> text', '- item'],
+    ])('inserts blank line between %j and %j', (line, next) => {
+      expect(terminateHtmlFlowBlocks(`${line}\n${next}`)).toBe(`${line}\n\n${next}`);
+    });
+
+    it.each([
+      ['<b> bold text', 'plain line'],
+      ['<your-api-key> replace this', 'plain line'],
+      ['<https://example.com> is our docs', 'plain line'],
+      ['<lit> test', 'plain line'],
+      [' <li> test', '[block:parameters]'],
+    ])('does not insert between %j and %j', (line, next) => {
+      const input = `${line}\n${next}`;
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    // A closer later in the same run means mdxish re-parses the whole block already.
+    it.each([
+      '<div>**bold**\nmore</div>',
+      '<div>**bold**\nmore\nmore2</div>',
+      '<li> test\n[block:callout]\n{}\n[/block]\n</li>',
+      '<div class="x"> hi\n## Heading\n</div>',
+    ])('does not insert when the tag closes later in the same run: %j', input => {
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('still inserts when the only closer is past a blank line', () => {
+      expect(terminateHtmlFlowBlocks('<li> test\n## Heading\n\n</li>')).toBe('<li> test\n\n## Heading\n\n</li>');
+    });
+  });
+
   describe('when it should not insert a blank line', () => {
     it('does not modify content when blank line already exists after a closed HTML tag', () => {
       const input = `<div></div>
