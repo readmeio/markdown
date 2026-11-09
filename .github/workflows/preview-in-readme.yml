@@ -1,0 +1,43 @@
+name: Preview in ReadMe
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    # Same-repo only. Forks do not get secrets on pull_request, and we must not
+    # use pull_request_target. Dependabot is skipped even when the branch is in-repo.
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch markdown-pr-preview
+        env:
+          GH_TOKEN: ${{ secrets.CONSUMER_DISPATCH_TOKEN }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          MARKDOWN_PR: ${{ github.event.pull_request.number }}
+          PR_ACTION: ${{ github.event.action }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN}" ]; then
+            echo 'CONSUMER_DISPATCH_TOKEN is empty.'
+            exit 1
+          fi
+
+          payload="$(jq -n \
+            --arg action "${PR_ACTION}" \
+            --argjson markdown_pr "${MARKDOWN_PR}" \
+            --arg sha "${SHA}" \
+            --arg head_repo "${HEAD_REPO}" \
+            '{event_type:"markdown-pr-preview",client_payload:{action:$action,markdown_pr:$markdown_pr,sha:$sha,head_repo:$head_repo}}')"
+          echo "Dispatching markdown-pr-preview to readmeio/readme (${payload})"
+          gh api --method POST repos/readmeio/readme/dispatches --input - <<<"${payload}"
