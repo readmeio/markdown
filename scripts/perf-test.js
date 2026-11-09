@@ -31,7 +31,6 @@ function humanFileSize(bytes, si = false, dp = 1) {
   const r = 10 ** dp;
 
   do {
-    // eslint-disable-next-line no-param-reassign
     bytes /= thresh;
     // eslint-disable-next-line no-plusplus
     ++u;
@@ -44,7 +43,7 @@ const max = 8;
 
 console.log('n : string size : duration');
 
-new Array(max).fill(0).forEach((_, i) => {
+Array.from({ length: max }).forEach((_, i) => {
   const bytes = 10 ** i;
   const doc = createDoc(bytes);
   const then = Date.now();

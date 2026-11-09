@@ -100,7 +100,6 @@ const TailwindStyle = ({ children, darkModeDataAttribute, darkModeRootSelector }
       attributeFilter: ['class'],
     });
 
-    // eslint-disable-next-line consistent-return
     return () => observer.disconnect();
   }, [addClasses, darkModeDataAttribute, darkModeRootSelector]);
 

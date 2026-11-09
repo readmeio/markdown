@@ -1,13 +1,12 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-
 import { vi } from 'vitest';
 
 import { renderingEngines } from './utils';
 
 const mermaid = vi.hoisted(() => ({ initialize: vi.fn(), run: vi.fn() }));
-vi.mock('mermaid', () => ({ default: mermaid }));
+vi.mock(import('mermaid'), () => ({ default: mermaid }));
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 

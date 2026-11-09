@@ -352,8 +352,8 @@ const processTableNode = (
   const columnCount = firstRow?.children?.length || 0;
   const alignArray: Table['align'][number][] =
     align && columnCount > 0
-      ? align.slice(0, columnCount).concat(new Array(Math.max(0, columnCount - align.length)).fill(null))
-      : new Array(columnCount).fill(null);
+      ? align.slice(0, columnCount).concat(Array.from({ length: Math.max(0, columnCount - align.length) }, () => null))
+      : Array.from({ length: columnCount }, () => null);
 
   return {
     align: alignArray,
@@ -404,7 +404,7 @@ const replaceTableHtml = (node: Html, index: number, parent: Parent, source: str
     // If the table is parsed successfully, we can now process it further
     // to build on the markdown / JSX table
     visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
-      if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
+      if (tableNode.name !== 'Table' && tableNode.name !== 'table') return;
       parent.children.splice(index, 1, processTableNode(tableNode, source, node.position));
       return EXIT;
     });

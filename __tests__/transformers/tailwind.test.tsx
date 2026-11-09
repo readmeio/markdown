@@ -24,14 +24,15 @@ const toHtml = (md: string) => {
   return container.innerHTML;
 };
 
-const topLevelWrappers = (md: string) => toHast(md).children.filter(c => 'tagName' in c && c.tagName === 'TailwindRoot');
+const topLevelWrappers = (md: string) =>
+  toHast(md).children.filter(c => 'tagName' in c && c.tagName === 'TailwindRoot');
 
 describe('tailwind transformer', () => {
   describe('flow/inline wrapping', () => {
     describe('inline context → span wrapper', () => {
       it('keeps an Image inline when flanked by text on one line', () => {
         const hast = toHast(`line 1 ${IMAGE} line 2`);
-  
+
         expect(hast.children).toMatchObject([
           {
             tagName: 'p',
@@ -46,11 +47,11 @@ describe('tailwind transformer', () => {
         expect(findElementByTagName(hast, 'TailwindRoot')?.properties).toStrictEqual({});
         expect(topLevelWrappers(`line 1 ${IMAGE} line 2`)).toHaveLength(0);
       });
-  
+
       it('keeps an Image inline with a soft break after it', () => {
         const md = `line 1 ${IMAGE}\nline 2`;
         const hast = toHast(md);
-  
+
         // Not a block wrapper, and the span wrapper lives inside the paragraph.
         expect(topLevelWrappers(md)).toHaveLength(0);
         const paragraph = hast.children[0];
@@ -60,10 +61,10 @@ describe('tailwind transformer', () => {
           children: [{ tagName: 'img' }],
         });
       });
-  
+
       it('generalizes to any self-closing custom component, not just Image', () => {
         const hast = toHast('line 1 <Foo /> line 2');
-  
+
         expect(hast.children).toMatchObject([
           {
             tagName: 'p',
@@ -106,25 +107,31 @@ describe('tailwind transformer', () => {
         });
       });
     });
-  
+
     describe('block context → div wrapper (unchanged behavior)', () => {
       it('wraps an Image on its own line between text as a block', () => {
         const md = `Line 1\n${IMAGE}\nLine 2`;
         const hast = toHast(md);
-  
-        expect(topLevelWrappers(md)).toMatchObject([{ tagName: 'TailwindRoot', properties: { flow: true }, children: [{ tagName: 'img' }] }]);
+
+        expect(topLevelWrappers(md)).toMatchObject([
+          { tagName: 'TailwindRoot', properties: { flow: true }, children: [{ tagName: 'img' }] },
+        ]);
         // Flanking text stays in its own paragraphs, so nothing is inline here.
         expect(hast.children[0]).toMatchObject({ tagName: 'p', children: [{ type: 'text', value: 'Line 1' }] });
       });
-  
+
       it('wraps a blank-line separated Image as a block', () => {
         const md = `Line 1\n\n${IMAGE}\n\nLine 2`;
-        expect(topLevelWrappers(md)).toMatchObject([{ tagName: 'TailwindRoot', properties: { flow: true }, children: [{ tagName: 'img' }] }]);
+        expect(topLevelWrappers(md)).toMatchObject([
+          { tagName: 'TailwindRoot', properties: { flow: true }, children: [{ tagName: 'img' }] },
+        ]);
       });
-  
+
       it('wraps a block-level custom component as a block', () => {
         const md = 'Line 1\n\n<Foo>hi</Foo>\n\nLine 2';
-        expect(topLevelWrappers(md)).toMatchObject([{ tagName: 'TailwindRoot', properties: { flow: true }, children: [{ tagName: 'Foo' }] }]);
+        expect(topLevelWrappers(md)).toMatchObject([
+          { tagName: 'TailwindRoot', properties: { flow: true }, children: [{ tagName: 'Foo' }] },
+        ]);
       });
 
       it.each([
@@ -141,20 +148,20 @@ describe('tailwind transformer', () => {
         expect(wrapper).toMatchObject({ properties: { flow: true }, children: [{ tagName: 'img' }] });
       });
     });
-  
+
     describe('plain HTML tags are never wrapped', () => {
       it('leaves an inline lowercase <image> unwrapped and inline', () => {
         const hast = toHast('line 1 <image />\nline 2');
-  
+
         expect(findAllElementsByTagName(hast, 'TailwindRoot')).toHaveLength(0);
         const paragraph = findElementByTagName(hast, 'p');
         expect(paragraph?.children[0]).toMatchObject({ type: 'text', value: 'line 1 ' });
         expect(findElementByTagName(hast, 'img')).not.toBeNull();
       });
-  
+
       it('leaves an inline <span> unwrapped and inline', () => {
         const hast = toHast('line 1 <span>hi</span> line 2');
-  
+
         expect(findAllElementsByTagName(hast, 'TailwindRoot')).toHaveLength(0);
         expect(hast.children).toMatchObject([
           {
@@ -168,12 +175,12 @@ describe('tailwind transformer', () => {
         ]);
       });
     });
-  
+
     describe('rendered HTML', () => {
       it('renders an inline Image as a span inside the paragraph', () => {
         expect(toHtml(`line 1 ${IMAGE} line 2`)).toContain('<p>line 1 <span class="readme-tailwind">');
       });
-  
+
       it('renders an Image inside a single-line HTML tag as an inline span', () => {
         expect(toHtml(`<div>line 1 ${IMAGE} line 2</div>`)).toContain('<div>line 1 <span class="readme-tailwind">');
       });
@@ -186,5 +193,3 @@ describe('tailwind transformer', () => {
     });
   });
 });
-
-

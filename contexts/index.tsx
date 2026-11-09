@@ -1,4 +1,4 @@
-import type {  RunOpts } from '../lib/run';
+import type { RunOpts } from '../lib/run';
 
 import { VariablesContext } from '@readme/variable';
 import React, { useMemo } from 'react';

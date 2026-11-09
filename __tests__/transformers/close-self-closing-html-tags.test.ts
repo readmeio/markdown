@@ -44,13 +44,25 @@ describe('closeSelfClosingHtmlTags (string-level preprocessor)', () => {
   });
 
   describe('does NOT modify void elements', () => {
-    it.each(['br', 'hr', 'img', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'source', 'track', 'wbr', 'param'])(
-      'leaves <%s /> unchanged',
-      tag => {
-        const input = `<${tag} />`;
-        expect(closeSelfClosingHtmlTags(input)).toBe(input);
-      },
-    );
+    it.each([
+      'br',
+      'hr',
+      'img',
+      'input',
+      'meta',
+      'link',
+      'area',
+      'base',
+      'col',
+      'embed',
+      'source',
+      'track',
+      'wbr',
+      'param',
+    ])('leaves <%s /> unchanged', tag => {
+      const input = `<${tag} />`;
+      expect(closeSelfClosingHtmlTags(input)).toBe(input);
+    });
 
     it('leaves <br /> with no space unchanged', () => {
       expect(closeSelfClosingHtmlTags('<br/>')).toBe('<br/>');
@@ -209,21 +221,27 @@ describe('closeSelfClosingHtmlTags (string-level preprocessor)', () => {
   });
 
   describe('block-level HTML elements', () => {
-    it.each(['section', 'article', 'aside', 'header', 'footer', 'main', 'nav', 'figure', 'blockquote', 'table', 'form'])(
-      'converts <%s />',
-      tag => {
-        expect(closeSelfClosingHtmlTags(`<${tag} />`)).toBe(`<${tag}></${tag}>`);
-      },
-    );
+    it.each([
+      'section',
+      'article',
+      'aside',
+      'header',
+      'footer',
+      'main',
+      'nav',
+      'figure',
+      'blockquote',
+      'table',
+      'form',
+    ])('converts <%s />', tag => {
+      expect(closeSelfClosingHtmlTags(`<${tag} />`)).toBe(`<${tag}></${tag}>`);
+    });
   });
 
   describe('heading-level elements', () => {
-    it.each(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])(
-      'converts <%s />',
-      tag => {
-        expect(closeSelfClosingHtmlTags(`<${tag} />`)).toBe(`<${tag}></${tag}>`);
-      },
-    );
+    it.each(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])('converts <%s />', tag => {
+      expect(closeSelfClosingHtmlTags(`<${tag} />`)).toBe(`<${tag}></${tag}>`);
+    });
   });
 
   describe('attributes with special patterns', () => {

@@ -1,29 +1,32 @@
-ARG NODE_VERSION=22.13
-FROM node:${NODE_VERSION}-alpine
+ARG NODE_VERSION=22.23.4
+FROM node:${NODE_VERSION}-bookworm-slim
 
 ARG NODE_VERSION
 ENV NODE_VERSION=$NODE_VERSION
 
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium-browser
-
-RUN apk update && apk add \
+# Playwright's Chromium build is glibc-only, so this image is Debian rather
+# than Alpine. Fonts are part of the screenshot baseline.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates \
+  fontconfig \
+  fonts-liberation \
+  fonts-noto-color-emoji \
+  fonts-noto-core \
+  fonts-roboto \
   make \
-  font-noto-emoji \
-  font-roboto \
-  chromium
+  && fc-cache -f \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g npm@10.5
-
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 ENV DOCKER_WORKSPACE=/markdown
 WORKDIR ${DOCKER_WORKSPACE}
 
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci && npx playwright install --with-deps chromium
 
 COPY . ./
 
-RUN mkdir -p __tests__/browser/__image_snapshots__/__diff_output__
+RUN mkdir -p __tests__/browser/__diff_output__
 
 EXPOSE 9966
 

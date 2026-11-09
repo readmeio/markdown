@@ -11,7 +11,8 @@ const run = (children: Root['children']): Root => {
   return tree;
 };
 
-const attr = (node: MdxJsxFlowElement, name: string) => node.attributes.find(a => 'name' in a && a.name === name)?.value;
+const attr = (node: MdxJsxFlowElement, name: string) =>
+  node.attributes.find(a => 'name' in a && a.name === name)?.value;
 
 /**
  * An `image-block` carries its attributes on the node and mirrored into `data.hProperties`.
@@ -93,8 +94,9 @@ describe('images-to-jsx transformer', () => {
   it('wraps a flow-position image in a paragraph so it stays its own block', () => {
     const bare: Image = { type: 'image', url: 'https://x.io/a.png', alt: 'Alt' };
 
-    const [wrapped] = run([bare, { type: 'heading', depth: 1, children: [{ type: 'text', value: 'H' }] }])
-      .children as [Paragraph];
+    const [wrapped] = run([bare, { type: 'heading', depth: 1, children: [{ type: 'text', value: 'H' }] }]).children as [
+      Paragraph,
+    ];
 
     expect(wrapped).toStrictEqual({ type: 'paragraph', children: [bare] });
   });
@@ -119,7 +121,9 @@ describe('images-to-jsx transformer', () => {
       data: { hProperties: { width: '200px' } },
     };
 
-    const [paragraph] = run([{ type: 'paragraph', children: [inline] }]).children as [{ children: MdxJsxFlowElement[] }];
+    const [paragraph] = run([{ type: 'paragraph', children: [inline] }]).children as [
+      { children: MdxJsxFlowElement[] },
+    ];
     const [image] = paragraph.children;
 
     expect(image.name).toBe('Image');

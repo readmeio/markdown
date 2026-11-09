@@ -128,8 +128,7 @@ function createTokenize(mode: 'flow' | 'text') {
     let quoteChar: Code = null;
 
     const isAlpha = (code: number) =>
-      (code >= codes.uppercaseA && code <= codes.uppercaseZ) ||
-      (code >= codes.lowercaseA && code <= codes.lowercaseZ);
+      (code >= codes.uppercaseA && code <= codes.uppercaseZ) || (code >= codes.lowercaseA && code <= codes.lowercaseZ);
 
     const isSameCaseAsTag = (code: number) =>
       isLowercaseTag

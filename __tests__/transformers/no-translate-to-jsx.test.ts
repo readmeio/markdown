@@ -7,7 +7,11 @@ import { describe, expect, it } from 'vitest';
 import { NodeTypes } from '../../enums';
 import mdxishNoTranslateToJsx from '../../processor/transform/mdxish/no-translate-to-jsx';
 
-const emptyNoTranslate = (): NoTranslate => ({ type: NodeTypes.noTranslate, children: [], data: { hName: 'NoTranslate' } });
+const emptyNoTranslate = (): NoTranslate => ({
+  type: NodeTypes.noTranslate,
+  children: [],
+  data: { hName: 'NoTranslate' },
+});
 
 const emptyFlowNoTranslate = (): MdxJsxFlowElement => ({
   type: 'mdxJsxFlowElement',
@@ -18,7 +22,10 @@ const emptyFlowNoTranslate = (): MdxJsxFlowElement => ({
 
 describe('mdxishNoTranslateToJsx', () => {
   it('gives every empty inline NoTranslate its own text child', () => {
-    const tree: Root = { type: 'root', children: [{ type: 'paragraph', children: [emptyNoTranslate(), emptyNoTranslate()] }] };
+    const tree: Root = {
+      type: 'root',
+      children: [{ type: 'paragraph', children: [emptyNoTranslate(), emptyNoTranslate()] }],
+    };
 
     mdxishNoTranslateToJsx()(tree);
 

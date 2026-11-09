@@ -3,7 +3,6 @@ import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
-
 import { describe, expect, it } from 'vitest';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';

@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import type { Properties } from 'hast';
 import type { BlockContent, Code, Link, Node, Parents, PhrasingContent, Table, TableCell, TableRow } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
@@ -135,7 +134,7 @@ const coerceJsxToMd =
       parent.children[index] = mdNode;
     } else if (node.name === 'Table') {
       const { position } = node;
-      const { align = [...new Array(node.children.length)].map(() => null) } = getAttrs<Pick<Table, 'align'>>(node);
+      const { align = Array.from({ length: node.children.length }, () => null) } = getAttrs<Pick<Table, 'align'>>(node);
       const children: TableRow[] = [];
 
       visit(node, { name: 'tr' } as Partial<MdxJsxFlowElement>, row => {
@@ -246,7 +245,7 @@ const coerceJsxToMd =
         },
         position: node.position,
       } as Recipe;
-      
+
       parent.children[index] = mdNode;
     } else if (node.name in types) {
       const hProperties = getAttrs<Properties>(node);

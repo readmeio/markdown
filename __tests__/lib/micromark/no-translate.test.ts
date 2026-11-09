@@ -51,17 +51,22 @@ describe('noTranslate tokenizer', () => {
     });
 
     it('ends a code span at a blank line, so a closer after it counts', () => {
-      expect(htmlValues('<NoTranslate>\n`a\n\n</NoTranslate>\nb`\n</NoTranslate>')[0]).toBe('<NoTranslate>\n`a\n\n</NoTranslate>');
+      expect(htmlValues('<NoTranslate>\n`a\n\n</NoTranslate>\nb`\n</NoTranslate>')[0]).toBe(
+        '<NoTranslate>\n`a\n\n</NoTranslate>',
+      );
     });
 
     it('claims a block inside a blockquote', () => {
-      expect(htmlValues('> <NoTranslate>\n> one\n> </NoTranslate>')).toStrictEqual(['<NoTranslate>\none\n</NoTranslate>']);
+      expect(htmlValues('> <NoTranslate>\n> one\n> </NoTranslate>')).toStrictEqual([
+        '<NoTranslate>\none\n</NoTranslate>',
+      ]);
     });
 
     it('claims an indented block from the start of its line', () => {
-      expect(htmlValues('  <NoTranslate>\n  one\n  </NoTranslate>')).toStrictEqual(['  <NoTranslate>\n  one\n  </NoTranslate>']);
+      expect(htmlValues('  <NoTranslate>\n  one\n  </NoTranslate>')).toStrictEqual([
+        '  <NoTranslate>\n  one\n  </NoTranslate>',
+      ]);
     });
-
   });
 
   describe('text: inline form', () => {
@@ -69,24 +74,59 @@ describe('noTranslate tokenizer', () => {
       ['mid paragraph', 'Hi <NoTranslate>Acme</NoTranslate> there', '<NoTranslate>Acme</NoTranslate>'],
       ['at the start of a line', '<NoTranslate>Acme</NoTranslate> is great', '<NoTranslate>Acme</NoTranslate>'],
       ['across a soft break', '<NoTranslate>Acme\nCloud</NoTranslate> after', '<NoTranslate>Acme\nCloud</NoTranslate>'],
-      ['closing on its last line with text after', '<NoTranslate>one\ntwo</NoTranslate> after', '<NoTranslate>one\ntwo</NoTranslate>'],
+      [
+        'closing on its last line with text after',
+        '<NoTranslate>one\ntwo</NoTranslate> after',
+        '<NoTranslate>one\ntwo</NoTranslate>',
+      ],
       ['under a paragraph line', 'Text\n<NoTranslate>one</NoTranslate>', '<NoTranslate>one</NoTranslate>'],
-      ['under a paragraph line, across its lines', 'Text\n<NoTranslate>\none\n</NoTranslate>', '<NoTranslate>\none\n</NoTranslate>'],
+      [
+        'under a paragraph line, across its lines',
+        'Text\n<NoTranslate>\none\n</NoTranslate>',
+        '<NoTranslate>\none\n</NoTranslate>',
+      ],
       ['in a heading', '# Use <NoTranslate>Acme</NoTranslate> now', '<NoTranslate>Acme</NoTranslate>'],
-      ['with attributes', 'Hi <NoTranslate title={"x"}>Acme</NoTranslate>', '<NoTranslate title={"x"}>Acme</NoTranslate>'],
-      ['with a brace in an attribute string', 'Hi <NoTranslate title={"}"}>Acme</NoTranslate>', '<NoTranslate title={"}"}>Acme</NoTranslate>'],
-      ['with a nested NoTranslate', '<NoTranslate><NoTranslate>a</NoTranslate> b</NoTranslate> c', '<NoTranslate><NoTranslate>a</NoTranslate> b</NoTranslate>'],
-      ['with a closer in inline code', '<NoTranslate>a `</NoTranslate>` b</NoTranslate> c', '<NoTranslate>a `</NoTranslate>` b</NoTranslate>'],
-      ['with a closer in inline code across a soft break', '<NoTranslate>a `x\n</NoTranslate>` b</NoTranslate> c', '<NoTranslate>a `x\n</NoTranslate>` b</NoTranslate>'],
+      [
+        'with attributes',
+        'Hi <NoTranslate title={"x"}>Acme</NoTranslate>',
+        '<NoTranslate title={"x"}>Acme</NoTranslate>',
+      ],
+      [
+        'with a brace in an attribute string',
+        'Hi <NoTranslate title={"}"}>Acme</NoTranslate>',
+        '<NoTranslate title={"}"}>Acme</NoTranslate>',
+      ],
+      [
+        'with a nested NoTranslate',
+        '<NoTranslate><NoTranslate>a</NoTranslate> b</NoTranslate> c',
+        '<NoTranslate><NoTranslate>a</NoTranslate> b</NoTranslate>',
+      ],
+      [
+        'with a closer in inline code',
+        '<NoTranslate>a `</NoTranslate>` b</NoTranslate> c',
+        '<NoTranslate>a `</NoTranslate>` b</NoTranslate>',
+      ],
+      [
+        'with a closer in inline code across a soft break',
+        '<NoTranslate>a `x\n</NoTranslate>` b</NoTranslate> c',
+        '<NoTranslate>a `x\n</NoTranslate>` b</NoTranslate>',
+      ],
       ['with a lone backtick', '<NoTranslate>a ` b</NoTranslate> c', '<NoTranslate>a ` b</NoTranslate>'],
-      ['with a closer in an expression', '<NoTranslate>a {"</NoTranslate>"} b</NoTranslate> c', '<NoTranslate>a {"</NoTranslate>"} b</NoTranslate>'],
+      [
+        'with a closer in an expression',
+        '<NoTranslate>a {"</NoTranslate>"} b</NoTranslate> c',
+        '<NoTranslate>a {"</NoTranslate>"} b</NoTranslate>',
+      ],
       ['empty', 'Before <NoTranslate></NoTranslate> after', '<NoTranslate></NoTranslate>'],
     ])('claims one node %s', (_label, doc, value) => {
       expect(htmlValues(doc)).toStrictEqual([value]);
     });
 
     it('claims each NoTranslate on a line as its own node', () => {
-      expect(htmlValues('<NoTranslate>a</NoTranslate> and <NoTranslate>b</NoTranslate>')).toStrictEqual(['<NoTranslate>a</NoTranslate>', '<NoTranslate>b</NoTranslate>']);
+      expect(htmlValues('<NoTranslate>a</NoTranslate> and <NoTranslate>b</NoTranslate>')).toStrictEqual([
+        '<NoTranslate>a</NoTranslate>',
+        '<NoTranslate>b</NoTranslate>',
+      ]);
     });
   });
 
@@ -96,7 +136,11 @@ describe('noTranslate tokenizer', () => {
       ['a self-closing tag', 'Hi <NoTranslate /> x', ['<NoTranslate />']],
       ['a self-closing tag alone on its line', '<NoTranslate />\nafter', ['<NoTranslate />\nafter']],
       ['an unclosed block', '<NoTranslate>\none', ['<NoTranslate>\none']],
-      ['another tag with the same prefix', '<NoTranslateS>\na\n</NoTranslateS>', ['<NoTranslateS>\na\n</NoTranslateS>']],
+      [
+        'another tag with the same prefix',
+        '<NoTranslateS>\na\n</NoTranslateS>',
+        ['<NoTranslateS>\na\n</NoTranslateS>'],
+      ],
       ['a lowercase tag', '<notranslate>a</notranslate>', ['<notranslate>', '</notranslate>']],
     ])('leaves %s to CommonMark', (_label, doc, values) => {
       expect(htmlValues(doc)).toStrictEqual(values);

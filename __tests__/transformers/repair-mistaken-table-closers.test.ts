@@ -89,7 +89,8 @@ describe('repairMistakenTableClosers (string-level preprocessor)', () => {
 
 > **Notes:**`;
 
-      expect(repairMistakenTableClosers(input)).toBe(`<table><thead><th class="page-label-version">Version: <code>v2026-07-21</code></th></thead></table>
+      expect(repairMistakenTableClosers(input))
+        .toBe(`<table><thead><th class="page-label-version">Version: <code>v2026-07-21</code></th></thead></table>
 
 > **Notes:**`);
     });

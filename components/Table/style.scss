@@ -1,9 +1,4 @@
-@mixin markdown-table(
-  $row: #fff,
-  $head: #f6f8fa,
-  $stripe: #fbfcfd,
-  $edges: #dfe2e5,
-) {
+@mixin markdown-table($row: #fff, $head: #f6f8fa, $stripe: #fbfcfd, $edges: #dfe2e5) {
   table {
     display: table;
     border-collapse: collapse;
@@ -26,6 +21,11 @@
       }
     }
 
+    // Browsers center th by default, so match body cells; an align attribute or inline style still wins
+    th:not([align]) {
+      text-align: inherit;
+    }
+
     th,
     thead td {
       font-weight: 600;
@@ -41,8 +41,14 @@
       vertical-align: middle;
       border: 1px solid var(--table-edges, #{$edges});
       padding: 6px 13px;
-      > :first-child, > :only-child { margin-top:    0 !important }
-      > :last-child, > :only-child  { margin-bottom: 0 !important }
+      > :first-child,
+      > :only-child {
+        margin-top: 0 !important;
+      }
+      > :last-child,
+      > :only-child {
+        margin-bottom: 0 !important;
+      }
     }
 
     &:not(.plain) tr:nth-child(2n) {
