@@ -155,6 +155,24 @@ This is some in progress <!-- commented out stuff -->
     `);
   });
 
+  it('compiles each html comment in a block separately', () => {
+    const md = `
+<table>
+  <tr><td>Row 1 <!-- a --></td></tr>
+  <tr><td>Row 2</td></tr>
+  <tr><td>Row 3 <!-- b --></td></tr>
+</table>
+`;
+
+    expect(migrate(md).trim()).toMatchInlineSnapshot(`
+      "<table>
+        <tr><td>Row 1 {/* a */}</td></tr>
+        <tr><td>Row 2</td></tr>
+        <tr><td>Row 3 {/* b */}</td></tr>
+      </table>"
+    `);
+  });
+
   // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('closes un-closed self closing tags', () => {
     const md = `
