@@ -1792,6 +1792,92 @@ exports[`MDX↔MDXish equivalence > unclosed-tags 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > unquoted-html-attributes 1`] = `
+{
+  "changes": [
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/h1[0]",
+      "right": "<h1 class="header-scroll heading heading-1">…(3 children)…</h1>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[1]",
+      "right": "<p>…(3 children)…</p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[2]",
+      "right": "<p>…(1 children)…</p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[3]",
+      "right": "<p>…(4 children)…</p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[4]",
+      "right": "<p>…(3 children)…</p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[5]",
+      "right": "<div data-url="https://example.com">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[6]",
+      "right": "<p>…(1 children)…</p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/a[7]",
+      "right": "<a href="https://example.com?a=b" target="true" title="name">…(1 children)…</a>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/pre[8]",
+      "right": "<pre class="x">…(1 children)…</pre>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/#text[9]",
+      "right": "#text("\`")",
+      "severity": "content",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/h2[10]",
+      "right": "<h2 class="header-scroll heading heading-2">…(3 children)…</h2>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "content",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > variables-everywhere 1`] = `
 {
   "changes": [
