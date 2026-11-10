@@ -1,5 +1,6 @@
 import type { CustomComponents } from '../../types';
 import type { Element } from 'hast';
+import type { Root as MdastRoot } from 'mdast';
 
 import fs from 'node:fs';
 
@@ -7,8 +8,8 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { vi } from 'vitest';
 
-import { mdx, compile, run, mdxish } from '../../index';
-import { migrate } from '../helpers';
+import { mdx, mdxishMdastToMd, compile, run, mdxish } from '../../index';
+import { migrate, roundTripMdxish } from '../helpers';
 
 describe('compatability with RDMD', () => {
   it('compiles glossary nodes', () => {
@@ -155,22 +156,40 @@ This is some in progress <!-- commented out stuff -->
     `);
   });
 
-  it('compiles each html comment in a block separately', () => {
-    const md = `
-<table>
+  describe('multiple html comments in one html block', () => {
+    const table = `<table>
   <tr><td>Row 1 <!-- a --></td></tr>
   <tr><td>Row 2</td></tr>
   <tr><td>Row 3 <!-- b --></td></tr>
-</table>
-`;
+</table>`;
+    const tableWithJsxComments = `<table>
+  <tr><td>Row 1 {/* a */}</td></tr>
+  <tr><td>Row 2</td></tr>
+  <tr><td>Row 3 {/* b */}</td></tr>
+</table>`;
 
-    expect(migrate(md).trim()).toMatchInlineSnapshot(`
-      "<table>
-        <tr><td>Row 1 {/* a */}</td></tr>
-        <tr><td>Row 2</td></tr>
-        <tr><td>Row 3 {/* b */}</td></tr>
-      </table>"
-    `);
+    describe.each([
+      ['mdx', mdx],
+      ['mdxishMdastToMd', mdxishMdastToMd],
+    ])('saved from the editor with %s', (_name, serialize) => {
+      it.each([
+        ['in different table rows', table, tableWithJsxComments],
+        ['on one line', '<p><!-- a --> kept <!-- b --></p>', '<p>{/* a */} kept {/* b */}</p>'],
+        [
+          'after a multi-line comment',
+          '<!--\n  first\n-->\n<p>kept</p>\n<!-- second -->',
+          '{/*\n  first\n*/}\n<p>kept</p>\n{/* second */}',
+        ],
+      ])('compiles each comment separately %s', (_label, value, expected) => {
+        const tree: MdastRoot = { type: 'root', children: [{ type: 'html', value }] };
+
+        expect(serialize(tree).trim()).toBe(expected);
+      });
+    });
+
+    it('keeps every table row when mdxish parses and re-serializes it', () => {
+      expect(roundTripMdxish(table).trim()).toBe(tableWithJsxComments);
+    });
   });
 
   // oxlint-disable-next-line vitest/no-disabled-tests
