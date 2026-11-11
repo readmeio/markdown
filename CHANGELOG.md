@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 16.2.2
+### 🛠 Fixes & Updates
+
+* **compatibility:** convert each html comment separately in compiled html blocks ([#1686](https://github.com/readmeio/markdown/issues/1686)) ([d220c1f](https://github.com/readmeio/markdown/commit/d220c1f4d57956b58df70355b548b85953505eea))
+* **editor:** html parsing support for unquoted attributes ([#1591](https://github.com/readmeio/markdown/issues/1591)) ([fa57d39](https://github.com/readmeio/markdown/commit/fa57d392196dd2f21e47bdd07fd68def38999460))
+
 ## Version 16.2.1
 ### 🛠 Fixes & Updates
 
