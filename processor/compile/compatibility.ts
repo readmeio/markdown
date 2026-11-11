@@ -36,7 +36,7 @@ type CompatNodes =
  *
  */
 const compileHtml = (node: Html) => {
-  const string = node.value.replaceAll(/<!--(.*)-->/gms, '{/*$1*/}');
+  const string = node.value.replaceAll(/<!--(.*?)-->/gs, '{/*$1*/}');
 
   return string;
 };
