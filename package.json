@@ -63,7 +63,7 @@
     "debug": "^4.3.4",
     "deepmerge": "^4.3.1",
     "emoji-regex": "^10.2.1",
-    "entities": "^6.0.1",
+    "entities": "^8.1.0",
     "estree-util-build-jsx": "^3.0.1",
     "estree-util-to-js": "^2.0.0",
     "estree-util-value-to-estree": "^3.1.1",
