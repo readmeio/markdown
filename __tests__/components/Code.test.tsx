@@ -6,6 +6,12 @@ import Code from '../../components/Code';
 
 import { captureMdxishProps, renderingEngines } from './utils';
 
+// The node build has no highlighter; this stub mirrors the browser one, which renders non-strings empty.
+vi.mock(import('@readme/syntax-highlighter'), async importOriginal => ({
+  ...(await importOriginal()),
+  default: (code: unknown) => (typeof code === 'string' ? code : ''),
+}));
+
 describe('Code', () => {
   describe('general component rendering', () => {
     it('renders a code element', () => {
@@ -61,5 +67,20 @@ const x = 1;
     const captured = captureMdxishProps(md, 'code');
     expect(captured.style).toBeTypeOf('object');
     expect(captured.style).toMatchObject({ color: 'red' });
+  });
+
+  // RM-16932
+  describe('markdown inside an html <code> tag', () => {
+    it.each(renderingEngines)('%s: keeps backtick-wrapped content', (_label, renderContent) => {
+      const Content = renderContent('<code>`hello`</code>');
+      const { container } = render(<Content />);
+      expect(container.querySelector('code')).toHaveTextContent('hello');
+    });
+
+    it.each(renderingEngines)('%s: keeps text around inline code', (_label, renderContent) => {
+      const Content = renderContent('<code>a `b` c</code> and <code>**bold**</code>');
+      const { container } = render(<Content />);
+      expect(container).toHaveTextContent('a b c and bold');
+    });
   });
 });
