@@ -9,7 +9,7 @@ import { toMarkdown } from 'mdast-util-to-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
-import { SKIP, visit } from 'unist-util-visit';
+import { EXIT, SKIP, visit } from 'unist-util-visit';
 
 import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
@@ -142,6 +142,16 @@ const removeIconPrefix = (paragraph: Paragraph, prefixLength: number) => {
   if (firstTextNode) dropTextPrefix(firstTextNode, prefixLength);
 };
 
+/** Whether an otherwise empty quote defines links used elsewhere on the page. */
+const hasReferenceDefinition = (node: Blockquote): boolean => {
+  let found = false;
+  visit(node, 'definition', () => {
+    found = true;
+    return EXIT;
+  });
+  return found;
+};
+
 const processBlockquote = (
   node: Blockquote,
   index: number | undefined,
@@ -154,7 +164,7 @@ const processBlockquote = (
     const content = extractText(node);
     const isEmpty = !content || content.trim() === '';
 
-    if (isEmpty && index !== undefined && parent) {
+    if (isEmpty && index !== undefined && parent && !hasReferenceDefinition(node)) {
       const textNode: Text = {
         type: 'text',
         value: '>',
