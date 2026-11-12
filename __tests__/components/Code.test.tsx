@@ -69,7 +69,6 @@ const x = 1;
     expect(captured.style).toMatchObject({ color: 'red' });
   });
 
-  // RM-16932
   describe('markdown inside an html <code> tag', () => {
     it.each(renderingEngines)('%s: keeps backtick-wrapped content', (_label, renderContent) => {
       const Content = renderContent('<code>`hello`</code>');
