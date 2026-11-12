@@ -8,6 +8,18 @@ export interface ProtectCodeBlocksResult {
   protectedContent: string;
 }
 
+// CommonMark fences open with either backticks or tildes; a fence closes with its own marker.
+const FENCE_MARKERS = ['```', '~~~'] as const;
+
+/** Earliest backtick or tilde fence marker in `text`, or null if there is none. */
+function findNextFence(text: string) {
+  return FENCE_MARKERS.reduce<{ marker: string; start: number } | null>((earliest, marker) => {
+    const start = text.indexOf(marker);
+    if (start === -1 || (earliest && earliest.start <= start)) return earliest;
+    return { marker, start };
+  }, null);
+}
+
 /**
  * Replaces code blocks and inline code with placeholders to protect them from preprocessing.
  *
@@ -32,13 +44,13 @@ export function protectCodeBlocks(content: string): ProtectCodeBlocksResult {
 
   let protectedContent = '';
   let remaining = content;
-  let codeBlockStart = remaining.indexOf('```');
+  let fence = findNextFence(remaining);
 
-  while (codeBlockStart !== -1) {
-    protectedContent += remaining.slice(0, codeBlockStart);
-    remaining = remaining.slice(codeBlockStart);
+  while (fence) {
+    protectedContent += remaining.slice(0, fence.start);
+    remaining = remaining.slice(fence.start);
 
-    const codeBlockEnd = remaining.indexOf('```', 3);
+    const codeBlockEnd = remaining.indexOf(fence.marker, 3);
     if (codeBlockEnd === -1) {
       break;
     }
@@ -49,7 +61,7 @@ export function protectCodeBlocks(content: string): ProtectCodeBlocksResult {
     protectedContent += `___CODE_BLOCK_${index}___`;
 
     remaining = remaining.slice(codeBlockEnd + 3);
-    codeBlockStart = remaining.indexOf('```');
+    fence = findNextFence(remaining);
   }
   protectedContent += remaining;
 

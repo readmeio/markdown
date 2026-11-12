@@ -3,16 +3,15 @@ import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
 import { HTML_TABLE_STRUCTURE_TAGS } from '../../../utils/common-html-words';
 
+import { findBalancedOpenerOffsets } from './components/utils';
 import { indentWidth } from './indentation';
 
 const STANDALONE_HTML_LINE_REGEX = /^(<[a-z][^<>]*>|<\/[a-z][^<>]*>)+\s*$/;
 
 const HTML_LINE_WITH_CONTENT_REGEX = /^<[a-z][^<>]*>.*<\/[a-z][^<>]*>(?:[^<]*)$/;
 
-// A leading open/close tag followed by text (`<li> test`); captures the tag name.
-const TAG_WITH_TRAILING_TEXT_REGEX = /^<\/?([a-z][a-z0-9-]*)(?=[\s/>])[^<>]*>\s*\S/;
-
-const CLOSING_TAG_NAME_REGEX = /<\/([a-z][a-z0-9-]*)\s*>/g;
+// A leading open/close tag followed by text (`<li> test`); captures the closer slash and tag name.
+const TAG_WITH_TRAILING_TEXT_REGEX = /^<(\/?)([a-z][a-z0-9-]*)(?=[\s/>])[^<>]*>\s*\S/;
 
 // CommonMark type-6 names open an HTML block regardless of trailing text; other tags don't.
 const HTML_BLOCK_NAMES: ReadonlySet<string> = new Set(htmlBlockNames);
@@ -36,27 +35,43 @@ function isLineHtml(line: string) {
   return STANDALONE_HTML_LINE_REGEX.test(line) || HTML_LINE_WITH_CONTENT_REGEX.test(line);
 }
 
+const leadingWhitespace = (line: string) => line.length - line.trimStart().length;
+
 /**
- * Per line, the last line index of each closing tag name within that line's
- * blank-line-delimited run (one shared map per run).
+ * Line indexes in `lines[start..)` whose leading opener is balanced before the run's
+ * blank line (where the HTML flow block ends). Openers before `start` can't steal
+ * a closer from a later one, so starting mid-run is safe.
  */
-function mapClosingTagsByRun(lines: string[]): Map<string, number>[] {
-  let run = new Map<string, number>();
-  return lines.map((line, index) => {
-    if (line.trim().length === 0) run = new Map();
-    for (const [, tagName] of line.matchAll(CLOSING_TAG_NAME_REGEX)) run.set(tagName, index);
-    return run;
-  });
+function findBalancedOpenerLines(lines: string[], start: number) {
+  const lineOffsets: number[] = [];
+  let text = '';
+  let end = start;
+  for (; end < lines.length && lines[end].trim().length > 0; end += 1) {
+    lineOffsets.push(text.length + leadingWhitespace(lines[end]));
+    text += `${lines[end]}\n`;
+  }
+  const balanced = findBalancedOpenerOffsets(text);
+  const lineIndexes = lineOffsets.flatMap((offset, k) => (balanced.has(offset) ? [start + k] : []));
+  return { end, lines: new Set(lineIndexes) };
+}
+
+/** Memoizes `findBalancedOpenerLines` per run so the loop walks each run at most once. */
+function createBalancedOpenerLookup(lines: string[]) {
+  let run: ReturnType<typeof findBalancedOpenerLines> | undefined;
+  return (index: number) => {
+    if (!run || index >= run.end) run = findBalancedOpenerLines(lines, index);
+    return run.lines.has(index);
+  };
 }
 
 /**
- * A type-6 tag with trailing text (`<li> test`) that isn't closed later in its run.
- * Closed ones already render, as mdxish re-parses the whole HTML block.
+ * A type-6 tag with trailing text (`<li> test`) left open for the rest of its run.
+ * Balanced ones already render, as mdxish re-parses the whole HTML block.
  */
-function leavesBlockTagOpen(line: string, index: number, runClosers: Map<string, number>) {
-  const tagName = TAG_WITH_TRAILING_TEXT_REGEX.exec(line.trim())?.[1];
+function leavesBlockTagOpen(line: string, isBalanced: () => boolean) {
+  const [, closerSlash, tagName] = TAG_WITH_TRAILING_TEXT_REGEX.exec(line.trim()) ?? [];
   if (tagName === undefined || !HTML_BLOCK_NAMES.has(tagName)) return false;
-  return (runClosers.get(tagName) ?? -1) <= index;
+  return Boolean(closerSlash) || !isBalanced();
 }
 
 // Per-tag {opens, closes} counts of RAW_CONTENT_TAGS on one line — feeds both the
@@ -71,8 +86,8 @@ function countRawContentTags(line: string): { closes: number; opens: number }[] 
 interface BoundaryFacts {
   /** Any raw-content element is still open at the boundary after `line`. */
   insideRawContent: boolean;
-  /** `line` opens a type-6 HTML block via a tag with trailing text, left unclosed. */
-  leavesBlockOpen: boolean;
+  /** `line` opens a type-6 HTML block via a tag with trailing text, left unclosed. Lazy: walks the run. */
+  leavesBlockOpen: () => boolean;
   /** A raw-content opener on `line` itself is left unclosed by that line. */
   lineLeavesRawOpen: boolean;
 }
@@ -92,10 +107,8 @@ function shouldTerminateBetween(
   const nextIndent = indentWidth(next);
   const currentTrimmed = line.trim();
   const nextTrimmed = next.trim();
-  const currentIsHtml = isLineHtml(currentTrimmed) || leavesBlockOpen;
-  if (!currentIsHtml || isLineHtml(nextTrimmed) || lineLeavesRawOpen) {
-    return false;
-  }
+  if (isLineHtml(nextTrimmed) || lineLeavesRawOpen) return false;
+  if (!isLineHtml(currentTrimmed) && !leavesBlockOpen()) return false;
 
   // Column-0 pairs keep the original (pre-relaxation) rule, deliberately ignoring
   // `insideRawContent`: one unclosed <pre>/<table> typo would otherwise suppress
@@ -124,7 +137,7 @@ export function terminateHtmlFlowBlocks(content: string) {
   const { protectedContent, protectedCode } = protectCodeBlocks(content);
 
   const lines = protectedContent.split('\n');
-  const closersByRun = mapClosingTagsByRun(lines);
+  const isOpenerBalanced = createBalancedOpenerLookup(lines);
   const result: string[] = [];
   // Per-tag count of still-open raw-content elements at the current boundary.
   const rawContentDepths = RAW_CONTENT_TAG_MATCHERS.map(() => 0);
@@ -141,7 +154,7 @@ export function terminateHtmlFlowBlocks(content: string) {
     const next = lines[i + 1];
     const boundaryFacts = {
       insideRawContent: rawContentDepths.some(depth => depth > 0),
-      leavesBlockOpen: leavesBlockTagOpen(line, i, closersByRun[i]),
+      leavesBlockOpen: () => leavesBlockTagOpen(line, () => isOpenerBalanced(i)),
       lineLeavesRawOpen: tagCounts.some(({ opens, closes }) => opens > closes),
     };
     if (next !== undefined && shouldTerminateBetween(line, next, boundaryFacts)) {

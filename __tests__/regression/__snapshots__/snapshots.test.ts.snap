@@ -221,8 +221,11 @@ exports[`Render engine regressions tests > html-opener-trailing-text (mdxish) 1`
 <li><p>closed later</p><div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p class="callout-heading empty"></p><p>Callout inside a closed li</p></blockquote></div></li>
 <div><strong>bold</strong><br/>
 more</div>
+</div></li><li> First sibling, never closed
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p class="callout-heading empty"></p><p>Callout under an implicitly closed li</p></blockquote></div>
+</li><li> Second sibling</li>
 <p><b> bold text<br/>
-stays in the same paragraph</b></p></div></li>"
+stays in the same paragraph</b></p>"
 `;
 
 exports[`Render engine regressions tests > htmlblock (mdx) 1`] = `

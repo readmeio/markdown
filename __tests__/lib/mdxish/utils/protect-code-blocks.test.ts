@@ -17,6 +17,21 @@ describe('protectCodeBlocks', () => {
       expect(protectedContent).not.toContain('```');
     });
 
+    it('should extract tilde fenced code blocks', () => {
+      const input = 'Before\n~~~html\n<div>\nnext\n~~~\nAfter `code`';
+      const { protectedCode, protectedContent } = protectCodeBlocks(input);
+
+      expect(protectedCode.codeBlocks).toStrictEqual(['~~~html\n<div>\nnext\n~~~']);
+      expect(protectedContent).toBe('Before\n___CODE_BLOCK_0___\nAfter ___INLINE_CODE_0___');
+    });
+
+    it('should close a fence only with its own marker', () => {
+      const input = '~~~\n```\n~~~\n```js\n~~~\n```';
+      const { protectedCode } = protectCodeBlocks(input);
+
+      expect(protectedCode.codeBlocks).toStrictEqual(['~~~\n```\n~~~', '```js\n~~~\n```']);
+    });
+
     it('should extract inline code', () => {
       const input = 'Use `const` to declare variables';
       const { protectedCode, protectedContent } = protectCodeBlocks(input);

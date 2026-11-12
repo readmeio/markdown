@@ -293,6 +293,22 @@ text at column 0`);
     it('still inserts when the only closer is past a blank line', () => {
       expect(terminateHtmlFlowBlocks('<li> test\n## Heading\n\n</li>')).toBe('<li> test\n\n## Heading\n\n</li>');
     });
+
+    // Only a balanced closer counts: htmlparser2 implicitly closes sibling `<li>`s.
+    it.each([
+      ['<li> First', '[block:callout]\n{}\n[/block]\n<li> Second</li>'],
+      ['<div> outer', '## Heading\n<div>inner</div>'],
+      ['<div> outer', '## Heading\n<span title="</div>">x</span>'],
+    ])('inserts when a later closer belongs to another element: %j', (line, rest) => {
+      expect(terminateHtmlFlowBlocks(`${line}\n${rest}`)).toBe(`${line}\n\n${rest}`);
+    });
+
+    it.each(['~~~html\n<li> test\nnext line\n~~~', '~~~\n<div>\nnext\n~~~', '~~~~\n<li> test\nnext\n~~~~'])(
+      'leaves tilde-fenced code unchanged: %j',
+      input => {
+        expect(terminateHtmlFlowBlocks(input)).toBe(input);
+      },
+    );
   });
 
   describe('when it should not insert a blank line', () => {
@@ -537,6 +553,20 @@ Some text
   });
 
   describe('performance tests', () => {
+    it('checks tag balance in linear time across a long unblanked legacy list', () => {
+      const list = (items: number) =>
+        `${Array.from({ length: items }, (_, i) => `<li> item ${i}\ntext ${i}`).join('\n')}\n</li>`;
+      const time = (md: string) => {
+        terminateHtmlFlowBlocks(md);
+        const start = performance.now();
+        terminateHtmlFlowBlocks(md);
+        return performance.now() - start;
+      };
+
+      // 8x the input; a per-line rescan would be ~64x slower.
+      expect(time(list(4000)) / Math.max(time(list(500)), 1)).toBeLessThan(20);
+    });
+
     it('does not catastrophically backtrack on tags with many spaces', () => {
       const input = `<a${' '.repeat(1000)}>
 Next line`;

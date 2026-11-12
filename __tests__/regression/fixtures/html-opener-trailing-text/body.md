@@ -29,5 +29,14 @@
 <div>**bold**
 more</div>
 
+<li> First sibling, never closed
+[block:callout]
+{
+  "type": "info",
+  "body": "Callout under an implicitly closed li"
+}
+[/block]
+<li> Second sibling</li>
+
 <b> bold text
 stays in the same paragraph</b>

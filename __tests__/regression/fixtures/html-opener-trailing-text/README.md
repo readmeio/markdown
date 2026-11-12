@@ -18,6 +18,8 @@ directly followed by markdown with no blank line between them.
 - Openers closed later in the same block (`<li> … </li>`, `<div>**bold**\nmore</div>`)
   are left glued: mdxish already re-parses those whole, so splitting them would
   break the bold and the callout.
+- Sibling `<li>`s where only the last is closed still split: the closer
+  balances the second `<li>`, so the first one's callout renders.
 - An inline tag (`<b> bold text`) is not split from the next line — only
   type-6 block names get the blank line.
 
@@ -26,4 +28,5 @@ The magic block and the unclosed-on-line openers aren't valid MDX, so the MDX si
 ## What flips this fixture
 
 `leavesBlockTagOpen` / `shouldTerminateBetween` in
-`processor/transform/mdxish/terminate-html-flow-blocks.ts`.
+`processor/transform/mdxish/terminate-html-flow-blocks.ts`, or
+`findBalancedOpenerOffsets` in `processor/transform/mdxish/components/utils.ts`.
