@@ -387,6 +387,87 @@ exports[`MDX↔MDXish equivalence > expressions-in-tables 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > html-code-with-markdown 1`] = `
+{
+  "changes": [
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[1]/code[1]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[2]/code[1]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[3]/code[1]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[3]/code[3]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[4]/code[1]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[4]/code[3]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[5]/code[1]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/ul[7]/li[0]/code[1]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[8]/div[0]/table[0]/tbody[1]/tr[0]/td[0]/code[0]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > htmlblock 1`] = `
 {
   "status": "match",
