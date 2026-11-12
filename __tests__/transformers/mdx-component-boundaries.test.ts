@@ -64,6 +64,8 @@ describe('component boundaries', () => {
       // eslint-disable-next-line no-template-curly-in-string
       '{`outer ${`</Callout>`}`}',
       '<Callout>nested</Callout>',
+      'Hi <<name>>',
+      'see <<glossary:term>>',
     ])('preserves the first component containing %s', body => {
       const first = `<Callout>${body}</Callout>`;
       const second = '<Callout>sibling</Callout>';

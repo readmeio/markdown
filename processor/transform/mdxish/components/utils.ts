@@ -1,9 +1,10 @@
 import type { Html, Node, PhrasingContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxExpressionAttribute, MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
+import { mdxFromMarkdown } from 'mdast-util-mdx';
+import { mdxjs } from 'micromark-extension-mdxjs';
 import { htmlRawNames } from 'micromark-util-html-tag-name';
 import remarkGfm from 'remark-gfm';
-import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
@@ -40,7 +41,16 @@ const buildInlineMdProcessor = ({ footnotes = [], phrasing = false, safeMode = f
 };
 
 const processorCache = new Map<string, ReturnType<typeof buildInlineMdProcessor>>();
-const componentBoundaryProcessor = unified().use(remarkParse).use(remarkMdx);
+
+const buildComponentBoundaryProcessor = () => {
+  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBoundary);
+  // `mdxjs` goes first (= lowest priority) so `legacyVariable` wins `<` and `<<var>>` doesn't throw.
+  return unified()
+    .data('micromarkExtensions', [mdxjs(), ...micromarkExtensions])
+    .data('fromMarkdownExtensions', [mdxFromMarkdown(), ...fromMarkdownExtensions])
+    .use(remarkParse);
+};
+const componentBoundaryProcessor = buildComponentBoundaryProcessor();
 
 /** Find top-level JSX siblings without changing MDXish's recovery for non-JSX bodies. */
 export function findComponentSiblingSpans(content: string, tag: string): { end: number, start: number; }[] {
