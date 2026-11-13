@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeContext } from 'micromark-util-types';
 
-import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
+import { markdownLineEnding, markdownLineEndingOrSpace, markdownSpace } from 'micromark-util-character';
 import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
@@ -10,6 +10,7 @@ import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '..
 import { createOpaqueRegions } from '../util/opaque-regions';
 
 import { markupOnlyContinuation } from './continuation-checks';
+import { htmlOpenTagConstruct } from './html-open-tag';
 
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
@@ -128,8 +129,7 @@ function createTokenize(mode: 'flow' | 'text') {
     let quoteChar: Code = null;
 
     const isAlpha = (code: number) =>
-      (code >= codes.uppercaseA && code <= codes.uppercaseZ) ||
-      (code >= codes.lowercaseA && code <= codes.lowercaseZ);
+      (code >= codes.uppercaseA && code <= codes.uppercaseZ) || (code >= codes.lowercaseA && code <= codes.lowercaseZ);
 
     const isSameCaseAsTag = (code: number) =>
       isLowercaseTag
@@ -209,13 +209,14 @@ function createTokenize(mode: 'flow' | 'text') {
 
     // ── Opening tag attributes ─────────────────────────────────────────────
 
+    // Everything except a flow-mode PascalCase block component must carry a
+    // `{…}` brace attribute to be claimed; plain HTML falls through to CommonMark.
+    function lacksRequiredBraceAttr(): boolean {
+      return (isLowercaseTag || !isFlow) && !sawBraceAttr;
+    }
+
     function afterOpenTagName(code: Code): State | undefined {
       if (code === null) return nok(code);
-
-      // Everything except a flow-mode PascalCase block component must carry a
-      // `{…}` brace attribute to be claimed; plain HTML falls through to
-      // CommonMark.
-      const requiresBraceAttr = isLowercaseTag || !isFlow;
 
       if (markdownLineEnding(code)) {
         if (!isFlow) return nok(code);
@@ -223,16 +224,15 @@ function createTokenize(mode: 'flow' | 'text') {
         return openTagContinuationStart(code);
       }
 
-      // Self-closing />
+      // Possibly self-closing `/>`; a lone `/` (e.g. in `href=https://…`) is attribute text
       if (code === codes.slash) {
-        if (requiresBraceAttr && !sawBraceAttr) return nok(code);
         effects.consume(code);
         return selfCloseGt;
       }
 
       // End of opening tag
       if (code === codes.greaterThan) {
-        if (requiresBraceAttr && !sawBraceAttr && !claimBraceLessTag()) return nok(code);
+        if (lacksRequiredBraceAttr() && !claimBraceLessTag()) return nok(code);
         effects.consume(code);
         onOpenerLine = isFlow;
         return pendingBlockWrapperClaim ? blockWrapperOpenerRest : body;
@@ -245,9 +245,10 @@ function createTokenize(mode: 'flow' | 'text') {
         return inQuotedAttr;
       }
 
-      // JSX expression attribute
+      // JSX expression attribute. A `{` mid-value (`href=https://x/{id}`) is
+      // literal text, so it mustn't make the whole element a JSX claim.
       if (code === codes.leftCurlyBrace) {
-        sawBraceAttr = true;
+        if (self.previous === codes.equalsTo || markdownLineEndingOrSpace(self.previous)) sawBraceAttr = true;
         return regions.braceExpression(code, afterOpenTagName);
       }
 
@@ -293,6 +294,7 @@ function createTokenize(mode: 'flow' | 'text') {
 
     function selfCloseGt(code: Code): State | undefined {
       if (code === codes.greaterThan) {
+        if (lacksRequiredBraceAttr()) return nok(code);
         effects.consume(code);
         // Self-closing tag completes the token
         return afterClose;
@@ -688,6 +690,7 @@ function createTokenize(mode: 'flow' | 'text') {
 export function mdxComponent(): Extension {
   return {
     flow: { [codes.lessThan]: [mdxComponentFlowConstruct] },
-    text: { [codes.lessThan]: [mdxComponentTextConstruct] },
+    // JSX first, so brace-bearing tags keep their whole-element claim.
+    text: { [codes.lessThan]: [mdxComponentTextConstruct, htmlOpenTagConstruct] },
   };
 }

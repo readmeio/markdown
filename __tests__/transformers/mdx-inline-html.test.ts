@@ -3,7 +3,6 @@ import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
-
 import { describe, expect, it } from 'vitest';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
@@ -22,7 +21,7 @@ const parse = (md: string): Root => {
     .use(mdxishMdxComponentBlocks)
     .use(mdxishInlineMdxHtmlBlocks);
   const tree = processor.parse(md);
-  processor.runSync(tree);
+  processor.runSync(tree, md);
   return tree as Root;
 };
 

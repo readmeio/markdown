@@ -32,7 +32,9 @@ describe('Cards', () => {
     it('renders Card as an anchor when href is provided', () => {
       const { container } = render(
         <CardsGrid>
-          <Card href="https://example.com" title="Link">Linked</Card>
+          <Card href="https://example.com" title="Link">
+            Linked
+          </Card>
         </CardsGrid>,
       );
       const card = container.querySelector('a.Card');
@@ -53,7 +55,9 @@ describe('Cards', () => {
       );
       const { container } = render(
         <CardsGrid>
-          <Card href="/docs/f" LinkComponent={LinkComponent} title="Link">Linked</Card>
+          <Card href="/docs/f" LinkComponent={LinkComponent} title="Link">
+            Linked
+          </Card>
         </CardsGrid>,
       );
       expect(container.querySelector('a.Card')).toHaveAttribute('href', '/ai-ml/docs/f');
@@ -63,7 +67,9 @@ describe('Cards', () => {
       const LinkComponent = ({ children }: React.PropsWithChildren) => <a href="/nope">{children}</a>;
       const { container } = render(
         <CardsGrid>
-          <Card LinkComponent={LinkComponent} title="Static">Static</Card>
+          <Card LinkComponent={LinkComponent} title="Static">
+            Static
+          </Card>
         </CardsGrid>,
       );
       expect(container.querySelector('div.Card')).toBeInTheDocument();
@@ -100,7 +106,9 @@ describe('Cards', () => {
     it('renders icon and badge props', () => {
       const { container } = render(
         <CardsGrid>
-          <Card badge="New" icon="fa-star" title="Featured">Content</Card>
+          <Card badge="New" icon="fa-star" title="Featured">
+            Content
+          </Card>
         </CardsGrid>,
       );
       expect(container.querySelector('.Card-icon')).toBeInTheDocument();
@@ -217,19 +225,21 @@ describe('Cards', () => {
     expect(() => render(<Content />)).not.toThrow();
 
     const captured = captureMdxishProps(md, 'Card');
-    expect(typeof captured.style).toBe('object');
+    expect(captured.style).toBeTypeOf('object');
     expect(captured.style).toMatchObject({ color: 'red' });
   });
 
   describe('given various card structures', () => {
-    it.each(renderingEngines)('%s: should parse where there is space after the opening tag and before the closing tag', (_label, renderContent) => {
-      const mdWithSpaces = `
+    it.each(renderingEngines)(
+      '%s: should parse where there is space after the opening tag and before the closing tag',
+      (_label, renderContent) => {
+        const mdWithSpaces = `
 <Cards>
   <Card title="First">Content</Card>
   <Card title="Second">More</Card>
 </Cards>
       `;
-      const mdWithoutSpaces = `
+        const mdWithoutSpaces = `
 
 <Cards>
 
@@ -239,13 +249,14 @@ describe('Cards', () => {
 </Cards>
       `;
 
-      const ContentWithSpaces = renderContent(mdWithSpaces);
-      const { container: containerWithSpaces } = render(<ContentWithSpaces />);
-      const ContentWithoutSpaces = renderContent(mdWithoutSpaces);
-      const { container: containerWithoutSpaces } = render(<ContentWithoutSpaces />);
+        const ContentWithSpaces = renderContent(mdWithSpaces);
+        const { container: containerWithSpaces } = render(<ContentWithSpaces />);
+        const ContentWithoutSpaces = renderContent(mdWithoutSpaces);
+        const { container: containerWithoutSpaces } = render(<ContentWithoutSpaces />);
 
-      expect(containerWithSpaces.innerHTML).toBe(containerWithoutSpaces.innerHTML);
-    });
+        expect(containerWithSpaces.innerHTML).toBe(containerWithoutSpaces.innerHTML);
+      },
+    );
 
     it.each(renderingEngines)('%s: should parse when the code is in one line', (_label, renderContent) => {
       const md = '<Cards><Card title="First">Content</Card><Card title="Second">More</Card></Cards>';

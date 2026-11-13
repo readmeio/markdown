@@ -1,7 +1,7 @@
 import type { Element, Text } from 'hast';
 
 import { mdxish } from '../../../lib';
-import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
+import { findAllElementsByTagName, findElementByTagName, sourceSlicesUnder } from '../../helpers';
 
 /** Concatenated text of a subtree, for asserting what stayed literal vs. evaluated. */
 const textOf = (node: Element): string =>
@@ -185,7 +185,9 @@ describe('variablesTextTransformer', () => {
     });
 
     it('resolves every {user.*} in a deep tree of mixed tags', () => {
-      const tree = mdxish('<div class="card"><h2>{user.name}</h2><p>text {user.email}</p><ul><li>{user.name}</li></ul></div>');
+      const tree = mdxish(
+        '<div class="card"><h2>{user.name}</h2><p>text {user.email}</p><ul><li>{user.name}</li></ul></div>',
+      );
       expect(findAllElementsByTagName(tree, 'variable')).toHaveLength(3);
     });
 
@@ -225,10 +227,7 @@ describe('variablesTextTransformer', () => {
     it('resolves both references when a body holds two', () => {
       const tree = mdxish('<div>{user.name} and {user.email}</div>');
 
-      expect(findAllElementsByTagName(tree, 'variable').map(v => v.properties?.name)).toStrictEqual([
-        'name',
-        'email',
-      ]);
+      expect(findAllElementsByTagName(tree, 'variable').map(v => v.properties?.name)).toStrictEqual(['name', 'email']);
     });
 
     it.each(['{1 + 1}', '{ color: red }'])('leaves %s inside a <div> literal', expression => {
@@ -243,6 +242,19 @@ describe('variablesTextTransformer', () => {
       const tree = mdxish('```\n{user.name}\n```');
       const variable = findElementByTagName(tree, 'variable');
       expect(variable).toBeNull();
+    });
+  });
+
+  // RM-18923: the variable replaced its expression without keeping its position.
+  describe('positions', () => {
+    it.each([
+      ['top-level text', 'Hi {user.name} there'],
+      ['a component body', '<Callout icon="📘" theme="info">\n  Hi {user.name}\n</Callout>'],
+      ['an Image caption', '<Image src="https://x.com/a.png" caption="Hi {user.name}" />'],
+    ])('keeps the source range of a variable in %s', (_, md) => {
+      expect(sourceSlicesUnder(md, ({ type }) => type === 'readme-variable')).toStrictEqual([
+        ['readme-variable', '{user.name}'],
+      ]);
     });
   });
 });

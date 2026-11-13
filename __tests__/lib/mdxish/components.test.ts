@@ -49,7 +49,7 @@ export const ExampleComponent = ({ header, body, children }) => {
     const tree = mdxish(md, { components: exampleComponents });
 
     // Content nodes are wrapped in a paragraph node
-    const content = (tree.children[0] as Element);
+    const content = tree.children[0] as Element;
     expect(content.children).toHaveLength(3);
 
     const firstText = content.children[0] as Text;
@@ -178,9 +178,7 @@ export const ApostropheTable = ({ data }) => {
 
       const componentNode = tree.children[0] as Element;
       expect(componentNode.tagName).toBe('ApostropheTable');
-      expect(componentNode.properties?.data).toStrictEqual([
-        { message: "The <API_KEY> doesn't match the project." },
-      ]);
+      expect(componentNode.properties?.data).toStrictEqual([{ message: "The <API_KEY> doesn't match the project." }]);
     });
 
     it('should parse a component with multiline props', () => {
@@ -310,7 +308,8 @@ labore et dolore magna aliqua.`,
   });
 
   it('should recognize nested components', () => {
-    const md = '<ExampleComponent body="This is outer content"><ExampleComponent body="This is inner content" /></ExampleComponent>';
+    const md =
+      '<ExampleComponent body="This is outer content"><ExampleComponent body="This is inner content" /></ExampleComponent>';
     const tree = mdxish(md, { components: exampleComponents });
 
     expect(tree.children).toMatchObject([
@@ -324,14 +323,16 @@ labore et dolore magna aliqua.`,
             properties: {
               body: 'This is outer content',
             },
-            children: [{
-              type: 'element',
-              tagName: 'ExampleComponent',
-              properties: {
-                body: 'This is inner content',
+            children: [
+              {
+                type: 'element',
+                tagName: 'ExampleComponent',
+                properties: {
+                  body: 'This is inner content',
+                },
+                children: [],
               },
-              children: [],
-            }]
+            ],
           },
         ],
       },
@@ -375,7 +376,8 @@ labore et dolore magna aliqua.`,
 
   describe('inline components with expression attributes', () => {
     it('should concatenate expression attributes', () => {
-      const md = "<Anchor label=\"Merchant Sign-Up API Documentation\" target=\"_blank\" href={'https://' + 'www.example.com' + '/reference/sign-up-api'}>Link</Anchor>";
+      const md =
+        "<Anchor label=\"Merchant Sign-Up API Documentation\" target=\"_blank\" href={'https://' + 'www.example.com' + '/reference/sign-up-api'}>Link</Anchor>";
       const tree = mdxish(md, { newEditorTypes: true });
       const anchor = findElementByTagName(tree, 'Anchor');
       expect(anchor).toMatchObject({
@@ -391,8 +393,7 @@ labore et dolore magna aliqua.`,
     });
 
     it('should render an Anchor whose href is a concatenation expression', () => {
-      const md =
-        "<Anchor label=\"Docs\" target=\"_blank\" href={'https://' + user.docsUrl + '/x'}>Docs</Anchor>.";
+      const md = '<Anchor label="Docs" target="_blank" href={\'https://\' + user.docsUrl + \'/x\'}>Docs</Anchor>.';
       const tree = mdxish(md, { newEditorTypes: true });
       const anchor = findElementByTagName(tree, 'Anchor');
       expect(anchor).toMatchObject({
@@ -510,7 +511,9 @@ Final plain paragraph at end of file.`;
               type: 'element',
               tagName: 'li',
               children: [
-                { type: 'text', value: 'three\n' },
+                { type: 'text', value: '\n' },
+                { type: 'element', tagName: 'p', children: [{ type: 'text', value: 'three' }] },
+                { type: 'text', value: '\n' },
                 {
                   type: 'element',
                   tagName: 'Callout',
@@ -536,7 +539,9 @@ Final plain paragraph at end of file.`;
       const md = '- one\n<ExampleComponent header="h">\n**bold** body\n</ExampleComponent>';
       const tree = mdxish(md, { components: exampleComponents });
       expect(findElementByTagName(tree, 'li')?.children).toMatchObject([
-        { type: 'text', value: 'one\n' },
+        { type: 'text', value: '\n' },
+        { type: 'element', tagName: 'p', children: [{ type: 'text', value: 'one' }] },
+        { type: 'text', value: '\n' },
         {
           type: 'element',
           tagName: 'ExampleComponent',
@@ -575,7 +580,10 @@ Final plain paragraph at end of file.`;
                         type: 'mdxJsxFlowElement',
                         name: 'Step',
                         children: [
-                          { type: 'paragraph', children: [{ type: 'text', value: 'First, install the dependencies.' }] },
+                          {
+                            type: 'paragraph',
+                            children: [{ type: 'text', value: 'First, install the dependencies.' }],
+                          },
                         ],
                       },
                     ],
@@ -619,7 +627,9 @@ Final plain paragraph at end of file.`;
     ])('keeps a multi-line attribute expression together with %s', (_, md) => {
       const tree = mdxish(md, { components: exampleComponents });
       expect(findElementByTagName(tree, 'li')?.children).toMatchObject([
-        { type: 'text', value: 'two\n' },
+        { type: 'text', value: '\n' },
+        { type: 'element', tagName: 'p', children: [{ type: 'text', value: 'two' }] },
+        { type: 'text', value: '\n' },
         { type: 'element', tagName: 'ExampleComponent', properties: { body: 'Test content\n' }, children: [] },
         { type: 'text', value: '\n' },
       ]);
@@ -633,7 +643,9 @@ Final plain paragraph at end of file.`;
       expect(findAllElementsByTagName(tree, 'li')).toMatchObject([
         {
           children: [
-            { type: 'text', value: 'one\n' },
+            { type: 'text', value: '\n' },
+            { type: 'element', tagName: 'p', children: [{ type: 'text', value: 'one' }] },
+            { type: 'text', value: '\n' },
             { type: 'element', tagName: 'ExampleComponent', properties: { body: 'x' }, children: [] },
             { type: 'text', value: '\n' },
           ],
@@ -653,7 +665,10 @@ Final plain paragraph at end of file.`;
         children: [
           {
             type: 'list',
-            children: [itemWithCallout, { type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'two' }] }] }],
+            children: [
+              itemWithCallout,
+              { type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'two' }] }] },
+            ],
           },
           { type: 'paragraph', children: [{ type: 'text', value: 'After the list' }] },
         ],
@@ -686,7 +701,10 @@ Final plain paragraph at end of file.`;
         children: [
           {
             type: 'blockquote',
-            children: [{ type: 'paragraph', children: [{ type: 'text', value: 'quote' }] }, itemWithCallout.children[1]],
+            children: [
+              { type: 'paragraph', children: [{ type: 'text', value: 'quote' }] },
+              itemWithCallout.children[1],
+            ],
           },
         ],
       });
@@ -696,7 +714,12 @@ Final plain paragraph at end of file.`;
       const md = '- two\n\n<ExampleComponent header="h" />';
       expect(parseMdxish(md)).toMatchObject({
         children: [
-          { type: 'list', children: [{ type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'two' }] }] }] },
+          {
+            type: 'list',
+            children: [
+              { type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'two' }] }] },
+            ],
+          },
           { type: 'mdxJsxFlowElement', name: 'ExampleComponent', children: [] },
         ],
       });
@@ -707,9 +730,19 @@ Final plain paragraph at end of file.`;
       const md = '- one\n<ExampleComponent header="h" />\n- two';
       expect(parseMdxish(md)).toMatchObject({
         children: [
-          { type: 'list', children: [{ type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'one' }] }] }] },
+          {
+            type: 'list',
+            children: [
+              { type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'one' }] }] },
+            ],
+          },
           { type: 'mdxJsxFlowElement', name: 'ExampleComponent', children: [] },
-          { type: 'list', children: [{ type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'two' }] }] }] },
+          {
+            type: 'list',
+            children: [
+              { type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'two' }] }] },
+            ],
+          },
         ],
       });
     });

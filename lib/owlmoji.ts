@@ -42,13 +42,15 @@ export const owlmoji = [
 
 const owlmojiNames = owlmoji.flatMap(emoji => emoji.names);
 
-export default class Owlmoji {
-  static kind = (name: string) => {
+const Owlmoji = {
+  kind(name: string) {
     if (name in nameToEmoji) return 'gemoji';
     else if (name.match(/^fa-/)) return 'fontawesome';
     else if (owlmojiNames.includes(name)) return 'owlmoji';
     return null;
-  };
+  },
 
-  static nameToEmoji = nameToEmoji;
-}
+  nameToEmoji,
+};
+
+export default Owlmoji;

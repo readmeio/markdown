@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
@@ -13,7 +12,8 @@ export default defineConfig({
       {
         extends: true,
         test: {
-          exclude: ['__tests__/browser'],
+          // Browser specs run through vitest.browser.config.mts, not jsdom.
+          exclude: ['**/__tests__/browser/**'],
           name: 'rdmd',
         },
       },

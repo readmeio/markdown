@@ -3,7 +3,6 @@ import type { Node, Root as MdastRoot } from 'mdast';
 
 import * as rdmd from '@readme/markdown-legacy';
 import { visit } from 'unist-util-visit';
-
 import { vi } from 'vitest';
 
 import { run, compile, migrate as baseMigrate, mdastV6 } from '../index';
@@ -77,10 +76,7 @@ export function findAllElementsByTagName(node: HastNode | HastRoot, tagName: str
  * actually parsed. Useful for position-based assertions that need to slice
  * the exact string the parser saw.
  */
-export const parseMdxishWithSource = (
-  doc: string,
-  opts: MdxishOpts = {},
-): { source: string; tree: MdastRoot } => {
+export const parseMdxishWithSource = (doc: string, opts: MdxishOpts = {}): { source: string; tree: MdastRoot } => {
   const { processor, parserReadyContent } = mdxishAstProcessor(doc, opts);
   // Pass the source as the file, as the editor's `processSync` does, so source-aware transforms run.
   const tree = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as MdastRoot;
@@ -90,37 +86,22 @@ export const parseMdxishWithSource = (
 /**
  * Parses markdown through the full mdxish pipeline and returns only the MDAST.
  */
-export const parseMdxish = (doc: string, opts: MdxishOpts = {}): MdastRoot =>
-  parseMdxishWithSource(doc, opts).tree;
+export const parseMdxish = (doc: string, opts: MdxishOpts = {}): MdastRoot => parseMdxishWithSource(doc, opts).tree;
 
-/**
- * Parses markdown and returns a `sliceOf` that resolves each node's coordinate space the
- * way a consumer must: a node's offsets index into the nearest `data.reparseSource` on
- * itself or an ancestor, falling back to the post-preprocess document source.
- */
-export const parseMdxishWithResolvedSources = (doc: string, opts: MdxishOpts = {}) => {
+/** Parses markdown and returns a `sliceOf` reading each node's text from the document by its position. */
+export const parseMdxishWithSlices = (doc: string, opts: MdxishOpts = {}) => {
   const { source, tree } = parseMdxishWithSource(doc, opts);
-  const sourceByNode = new Map<Node, string>();
-
-  const resolve = (node: Node, inherited: string) => {
-    const resolved = node.data?.reparseSource ?? inherited;
-    sourceByNode.set(node, resolved);
-    if ('children' in node) (node.children as Node[]).forEach(child => resolve(child, resolved));
-  };
-  resolve(tree, source);
-
   return {
     tree,
     sliceOf: (node: Node): string | undefined =>
-      sourceByNode.get(node)?.slice(node.position?.start.offset, node.position?.end.offset),
+      node.position && source.slice(node.position.start.offset, node.position.end.offset),
   };
 };
 
 /**
  * Round-trips markdown: parse → MDAST → serialize back to markdown.
  */
-export const roundTripMdxish = (doc: string, opts: MdxishOpts = {}): string =>
-  mdxishMdastToMd(parseMdxish(doc, opts));
+export const roundTripMdxish = (doc: string, opts: MdxishOpts = {}): string => mdxishMdastToMd(parseMdxish(doc, opts));
 
 /**
  * Walks a unist tree (mdast or hast) and returns every node that matches.
@@ -129,10 +110,7 @@ export const roundTripMdxish = (doc: string, opts: MdxishOpts = {}): string =>
  * The `test` argument can be either a type string (`collectNodes(tree, 'table')`)
  * or a predicate (`collectNodes(tree, n => n.type === 'foo' && n.name === 'bar')`).
  */
-export const collectNodes = <T extends Node = Node>(
-  tree: Node,
-  test: string | ((node: Node) => boolean),
-): T[] => {
+export const collectNodes = <T extends Node = Node>(tree: Node, test: string | ((node: Node) => boolean)): T[] => {
   const out: T[] = [];
   const match = typeof test === 'string' ? (node: Node) => node.type === test : test;
   visit(tree, node => {
@@ -143,14 +121,14 @@ export const collectNodes = <T extends Node = Node>(
 
 /**
  * `[label, slice]` for the first node matching `test` and every positioned node under it, sliced
- * the way a consumer must (see `parseMdxishWithResolvedSources`). Labels are the JSX name or type.
+ * from the document. Labels are the JSX name or type.
  */
-export const resolvedSlicesUnder = (
+export const sourceSlicesUnder = (
   doc: string,
   test: (node: Node) => boolean,
   opts: MdxishOpts = { newEditorTypes: true },
 ): [string, string | undefined][] => {
-  const { tree, sliceOf } = parseMdxishWithResolvedSources(doc, opts);
+  const { tree, sliceOf } = parseMdxishWithSlices(doc, opts);
   const [match] = collectNodes(tree, test);
   const slices: [string, string | undefined][] = [];
   if (!match) return slices;

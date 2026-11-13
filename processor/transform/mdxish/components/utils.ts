@@ -1,14 +1,17 @@
 import type { Html, Node, PhrasingContent } from 'mdast';
-import type { MdxJsxAttribute, MdxJsxExpressionAttribute, MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
+import type {
+  MdxJsxAttribute,
+  MdxJsxExpressionAttribute,
+  MdxJsxFlowElement,
+  MdxJsxTextElement,
+} from 'mdast-util-mdx-jsx';
 
 import { mdxFromMarkdown } from 'mdast-util-mdx';
 import { mdxjs } from 'micromark-extension-mdxjs';
 import { htmlRawNames } from 'micromark-util-html-tag-name';
-import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-import { footnoteLabels } from '../../../../lib/micromark/footnote-labels';
 import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { NON_REPARSED_BODY_TAGS } from '../../../../utils/common-html-words';
 import { walkTags } from '../tables/tag-walker';
@@ -16,31 +19,6 @@ import { tableTags } from '../tables/utils';
 import { soleUserVariableExpression } from '../variables-text';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
-
-interface InlineMdProcessorOptions {
-  // Footnotes the document defines, so `[^a]` in the body still links.
-  footnotes?: readonly string[];
-  // Phrasing only, so the body always comes back as one paragraph. Without it an inline
-  // body like `[a]: https://b.com` parses as a link definition and renders nothing.
-  phrasing?: boolean;
-  safeMode?: boolean;
-}
-
-const buildInlineMdProcessor = ({ footnotes = [], phrasing = false, safeMode = false }: InlineMdProcessorOptions) => {
-  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, {
-    phrasing,
-    safeMode,
-  });
-  if (footnotes.length) micromarkExtensions.push(footnoteLabels(footnotes));
-
-  return unified()
-    .data('micromarkExtensions', micromarkExtensions)
-    .data('fromMarkdownExtensions', fromMarkdownExtensions)
-    .use(remarkParse)
-    .use(remarkGfm);
-};
-
-const processorCache = new Map<string, ReturnType<typeof buildInlineMdProcessor>>();
 
 const buildComponentBoundaryProcessor = () => {
   const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBoundary);
@@ -53,13 +31,15 @@ const buildComponentBoundaryProcessor = () => {
 const componentBoundaryProcessor = buildComponentBoundaryProcessor();
 
 /** Find top-level JSX siblings without changing MDXish's recovery for non-JSX bodies. */
-export function findComponentSiblingSpans(content: string, tag: string): { end: number, start: number; }[] {
+export function findComponentSiblingSpans(content: string, tag: string): { end: number; start: number }[] {
   const closingTag = `</${tag}>`;
   if (content.indexOf(closingTag) === content.lastIndexOf(closingTag)) return [];
   const prefix = `<${tag}>`;
   try {
     const tree = componentBoundaryProcessor.parse(prefix + content);
-    const children = tree.children.flatMap(node => (node.type === 'paragraph' && 'children' in node ? node.children : [node]));
+    const children = tree.children.flatMap(node =>
+      node.type === 'paragraph' && 'children' in node ? node.children : [node],
+    );
     const components = children.filter(
       (node): node is MdxJsxFlowElement | MdxJsxTextElement =>
         node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement',
@@ -74,23 +54,6 @@ export function findComponentSiblingSpans(content: string, tag: string): { end: 
     return [];
   }
 }
-
-/**
- * Unified processor for re-parsing the body of an MDX component
- * Memoized based on the argument values so we don't pay the construction cost on every parse
- * The cache key is built from every option, so a new option has to be added to it too.
- * Footnotes differ per document, so a processor with them is never cached.
- */
-export const getInlineMdProcessor = (options: InlineMdProcessorOptions = {}) => {
-  if (options.footnotes?.length) return buildInlineMdProcessor(options);
-  const key = `${!!options.phrasing}:${!!options.safeMode}`;
-  let processor = processorCache.get(key);
-  if (!processor) {
-    processor = buildInlineMdProcessor(options);
-    processorCache.set(key, processor);
-  }
-  return processor;
-};
 
 /**
  * True when a tag name starts with an uppercase letter — ReadMe's marker for

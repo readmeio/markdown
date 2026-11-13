@@ -12,11 +12,7 @@ const mdxishMermaidTransformer = () => (tree: Root) => {
     if (node.tagName !== 'pre' || node.children.length !== 1) return;
 
     const [child] = node.children;
-    if (
-      child.type === 'element' &&
-      child.tagName === 'code' &&
-      child.properties?.lang === 'mermaid'
-    ) {
+    if (child.type === 'element' && child.tagName === 'code' && child.properties?.lang === 'mermaid') {
       // Combine existing className with the new mermaid-render class
       const existingClassName = node.properties?.className;
       const classNameArray = Array.isArray(existingClassName)
@@ -36,4 +32,3 @@ const mdxishMermaidTransformer = () => (tree: Root) => {
 };
 
 export default mdxishMermaidTransformer;
-

@@ -99,7 +99,8 @@ describe('evaluateExpressions', () => {
       const fromTag = findElementByTagName(mdxish('<Callout theme="info">yes</Callout>'), 'Callout');
 
       expect(fromExpression).toMatchObject({ tagName: 'Callout', properties: { theme: 'info' } });
-      expect(fromExpression?.children).toStrictEqual(fromTag?.children);
+      // An expression's output is re-parsed on its own, so only its positions differ.
+      expect(fromExpression).toStrictEqualExceptPosition(fromTag);
     });
 
     it('should parse markdown in the children of a component inside an expression', () => {
@@ -123,7 +124,9 @@ describe('evaluateExpressions', () => {
     });
 
     it('should evaluate an expression that spans several lines without leaking into the document', () => {
-      const tree = mdxish(['Before', '', '{true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', 'After'].join('\n'));
+      const tree = mdxish(
+        ['Before', '', '{true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', 'After'].join('\n'),
+      );
 
       expect(tree.children.filter(child => child.type === 'element')).toMatchObject([
         { tagName: 'p', children: [{ type: 'text', value: 'Before' }] },
@@ -161,7 +164,9 @@ describe('evaluateExpressions', () => {
     });
 
     it('should keep the blocks around a multiline expression intact', () => {
-      const tree = mdxish(['# Title', '', '{true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', '## After'].join('\n'));
+      const tree = mdxish(
+        ['# Title', '', '{true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', '## After'].join('\n'),
+      );
 
       expect(tree.children.filter(child => child.type === 'element')).toMatchObject([
         { tagName: 'h1', children: [{ type: 'text', value: 'Title' }] },
@@ -171,7 +176,9 @@ describe('evaluateExpressions', () => {
     });
 
     it('should evaluate a multiline expression inside a list item', () => {
-      const tree = mdxish(['- one', '- {true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '- three'].join('\n'));
+      const tree = mdxish(
+        ['- one', '- {true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '- three'].join('\n'),
+      );
 
       const items = findAllElementsByTagName(tree, 'li');
       expect(items).toHaveLength(3);
@@ -208,7 +215,9 @@ describe('evaluateExpressions', () => {
     });
 
     it('should keep a failed multiline expression literal without breaking the blocks around it', () => {
-      const tree = mdxish(['Before', '', '{nope', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', 'After'].join('\n'));
+      const tree = mdxish(
+        ['Before', '', '{nope', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', 'After'].join('\n'),
+      );
 
       const paragraphs = tree.children.filter(child => child.type === 'element');
       expect(paragraphs).toMatchObject([
@@ -227,7 +236,7 @@ describe('evaluateExpressions', () => {
       const tag = mdxish('<Tabs>\n<Tab title="One">\na\n</Tab>\n</Tabs>');
 
       expect(expression.children.filter(child => child.type === 'element')).toMatchObject([{ tagName: 'Tabs' }]);
-      expect(findElementByTagName(expression, 'Tabs')).toStrictEqual(findElementByTagName(tag, 'Tabs'));
+      expect(findElementByTagName(expression, 'Tabs')).toStrictEqualExceptPosition(findElementByTagName(tag, 'Tabs'));
     });
 
     it('should keep an inline result in its paragraph', () => {
@@ -262,7 +271,11 @@ describe('evaluateExpressions', () => {
 
     it.each([
       ['a single-line hook component', `${hookComponent}\n\n{<Counter />}`, '<div class="c">1</div>'],
-      ['a multiline hook component', `${hookComponent}\n\n{true ? (\n  <Counter />\n) : null}`, '<div class="c">1</div>'],
+      [
+        'a multiline hook component',
+        `${hookComponent}\n\n{true ? (\n  <Counter />\n) : null}`,
+        '<div class="c">1</div>',
+      ],
       ['a multiline memo component', `${memoComponent}\n\n{true ? (\n  <Boxed />\n) : null}`, '<div class="m">m</div>'],
     ])('should keep %s rendered through the fallback out of a paragraph', (_name, doc, expected) => {
       expect(mix(doc)).toBe(expected);

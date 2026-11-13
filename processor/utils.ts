@@ -7,7 +7,7 @@ import type {
   MdxJsxAttributeValueExpression,
   MdxJsxAttributeValueExpressionData,
 } from 'mdast-util-mdx-jsx';
-import type { Point, Position } from 'unist';
+import type { Position } from 'unist';
 
 import { decodeHTMLStrict } from 'entities/decode';
 import { CONTINUE, EXIT, visit } from 'unist-util-visit';
@@ -40,69 +40,6 @@ export function evaluate(source: string, scope: Record<string, unknown> = {}) {
   // eslint-disable-next-line no-new-func
   return new Function(...names, `return (${source})`)(...values);
 }
-
-interface ValueLine {
-  /** Width of the container prefix (`> `, list indent) micromark stripped from this line. */
-  prefixWidth: number;
-  sourceStart: number;
-  valueStart: number;
-}
-
-/**
- * Width each container prefix adds back per line of `value`, aligned from the line end since a
- * tab in the prefix is expanded to spaces in `value`. None (a verbatim slice) when the source
- * is missing or doesn't line up.
- */
-const containerPrefixWidths = (valueLines: string[], source: string | null | undefined, position: Position) => {
-  const sourceLines = source?.slice(position.start.offset, position.end.offset).split('\n');
-  const linesUp =
-    sourceLines?.length === valueLines.length &&
-    sourceLines.every((line, i) => line.endsWith(valueLines[i].trimStart()));
-  return valueLines.map((line, i) => (linesUp ? sourceLines[i].length - line.length : 0));
-};
-
-/**
- * Maps offsets in a node's `value` to points in `source`. Containers strip a prefix from every
- * continuation line of `value`, so a plain offset shift drifts by line (CX-4028).
- */
-export const createValueToSourceMapper = (
-  position: Position | undefined,
-  value: string,
-  source: string | null | undefined,
-): ((valueOffset: number) => Point) | null => {
-  if (position?.start.offset === undefined) return null;
-  const { start } = position;
-  const valueLines = value.split('\n');
-  const prefixWidths = containerPrefixWidths(valueLines, source, position);
-
-  const lines: ValueLine[] = [];
-  let valueStart = 0;
-  let sourceStart = start.offset;
-  valueLines.forEach((line, i) => {
-    lines.push({ prefixWidth: prefixWidths[i], sourceStart, valueStart });
-    valueStart += line.length + 1;
-    sourceStart += prefixWidths[i] + line.length + 1;
-  });
-
-  return valueOffset => {
-    // Binary search: a large table maps one point per node.
-    let low = 0;
-    let high = lines.length - 1;
-    while (low < high) {
-      const mid = Math.ceil((low + high) / 2);
-      if (lines[mid].valueStart <= valueOffset) low = mid;
-      else high = mid - 1;
-    }
-    const { prefixWidth, sourceStart: lineSourceStart, valueStart: lineValueStart } = lines[low];
-    // Clamped: an expanded tab can make a leading-whitespace offset fall before the line.
-    const sourceColumn = Math.max(0, prefixWidth + valueOffset - lineValueStart);
-    return {
-      line: start.line + low,
-      column: (low === 0 ? start.column : 1) + sourceColumn,
-      offset: lineSourceStart + sourceColumn,
-    };
-  };
-};
 
 /**
  * Formats the hProperties of a node as a string, so they can be compiled back into JSX/MDX.
@@ -239,6 +176,8 @@ export const isMDXEsm = (node: Node): node is MdxjsEsm => {
   return node.type === 'mdxjsEsm';
 };
 
+export const isText = (node: Node): node is Text => node.type === 'text';
+
 /**
  * Takes an HTML string and formats it for display in the editor. Removes leading/trailing newlines
  * and unindents the HTML.
@@ -277,8 +216,7 @@ export function formatHtmlForMdxish(html: string, openingTagIndent = 0): string 
   // which is invalid javascript and will cause error
   cleaned = cleaned.replace(
     /(<(pre|code)\b[^>]*>)([\s\S]*?)(<\/\2>)/gi,
-    (_m, open: string, _tag: string, inner: string, close: string) =>
-      open + inner.replace(/\\n/g, '\n') + close,
+    (_m, open: string, _tag: string, inner: string, close: string) => open + inner.replace(/\\n/g, '\n') + close,
   );
 
   // Unescape backticks: \` -> ` (users escape backticks in template literals)
@@ -313,7 +251,6 @@ export const formatHTML = (html: string): string => {
   // Remove leading/trailing backticks if present, since they're used to keep the HTML
   // from being parsed prematurely
   if (html.startsWith('`') && html.endsWith('`')) {
-    // eslint-disable-next-line no-param-reassign
     html = html.slice(1, -1);
   }
   // Removes the leading/trailing newlines
@@ -409,7 +346,6 @@ export const toAttributes = (object: Record<string, unknown>, keys: string[] = [
 export const hasNamedExport = (tree: HastRoot | MdastRoot, name: string): boolean => {
   let hasExport = false;
 
-  // eslint-disable-next-line consistent-return
   visit(tree, 'mdxjsEsm', node => {
     if (
       'declaration' in node.data.estree.body[0] &&

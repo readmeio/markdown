@@ -59,7 +59,7 @@ function visitExpressionNode(node: MdxFlowExpression | MdxTextExpression, index:
   if (index === undefined || !parent) return;
   const match = soleUserVariableExpression(node);
   if (!match) return;
-  parent.children.splice(index, 1, makeVariableNode(match.name, match.wrapped));
+  parent.children.splice(index, 1, { ...makeVariableNode(match.name, match.wrapped), position: node.position });
 }
 
 const variablesTextTransformer: Plugin = () => tree => {

@@ -694,3 +694,34 @@ describe('mdxish list item with an empty first line', () => {
     expect(firstItemChildren('- - B')).toStrictEqual(['ul']);
   });
 });
+
+describe('mdxish tight list item with text and a block', () => {
+  const itemChildren = (md: string, index = 0) =>
+    findAllElementsByTagName(mdxish(md), 'li')
+      .at(index)!
+      .children.filter((child): child is Element => child.type === 'element')
+      .map(child => child.tagName);
+
+  // The editor always wraps item text in <p>, and the block after it relies on that margin
+  it.each([
+    ['a callout', '1. one\n2. text\n   > 📘\n   > body', 1, ['p', 'Callout']],
+    ['a fenced code block', '- text\n  ```\n  code\n  ```', 0, ['p', 'pre']],
+  ])('wraps the text in <p> when followed by %s', (_, md, index, expected) => {
+    expect(itemChildren(md, index)).toStrictEqual(expected);
+  });
+
+  it('keeps the other items of the list tight', () => {
+    expect(itemChildren('1. one\n2. text\n   > 📘\n   > body', 0)).toStrictEqual([]);
+  });
+
+  it('keeps text followed only by a sublist unwrapped', () => {
+    expect(itemChildren('- text\n  - nested')).toStrictEqual(['ul']);
+  });
+
+  it.each([
+    ['a link definition', '- [ref]: /url\n  text\n- next'],
+    ['an HTML comment', '- text\n  <!-- note -->\n- next'],
+  ])('keeps text next to %s unwrapped', (_, md) => {
+    expect(itemChildren(md)).toStrictEqual([]);
+  });
+});

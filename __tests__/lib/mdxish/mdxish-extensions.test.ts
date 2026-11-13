@@ -158,7 +158,9 @@ describe('mdxishExtensions', () => {
     });
 
     it('still claims an inline NoTranslate', () => {
-      const tree = parseWith('Hi <NoTranslate>Acme</NoTranslate> there') as { children: { children: { type: string }[] }[] };
+      const tree = parseWith('Hi <NoTranslate>Acme</NoTranslate> there') as {
+        children: { children: { type: string }[] }[];
+      };
 
       expect(tree.children[0].children.map(child => child.type)).toStrictEqual(['text', 'html', 'text']);
     });
@@ -218,6 +220,7 @@ describe('extension registration is centralised (CX-3708)', () => {
       'lib/stripComments.ts',
       'processor/transform/mdxish/components/utils.ts',
       'processor/transform/mdxish/magic-blocks/magic-block-transformer.ts',
+      'processor/transform/mdxish/parse-markdown-fragment.ts',
       'processor/transform/mdxish/tables/mdxish-tables.ts',
     ]);
   });

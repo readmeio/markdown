@@ -44,11 +44,15 @@ function fastestParse(md: string, iterations = 4): number {
 }
 
 describe('large <HTMLBlock> performance', () => {
-  it.each([1_000, 10_000, 30_000, 57_000])('preserves the payload of a %d-line block verbatim', lines => {
-    const { md, expectedHtml } = buildHtmlBlock(lines);
-    // Full payload equality — verifies content, ordering, and completeness.
-    expect(htmlBlockPayloads(mdxish(md))).toStrictEqual([expectedHtml]);
-  }, 30_000);
+  it.each([1_000, 10_000, 30_000, 57_000])(
+    'preserves the payload of a %d-line block verbatim',
+    lines => {
+      const { md, expectedHtml } = buildHtmlBlock(lines);
+      // Full payload equality — verifies content, ordering, and completeness.
+      expect(htmlBlockPayloads(mdxish(md))).toStrictEqual([expectedHtml]);
+    },
+    30_000,
+  );
 
   it('parses in roughly linear time, not O(n²)', () => {
     // Assert the scaling ratio, not a wall-clock budget: dividing the timings
@@ -60,7 +64,9 @@ describe('large <HTMLBlock> performance', () => {
     const ratio30 = t30 / t10;
     const ratio57 = t57 / t10;
     // eslint-disable-next-line no-console
-    console.log(`  30k/10k = ${ratio30.toFixed(2)}× (linear ≈ 3, quadratic ≈ 9) | 57k/10k = ${ratio57.toFixed(2)}× (linear ≈ 5.7, quadratic ≈ 32)`);
+    console.log(
+      `  30k/10k = ${ratio30.toFixed(2)}× (linear ≈ 3, quadratic ≈ 9) | 57k/10k = ${ratio57.toFixed(2)}× (linear ≈ 5.7, quadratic ≈ 32)`,
+    );
 
     expect(ratio30).toBeLessThan(5);
     expect(ratio57).toBeLessThan(10);

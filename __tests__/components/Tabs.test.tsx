@@ -381,7 +381,7 @@ Second content
   describe('roundtrip (mdxish)', () => {
     const roundtrip = (md: string) => {
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
-      const mdast = processor.runSync(processor.parse(parserReadyContent)) as MdastRoot;
+      const mdast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as MdastRoot;
       return mdxishMdastToMd(mdast);
     };
 
@@ -515,7 +515,9 @@ Second content
     it('renders icon and iconColor when provided', () => {
       const { container } = render(
         <Tabs>
-          <Tab icon="fa-gear" iconColor="#FF0000" title="Settings">x</Tab>
+          <Tab icon="fa-gear" iconColor="#FF0000" title="Settings">
+            x
+          </Tab>
         </Tabs>,
       );
       const icon = container.querySelector('i.TabGroup-icon');
@@ -532,7 +534,7 @@ Second content
       expect(() => render(<Content />)).not.toThrow();
 
       const captured = captureMdxishProps(md, 'Tab');
-      expect(typeof captured.style).toBe('object');
+      expect(captured.style).toBeTypeOf('object');
       expect(captured.style).toMatchObject({ color: 'red' });
     });
   });

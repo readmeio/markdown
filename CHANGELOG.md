@@ -1,6 +1,33 @@
 Changelog
 ===
 
+## Version 16.2.2
+### 🛠 Fixes & Updates
+
+* **compatibility:** convert each html comment separately in compiled html blocks ([#1686](https://github.com/readmeio/markdown/issues/1686)) ([d220c1f](https://github.com/readmeio/markdown/commit/d220c1f4d57956b58df70355b548b85953505eea))
+* **editor:** html parsing support for unquoted attributes ([#1591](https://github.com/readmeio/markdown/issues/1591)) ([fa57d39](https://github.com/readmeio/markdown/commit/fa57d392196dd2f21e47bdd07fd68def38999460))
+
+## Version 16.2.1
+### 🛠 Fixes & Updates
+
+* address flagged CodeQL alerts ([#1682](https://github.com/readmeio/markdown/issues/1682)) ([3b14a86](https://github.com/readmeio/markdown/commit/3b14a86cd2c33ce0e8b2e8c55866c9cf5504f354))
+* move lint and format to oxlint and oxfmt ([#1680](https://github.com/readmeio/markdown/issues/1680)) ([85c915b](https://github.com/readmeio/markdown/commit/85c915bc326e6d76c2736ac76ae4637b1471225d))
+* **deps:** patch Dependabot security vulnerabilities ([#1679](https://github.com/readmeio/markdown/issues/1679)) ([bfc9c1b](https://github.com/readmeio/markdown/commit/bfc9c1b22f725a2dc1cb0f66cd7512533305e17c))
+* pulling dependabot updates back a bit ([a9906c3](https://github.com/readmeio/markdown/commit/a9906c3403a0a015d5ddb5e116def2a948d2e3c9))
+* **mdxish:** space callouts under tight list items ([#1671](https://github.com/readmeio/markdown/issues/1671)) ([f21e0d8](https://github.com/readmeio/markdown/commit/f21e0d881533179b541ceca866ca5ef00ea12071))
+* **table:** stop centering unaligned headers ([#1670](https://github.com/readmeio/markdown/issues/1670)) ([139d238](https://github.com/readmeio/markdown/commit/139d238de847cd8550afeab25620cc5a3a178d63))
+* **deps-dev:** upgrade vitest to v5 ([#1681](https://github.com/readmeio/markdown/issues/1681)) ([0946e08](https://github.com/readmeio/markdown/commit/0946e08a9596358abef2d1fa968c66732e45ff6b))
+
+## Version 16.2.0
+### ✨ New & Improved
+
+* **mdxish:** add markdown fragment re-parser that maps positions to the document ([#1656](https://github.com/readmeio/markdown/issues/1656)) ([2113176](https://github.com/readmeio/markdown/commit/21131767145553c0a8c91cc388b81231a5071882)), closes [#1657](https://github.com/readmeio/markdown/issues/1657) [#1658](https://github.com/readmeio/markdown/issues/1658)
+* **mdxish:** map re-parsed positions to the document and drop reparseSource stamps ([#1657](https://github.com/readmeio/markdown/issues/1657)) ([dc2a865](https://github.com/readmeio/markdown/commit/dc2a8654b18479c6de06ff5981e205b69a111a9d))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** give magic block output and Glossary elements source positions ([#1658](https://github.com/readmeio/markdown/issues/1658)) ([2c65ed9](https://github.com/readmeio/markdown/commit/2c65ed90f52bf6e6b00751e6b533949451682107))
+
 ## Version 16.1.0
 ### ✨ New & Improved
 

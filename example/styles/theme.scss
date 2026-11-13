@@ -7,14 +7,8 @@
 // Theme Variables
 :root {
   // Backgrounds
-  --color-bg-active: rgba(
-    var(--black-rgb),
-    0.1
-  ); // Transparent tint to apply over an arbitrary bg color in "active" state
-  --color-bg-hover: rgba(
-    var(--black-rgb),
-    0.05
-  ); // Transparent tint to apply over an arbitrary bg color in "hover" state
+  --color-bg-active: rgba(var(--black-rgb), 0.1); // Transparent tint to apply over an arbitrary bg color in "active" state
+  --color-bg-hover: rgba(var(--black-rgb), 0.05); // Transparent tint to apply over an arbitrary bg color in "hover" state
   --color-bg-page: var(--white);
   --color-bg-page-rgb: var(--white-rgb);
   --color-bg-page-inverse-rgb: var(--black-rgb);

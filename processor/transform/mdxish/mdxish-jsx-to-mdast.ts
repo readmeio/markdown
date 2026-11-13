@@ -1,6 +1,6 @@
+import type { Anchor, Callout, NoTranslate, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
 import type { MagicBlockEmbed, MagicBlockImage } from './magic-blocks/types';
 import type { FigureNode } from './types';
-import type { Anchor, Callout, NoTranslate, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
 import type { Html, Node, Paragraph, Parent, PhrasingContent, RootContent, Table, TableCell, TableRow } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
@@ -8,11 +8,11 @@ import type { Plugin } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
-import { mdast } from '../../../lib';
 import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
+import { findQuotedAttributeValue } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { getAttrs, isMDXElement } from '../../utils';
 
-import { replaceInheritingReparseSource, stampReparseSource } from './reparse-source';
+import { getDocumentSource, type MarkdownFragment, reparseMarkdownFragment } from './parse-markdown-fragment';
 import { getCellWidth, hasOnlyWidthAttributes } from './tables/cell-width';
 import { tableTags, unwrapSoleParagraph } from './tables/utils';
 
@@ -215,11 +215,7 @@ function reassembleHtmlFigures(tree: Parent) {
       const nextNode = children[i + 1];
       const imageNode = nextNode ? findImageInNode(nextNode) : undefined;
 
-      if (
-        node.type === 'html' &&
-        FIGURE_OPEN_REGEX.test((node as Html).value.trim()) &&
-        imageNode
-      ) {
+      if (node.type === 'html' && FIGURE_OPEN_REGEX.test((node as Html).value.trim()) && imageNode) {
         const { captionText, endIndex, foundClose } = scanForFigcaptionAndClose(children, i + 2);
 
         if (foundClose) {
@@ -314,21 +310,24 @@ const transformNoTranslate = (jsx: MdxJsxTextElement): NoTranslate => ({
   position: jsx.position,
 });
 
-/**
- * Parses an image caption's markdown. The caption is re-parsed on its own, so the
- * children's positions index into it rather than the document.
- */
-const parseCaptionChildren = (caption: string): RootContent[] => {
-  const { children } = mdast(caption);
-  stampReparseSource(children, caption);
-  return children;
+/** The `<Image>` tag's caption as written; the whole tag when it isn't a quoted attribute. */
+const findCaptionFragment = (image: MdxJsxFlowElement, documentSource: string): MarkdownFragment => {
+  const value = documentSource.slice(image.position?.start.offset, image.position?.end.offset);
+  const parentNode = { position: image.position, value };
+  const caption = findQuotedAttributeValue(value, 'caption');
+  if (!caption) return { parentNode, offsetInParentNode: 0, rawText: value };
+  return { parentNode, offsetInParentNode: caption.start, rawText: value.slice(caption.start, caption.end) };
 };
+
+/** Parses an image caption's markdown, positioned where the caption sits in the `<Image>` tag. */
+const parseCaptionChildren = (caption: string, image: MdxJsxFlowElement, documentSource: string): RootContent[] =>
+  reparseMarkdownFragment(findCaptionFragment(image, documentSource), caption, { documentSource });
 
 /**
  * Transforms an `<Image />` JSX element into an image-block MDAST node.
  * Normalizes attributes (align, border, width→sizing) and parses caption markdown into children.
  */
-const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
+const transformImage = (jsx: MdxJsxFlowElement, documentSource: string): ImageBlock => {
   const attrs = getAttrs<ImageAttrs>(jsx);
   const {
     align,
@@ -370,7 +369,7 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     alt,
     border: toBool(border),
     caption,
-    children: caption ? parseCaptionChildren(caption) : [],
+    children: caption ? parseCaptionChildren(caption, jsx, documentSource) : [],
     className,
     framed: toBool(framed),
     height: height !== undefined ? String(height) : undefined,
@@ -401,10 +400,7 @@ const transformCallout = (jsx: MdxJsxFlowElement): Callout => {
   const hasHeadingFirst = jsxChildren[0]?.type === 'heading';
   const children = hasHeadingFirst
     ? jsxChildren
-    : ([
-        { type: 'paragraph', children: [{ type: 'text', value: '' }] },
-        ...jsxChildren,
-      ] as Callout['children']);
+    : ([{ type: 'paragraph', children: [{ type: 'text', value: '' }] }, ...jsxChildren] as Callout['children']);
 
   return {
     type: NodeTypes.callout,
@@ -588,9 +584,7 @@ const wrapBareCellsInRow = (node: Node): void => {
     if (section.name !== 'thead' && section.name !== 'tbody') return;
 
     const children = section.children as Node[];
-    const hasRow = children.some(
-      c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr',
-    );
+    const hasRow = children.some(c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr');
     if (hasRow) return;
 
     const unwrapped = children.flatMap(c => {
@@ -735,7 +729,7 @@ const transformFigure = (jsx: MdxJsxFlowElement): FigureNode | null => {
   return buildFigureNode(imageNode, captionText, jsx.position);
 };
 
-type ComponentTransformer = (jsx: MdxJsxFlowElement) => Node | null;
+type ComponentTransformer = (jsx: MdxJsxFlowElement, documentSource: string) => Node | null;
 
 const COMPONENT_MAP: Record<string, ComponentTransformer> = {
   Callout: transformCallout,
@@ -761,7 +755,9 @@ const COMPONENT_MAP: Record<string, ComponentTransformer> = {
  *
  * This is controlled by the `newEditorTypes` flag to maintain backwards compatibility.
  */
-const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
+const mdxishJsxToMdast: Plugin<[], Parent> = () => (tree, file) => {
+  const documentSource = getDocumentSource(file);
+
   // Block JSX components (Image, Callout, Embed, Recipe)
   visit(tree, 'mdxJsxFlowElement', (node: MdxJsxFlowElement, index, parent: Parent | undefined) => {
     if (!parent || index === undefined || !node.name) return;
@@ -769,10 +765,10 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     const transformer = COMPONENT_MAP[node.name];
     if (!transformer) return;
 
-    const newNode = transformer(node);
+    const newNode = transformer(node, documentSource);
     if (!newNode) return;
 
-    replaceInheritingReparseSource(parent, index, [newNode]);
+    (parent.children as Node[]).splice(index, 1, newNode);
   });
 
   // Inline JSX components (Anchor, NoTranslate)
@@ -783,7 +779,7 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
       const newNode = transformAnchor(node);
       (parent.children as Node[])[index] = newNode;
     } else if (node.name === 'NoTranslate') {
-      replaceInheritingReparseSource(parent, index, [transformNoTranslate(node)]);
+      (parent.children as Node[])[index] = transformNoTranslate(node);
     }
   });
 
