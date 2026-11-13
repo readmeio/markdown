@@ -5,7 +5,7 @@ import type { VFile } from 'vfile';
 
 import { visit, SKIP } from 'unist-util-visit';
 
-import { INLINE_COMPONENT_TAGS_LOWER } from '../../lib/constants';
+import { INLINE_COMPONENT_TAGS } from '../../lib/constants';
 import { getComponentName } from '../../lib/utils/mdxish/mdxish-get-component-name';
 import {
   CUSTOM_PROP_BOUNDARIES,
@@ -25,9 +25,9 @@ interface Options {
 // untouched (their children are namespaced XML, not HTML tags/components).
 const FOREIGN_CONTENT_ROOTS = new Set<string>(FOREIGN_CONTENT_TAGS);
 
-// The markdown parser already parsed these children. Parsing them again drops
-// line breaks and turns escaped text back into markup.
-const PARSED_CHILDREN_COMPONENTS = new Set(['NoTranslate']);
+// The markdown parser already parsed inline components' children. Parsing them
+// again drops line breaks and turns escaped text back into markup (RM-19073).
+const PARSED_CHILDREN_COMPONENTS: ReadonlySet<string> = INLINE_COMPONENT_TAGS;
 
 function isElementContentNode(node: Root['children'][number]): node is ElementContent {
   return node.type === 'element' || node.type === 'text' || node.type === 'comment';
@@ -56,16 +56,6 @@ function areAllChildrenComponents(children: ElementContent[]): boolean {
     }
     return false;
   });
-}
-
-/** Check if nodes represent a single paragraph with only text (no markdown formatting) */
-function isSingleParagraphTextNode(nodes: ElementContent[]): boolean {
-  return (
-    nodes.length === 1 &&
-    nodes[0].type === 'element' &&
-    nodes[0].tagName === 'p' &&
-    nodes[0].children?.every(child => child.type === 'text')
-  );
 }
 
 /**
@@ -146,14 +136,7 @@ function parseTextChildren(
 
     const hast = tryProcessMarkdown(processMarkdown, child.value.trim());
     if (!hast) return [child];
-    const children = (hast.children ?? []).filter(isElementContentNode);
-
-    // For inline components, preserve plain text instead of wrapping in <p>
-    if (INLINE_COMPONENT_TAGS_LOWER.has(node.tagName.toLowerCase()) && isSingleParagraphTextNode(children)) {
-      return [child];
-    }
-
-    return children;
+    return (hast.children ?? []).filter(isElementContentNode);
   });
 
   // Unwrap <p> elements whose meaningful children are ALL components.
