@@ -9,7 +9,7 @@ import { toMarkdown } from 'mdast-util-to-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
-import { EXIT, SKIP, visit } from 'unist-util-visit';
+import { SKIP, visit } from 'unist-util-visit';
 
 import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
@@ -18,8 +18,6 @@ import compatibility from '../compile/compatibility';
 import gemoji from '../compile/gemoji';
 import variable from '../compile/variable';
 import { isText } from '../utils';
-
-import { extractText } from './extract-text';
 
 const titleParser = unified().use(remarkParse).use(remarkGfm);
 // The title paragraph may contain custom AST nodes that `toMarkdown` doesn't
@@ -142,16 +140,6 @@ const removeIconPrefix = (paragraph: Paragraph, prefixLength: number) => {
   if (firstTextNode) dropTextPrefix(firstTextNode, prefixLength);
 };
 
-/** Whether an otherwise empty quote defines links used elsewhere on the page. */
-const hasReferenceDefinition = (node: Blockquote): boolean => {
-  let found = false;
-  visit(node, 'definition', () => {
-    found = true;
-    return EXIT;
-  });
-  return found;
-};
-
 const processBlockquote = (
   node: Blockquote,
   index: number | undefined,
@@ -159,12 +147,7 @@ const processBlockquote = (
   isMdxish = false,
 ) => {
   if (!isCalloutStructure(node)) {
-    // Only stringify empty blockquotes (no extractable text content)
-    // Preserve blockquotes with actual content (e.g., headings, lists, etc.)
-    const content = extractText(node);
-    const isEmpty = !content || content.trim() === '';
-
-    if (isEmpty && index !== undefined && parent && !hasReferenceDefinition(node)) {
+    if (node.children.length === 0 && index !== undefined && parent) {
       const textNode: Text = {
         type: 'text',
         value: '>',
