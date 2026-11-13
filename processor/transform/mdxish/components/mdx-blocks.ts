@@ -86,9 +86,13 @@ function safeDeindent(text: string): string {
 const trimBlankEdges = (text: string): string =>
   text.replace(LEADING_BLANK_LINES_RE, '').replace(TRAILING_BLANK_LINES_RE, '');
 
-/** The part of `parentNode.value` from `start`, with its surrounding whitespace dropped. */
-const trimmedFragmentFrom = (parentNode: MarkdownFragment['parentNode'], start: number): MarkdownFragment => {
-  const text = parentNode.value.slice(start);
+/** `parentNode.value` from `start` to `end`, with its surrounding whitespace dropped. */
+const trimmedFragmentFrom = (
+  parentNode: MarkdownFragment['parentNode'],
+  start: number,
+  end?: number,
+): MarkdownFragment => {
+  const text = parentNode.value.slice(start, end);
   const rawText = text.trim();
   return { parentNode, offsetInParentNode: start + text.indexOf(rawText), rawText };
 };
@@ -126,6 +130,39 @@ const parseSibling = (
     (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
     siblingNodes.forEach(siblingNode => promoted.add(siblingNode));
   }
+};
+
+/**
+ * Split an html node holding several top-level same-name components (e.g. `<A>…</A><A>…</A>`
+ * on one line) into one html node each, parsing any markdown between them as siblings.
+ */
+const splitComponentSiblings = (
+  node: Html,
+  { tag, contentAfterTag }: { contentAfterTag: string; tag: string },
+  safeMode: boolean,
+  documentSource: string,
+  promoted: WeakSet<Node>,
+): RootContent[] | undefined => {
+  const siblings = findComponentSiblingSpans(contentAfterTag, tag);
+  if (!siblings.length) return undefined;
+
+  const parentNode = { position: node.position, value: node.value };
+  const contentStart = node.value.trimEnd().length - contentAfterTag.length;
+  const toDocumentPosition = createNodeValueToDocumentMapper(parentNode, documentSource);
+  return siblings.flatMap((sibling, siblingIndex) => {
+    const start = siblingIndex ? contentStart + sibling.start : 0;
+    const end = contentStart + sibling.end;
+    const next = siblings[siblingIndex + 1];
+    const component = {
+      ...node,
+      value: node.value.slice(start, end),
+      position: toDocumentPosition?.(start, end),
+    } satisfies Html;
+    const gap = trimmedFragmentFrom(parentNode, end, next ? contentStart + next.start : undefined);
+    const gapNodes = gap.rawText ? parseMdChildren(gap, safeMode, documentSource) : [];
+    gapNodes.forEach(gapNode => promoted.add(gapNode));
+    return [component, ...gapNodes];
+  });
 };
 
 interface ComponentNodeOptions {
@@ -205,7 +242,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, documentSource:
   const promoted = new WeakSet<Node>();
 
   const processChildNode = (parent: Parent, index: number) => {
-    let node = parent.children[index];
+    const node = parent.children[index];
     if (!node) return;
     // Descend into container nodes (lists, blockquotes, …) so their html children
     // are reached — unless the subtree was already promoted upstream.
@@ -214,45 +251,20 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, documentSource:
     }
 
     // Only html nodes can be an unparsed MDX component.
-    let value = (node as { value?: string }).value;
+    const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
 
-    let trimmed = value.trim();
-    let parsed = parseTag(trimmed, parseOpts);
+    const trimmed = value.trim();
+    const parsed = parseTag(trimmed, parseOpts);
     if (!parsed) return;
 
     if (isPascalCase(parsed.tag) && !parsed.selfClosing && !GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(parsed.tag)) {
-      const siblings = findComponentSiblingSpans(parsed.contentAfterTag, parsed.tag);
-      if (siblings.length) {
-        const contentStart = value.length - value.trimStart().length + trimmed.length - parsed.contentAfterTag.length;
-        const htmlNode = { position: node.position, value };
-        const toDocumentPosition = createNodeValueToDocumentMapper(htmlNode, documentSource);
-        const replacements = siblings.flatMap((sibling, siblingIndex) => {
-          const start = siblingIndex ? contentStart + sibling.start : 0;
-          const end = contentStart + sibling.end;
-          const component = {
-            ...node,
-            type: 'html',
-            value: value.slice(start, end),
-            position: toDocumentPosition?.(start, end),
-          } satisfies Html;
-          const gap = value.slice(
-            end,
-            siblings[siblingIndex + 1] ? contentStart + siblings[siblingIndex + 1].start : value.length,
-          );
-          const rawText = gap.trim();
-          const gapFragment = { parentNode: htmlNode, offsetInParentNode: end + gap.indexOf(rawText), rawText };
-          const gapNodes = rawText ? parseMdChildren(gapFragment, safeMode, documentSource) : [];
-          gapNodes.forEach(gapNode => promoted.add(gapNode));
-          return [component, ...gapNodes];
-        });
-        (parent.children as Node[]).splice(index, 1, ...replacements);
-        [node] = replacements;
-        if (node.type !== 'html') return;
-        value = node.value;
-        trimmed = value.trim();
-        parsed = parseTag(trimmed, parseOpts);
-        if (!parsed) return;
+      const replacements = splitComponentSiblings(node as Html, parsed, safeMode, documentSource, promoted);
+      if (replacements) {
+        parent.children.splice(index, 1, ...replacements);
+        // The first replacement is now a lone component; promote it like any other.
+        processChildNode(parent, index);
+        return;
       }
     }
 
