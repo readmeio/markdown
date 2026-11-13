@@ -88,7 +88,9 @@ describe('protectCodeBlocks', () => {
       });
 
       it('still protects a fence after a tilde fence its blockquote closed', () => {
-        expect(blocksOf('> ~~~\n> x\n\nText\n\n```jsx\n{/* keep */}\n```')).toStrictEqual(['```jsx\n{/* keep */}\n```']);
+        expect(blocksOf('> ~~~\n> x\n\nText\n\n```jsx\n{/* keep */}\n```')).toStrictEqual([
+          '```jsx\n{/* keep */}\n```',
+        ]);
       });
 
       it('scans in linear time across many code blocks', () => {

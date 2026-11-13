@@ -33,7 +33,9 @@ function matchFenceOpener(line: string) {
 /** True when `line` closes `fence` at quote depth `depth`: same character, at least as long. */
 function closesFence(line: string, fence: string, depth: number) {
   const [, prefix, closer] = FENCE_CLOSER_REGEX.exec(line) ?? [];
-  return closer !== undefined && closer[0] === fence[0] && closer.length >= fence.length && quoteDepth(prefix) === depth;
+  return (
+    closer !== undefined && closer[0] === fence[0] && closer.length >= fence.length && quoteDepth(prefix) === depth
+  );
 }
 
 /**

@@ -329,12 +329,9 @@ text at column 0`);
       '~~~\n<div>\nnext\n~~~',
       '~~~~~~\n<li> test\nnext\n~~~~~~',
       'Use `~~~` to open a tilde fence.\n\n```html\n<div>\nnext\n```',
-    ])(
-      'leaves fenced code unchanged: %j',
-      input => {
-        expect(terminateHtmlFlowBlocks(input)).toBe(input);
-      },
-    );
+    ])('leaves fenced code unchanged: %j', input => {
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
   });
 
   describe('when it should not insert a blank line', () => {
