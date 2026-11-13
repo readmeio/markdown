@@ -1,9 +1,9 @@
-import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
+import { htmlRawNames } from 'micromark-util-html-tag-name';
 
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
-import { HTML_TABLE_STRUCTURE_TAGS } from '../../../utils/common-html-words';
+import { HTML_BLOCK_TAG_NAMES, HTML_TABLE_STRUCTURE_TAGS } from '../../../utils/common-html-words';
 
-import { findBalancedOpenerOffsets } from './components/utils';
+import { findBalancedOpenerOffsets, isMarkdownPromotableHtmlTag } from './components/utils';
 import { indentWidth } from './indentation';
 
 const STANDALONE_HTML_LINE_REGEX = /^(<[a-z][^<>]*>|<\/[a-z][^<>]*>)+\s*$/;
@@ -13,8 +13,10 @@ const HTML_LINE_WITH_CONTENT_REGEX = /^<[a-z][^<>]*>.*<\/[a-z][^<>]*>(?:[^<]*)$/
 // A leading open/close tag followed by text (`<li> test`); captures the closer slash and tag name.
 const TAG_WITH_TRAILING_TEXT_REGEX = /^<(\/?)([a-z][a-z0-9-]*)(?=[\s/>])[^<>]*>\s*\S/;
 
-// CommonMark type-6 names open an HTML block regardless of trailing text; other tags don't.
-const HTML_BLOCK_NAMES: ReadonlySet<string> = new Set(htmlBlockNames);
+// Markdown blocks an HTML flow block would swallow as raw text: magic block, heading
+// (compact `#Heading` too), list item, blockquote, fenced code (placeholder), thematic break.
+const SWALLOWED_BLOCK_START_REGEX =
+  /^(?:\[block:|#{1,6}(?!#)|[-*+][ \t]|\d{1,9}[.)][ \t]|>|___CODE_BLOCK_\d+___|(?:[-*_][ \t]*){3,}$)/;
 
 // A line that is exactly one lowercase opening (or self-closing) tag — the shape
 // that opens a CommonMark type-6/7 HTML block and swallows the lines below it.
@@ -66,12 +68,12 @@ function createBalancedOpenerLookup(lines: string[]) {
 
 /**
  * A type-6 tag with trailing text (`<li> test`) left open for the rest of its run.
- * Balanced ones already render, as mdxish re-parses the whole HTML block.
+ * Balanced, promotable ones already render, as mdxish re-parses the whole HTML block.
  */
 function leavesBlockTagOpen(line: string, isBalanced: () => boolean) {
   const [, closerSlash, tagName] = TAG_WITH_TRAILING_TEXT_REGEX.exec(line.trim()) ?? [];
-  if (tagName === undefined || !HTML_BLOCK_NAMES.has(tagName)) return false;
-  return Boolean(closerSlash) || !isBalanced();
+  if (tagName === undefined || !HTML_BLOCK_TAG_NAMES.has(tagName)) return false;
+  return Boolean(closerSlash) || !isMarkdownPromotableHtmlTag(tagName) || !isBalanced();
 }
 
 // Per-tag {opens, closes} counts of RAW_CONTENT_TAGS on one line — feeds both the
@@ -108,7 +110,18 @@ function shouldTerminateBetween(
   const currentTrimmed = line.trim();
   const nextTrimmed = next.trim();
   if (isLineHtml(nextTrimmed) || lineLeavesRawOpen) return false;
-  if (!isLineHtml(currentTrimmed) && !leavesBlockOpen()) return false;
+
+  // RM-16379: a type-6 opener with trailing text only splits before a markdown block, so
+  // legacy continuation lines (`<li>Step\nmore`) stay glued; the walk runs last.
+  if (!isLineHtml(currentTrimmed)) {
+    return (
+      currentIndent === 0 &&
+      nextIndent === 0 &&
+      !insideRawContent &&
+      SWALLOWED_BLOCK_START_REGEX.test(nextTrimmed) &&
+      leavesBlockOpen()
+    );
+  }
 
   // Column-0 pairs keep the original (pre-relaxation) rule, deliberately ignoring
   // `insideRawContent`: one unclosed <pre>/<table> typo would otherwise suppress

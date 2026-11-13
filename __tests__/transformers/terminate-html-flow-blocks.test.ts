@@ -258,32 +258,49 @@ text at column 0`);
     });
   });
 
-  // RM-16379: a type-6 opener with trailing text still opens an HTML block.
+  // RM-16379: a type-6 opener with trailing text still opens an HTML block, which
+  // swallows a markdown block on the next line.
   describe('block-level tag followed by text on the same line', () => {
     it.each([
       ['<li> test', '[block:parameters]'],
-      ['<div> hi', '**bold**'],
       ['<div class="x"> hi', '## Heading'],
+      ['<div> hi', '#Compact heading'],
       ['</li> text', '- item'],
+      ['<li> test', '1. step'],
+      ['<div> hi', '> quote'],
+      ['<div> hi', '---'],
+      ['<li> test', '```js\ncode\n```'],
+      ['<figure> intro', '[block:callout]\n{}\n[/block]\n</figure>'],
     ])('inserts blank line between %j and %j', (line, next) => {
       expect(terminateHtmlFlowBlocks(`${line}\n${next}`)).toBe(`${line}\n\n${next}`);
     });
 
     it.each([
-      ['<b> bold text', 'plain line'],
-      ['<your-api-key> replace this', 'plain line'],
-      ['<https://example.com> is our docs', 'plain line'],
-      ['<lit> test', 'plain line'],
+      ['<b> bold text', '## Heading'],
+      ['<your-api-key> replace this', '- item'],
+      ['<https://example.com> is our docs', '## Heading'],
+      ['<lit> test', '## Heading'],
       [' <li> test', '[block:parameters]'],
+      // Legacy continuation lines stay inside the HTML block, as on `next`.
+      ['<div> hi', '**bold**'],
+      ['<li>Step one', 'more detail\n<li>Step two\n</ol>'],
+      ['<p>Line one', '<br>Line two\n<br>Line three'],
     ])('does not insert between %j and %j', (line, next) => {
       const input = `${line}\n${next}`;
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
 
-    // A closer later in the same run means mdxish re-parses the whole block already.
+    it.each([
+      '<textarea>\n<p> Hello\n# world\n</textarea>',
+      '<pre>\n<li> item\n- text\n</pre>',
+      '<table>\n<tr>\n<td>\n<p> cell\n- text\n</td>\n</tr>\n</table>',
+    ])('leaves raw-content and table payloads unchanged: %j', input => {
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    // A balanced closer later in the same run means mdxish re-parses the whole block already.
     it.each([
       '<div>**bold**\nmore</div>',
-      '<div>**bold**\nmore\nmore2</div>',
       '<li> test\n[block:callout]\n{}\n[/block]\n</li>',
       '<div class="x"> hi\n## Heading\n</div>',
     ])('does not insert when the tag closes later in the same run: %j', input => {
@@ -303,8 +320,13 @@ text at column 0`);
       expect(terminateHtmlFlowBlocks(`${line}\n${rest}`)).toBe(`${line}\n\n${rest}`);
     });
 
-    it.each(['~~~html\n<li> test\nnext line\n~~~', '~~~\n<div>\nnext\n~~~', '~~~~\n<li> test\nnext\n~~~~'])(
-      'leaves tilde-fenced code unchanged: %j',
+    it.each([
+      '~~~html\n<li> test\nnext line\n~~~',
+      '~~~\n<div>\nnext\n~~~',
+      '~~~~~~\n<li> test\nnext\n~~~~~~',
+      'Use `~~~` to open a tilde fence.\n\n```html\n<div>\nnext\n```',
+    ])(
+      'leaves fenced code unchanged: %j',
       input => {
         expect(terminateHtmlFlowBlocks(input)).toBe(input);
       },
