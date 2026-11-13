@@ -15,6 +15,8 @@ Escaped markdown, encoded tags and soft line breaks inside the inline
 
 - Escaped `*`/`_` and encoded tags stay literal text inside `<Anchor>` and `<Glossary>`.
 - The text after a soft line break is kept.
+- The same holds for an `<Anchor>` in a list item, a table cell, a callout and
+  single-line raw html, which reach the plugin by different paths.
 - Real inline markdown (bold, emphasis) inside an `<Anchor>` still renders.
 - Suite B reports only the `<br>` MDXish emits for the soft line break, which it
   does in every paragraph, not just inside components.

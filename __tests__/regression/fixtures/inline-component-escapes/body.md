@@ -14,3 +14,17 @@ Read <Anchor href="https://example.com">line one
 line two</Anchor> now.
 
 Read <Glossary>\*lit\*</Glossary> now.
+
+## Nested
+
+- <Anchor href="https://example.com">\*lit\* in a **list**</Anchor>
+
+| Cell |
+| ---- |
+| <Anchor href="https://example.com">\*lit\* in a **table**</Anchor> |
+
+> 📘 Callout
+>
+> Read <Anchor href="https://example.com">\*lit\* in a **callout**</Anchor> now.
+
+<div><Anchor href="https://example.com">\*lit\* in **raw html**</Anchor></div>
