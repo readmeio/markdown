@@ -258,6 +258,82 @@ text at column 0`);
     });
   });
 
+  // RM-16379: a type-6 opener with trailing text still opens an HTML block, which
+  // swallows a markdown block on the next line.
+  describe('block-level tag followed by text on the same line', () => {
+    it.each([
+      ['<li> test', '[block:parameters]'],
+      ['<div class="x"> hi', '## Heading'],
+      ['<div> hi', '#Compact heading'],
+      // Prose starting with `#` is a compact heading in mdxish anyway (`normalizeCompactHeadings`).
+      ['<li> Tags:', '#docs #api'],
+      ['</li> text', '## Heading'],
+      ['<li> test', '```js\ncode\n```'],
+      ['<figure> intro', '[block:callout]\n{}\n[/block]\n</figure>'],
+    ])('inserts blank line between %j and %j', (line, next) => {
+      expect(terminateHtmlFlowBlocks(`${line}\n${next}`)).toBe(`${line}\n\n${next}`);
+    });
+
+    it.each([
+      ['<b> bold text', '## Heading'],
+      ['<your-api-key> replace this', '## Heading'],
+      ['<https://example.com> is our docs', '## Heading'],
+      ['<lit> test', '## Heading'],
+      [' <li> test', '[block:parameters]'],
+      // Legacy continuation lines stay inside the HTML block, as on `next`.
+      ['<div> hi', '**bold**'],
+      ['<li>Step one', 'more detail\n<li>Step two\n</ol>'],
+      ['<p>Line one', '<br>Line two\n<br>Line three'],
+      // Lists, blockquotes and rules still wouldn't render after the HTML block, so splitting gains nothing.
+      ['<li> Range', '- 5 to 10 degrees'],
+      ['<li> test', '1999. was a year'],
+      ['<div> hi', '>= 5 items'],
+      ['<div> Title text', '---\nmore'],
+    ])('does not insert between %j and %j', (line, next) => {
+      const input = `${line}\n${next}`;
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it.each([
+      '<textarea>\n<p> Hello\n# world\n</textarea>',
+      '<pre>\n<li> item\n- text\n</pre>',
+      '<table>\n<tr>\n<td>\n<p> cell\n- text\n</td>\n</tr>\n</table>',
+    ])('leaves raw-content and table payloads unchanged: %j', input => {
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    // A balanced closer later in the same run means mdxish re-parses the whole block already.
+    it.each([
+      '<div>**bold**\nmore</div>',
+      '<li> test\n[block:callout]\n{}\n[/block]\n</li>',
+      '<div class="x"> hi\n## Heading\n</div>',
+    ])('does not insert when the tag closes later in the same run: %j', input => {
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('still inserts when the only closer is past a blank line', () => {
+      expect(terminateHtmlFlowBlocks('<li> test\n## Heading\n\n</li>')).toBe('<li> test\n\n## Heading\n\n</li>');
+    });
+
+    // Only a balanced closer counts: htmlparser2 implicitly closes sibling `<li>`s.
+    it.each([
+      ['<li> First', '[block:callout]\n{}\n[/block]\n<li> Second</li>'],
+      ['<div> outer', '## Heading\n<div>inner</div>'],
+      ['<div> outer', '## Heading\n<span title="</div>">x</span>'],
+    ])('inserts when a later closer belongs to another element: %j', (line, rest) => {
+      expect(terminateHtmlFlowBlocks(`${line}\n${rest}`)).toBe(`${line}\n\n${rest}`);
+    });
+
+    it.each([
+      '~~~html\n<li> test\nnext line\n~~~',
+      '~~~\n<div>\nnext\n~~~',
+      '~~~~~~\n<li> test\nnext\n~~~~~~',
+      'Use `~~~` to open a tilde fence.\n\n```html\n<div>\nnext\n```',
+    ])('leaves fenced code unchanged: %j', input => {
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+  });
+
   describe('when it should not insert a blank line', () => {
     it('does not modify content when blank line already exists after a closed HTML tag', () => {
       const input = `<div></div>
@@ -500,6 +576,23 @@ Some text
   });
 
   describe('performance tests', () => {
+    it('checks tag balance in linear time across a long unblanked legacy list', () => {
+      // Each `<li>` sits above a heading, so every one triggers the balance walk.
+      const list = (items: number) =>
+        `${Array.from({ length: items }, (_, i) => `<li> item ${i}\n## Heading ${i}`).join('\n')}\n</li>`;
+      const fastest = (md: string) =>
+        Math.min(
+          ...Array.from({ length: 3 }, () => {
+            const start = performance.now();
+            terminateHtmlFlowBlocks(md);
+            return performance.now() - start;
+          }),
+        );
+
+      // 8x the input; a per-line rescan would be ~64x slower.
+      expect(fastest(list(4000)) / Math.max(fastest(list(500)), 1)).toBeLessThan(20);
+    });
+
     it('does not catastrophically backtrack on tags with many spaces', () => {
       const input = `<a${' '.repeat(1000)}>
 Next line`;

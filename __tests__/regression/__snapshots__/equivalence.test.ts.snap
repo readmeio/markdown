@@ -387,6 +387,43 @@ exports[`MDX↔MDXish equivalence > expressions-in-tables 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > html-opener-trailing-text 1`] = `
+{
+  "changes": [
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/li[0]",
+      "right": "<li>…(3 children)…</li>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/li[1]",
+      "right": "<li>…(2 children)…</li>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/li[2]",
+      "right": "<li>…(1 children)…</li>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[3]",
+      "right": "<p>…(1 children)…</p>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > htmlblock 1`] = `
 {
   "status": "match",

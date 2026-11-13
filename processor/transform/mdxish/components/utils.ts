@@ -101,3 +101,27 @@ export function findBalancedClosingTagIndex(content: string, tag: string): numbe
   });
   return closeIndex;
 }
+
+/**
+ * Start offsets of every opening tag in `html` that a later canonical `</tag>`
+ * balances. Same depth rules as `findBalancedClosingTagIndex`, in one walk.
+ */
+export function findBalancedOpenerOffsets(html: string): Set<number> {
+  const openersByTag = new Map<string, number[]>();
+  const balanced = new Set<number>();
+  walkTags(html, {
+    onOpen: ({ name, start, isSelfClosing, isStrayCloser }) => {
+      if (isSelfClosing || isStrayCloser) return;
+      const tag = name.toLowerCase();
+      const openers = openersByTag.get(tag) ?? [];
+      openers.push(start);
+      openersByTag.set(tag, openers);
+    },
+    onClose: ({ name, start, end, implicit }) => {
+      if (implicit || end - start !== name.length + 3) return;
+      const opener = openersByTag.get(name.toLowerCase())?.pop();
+      if (opener !== undefined) balanced.add(opener);
+    },
+  });
+  return balanced;
+}

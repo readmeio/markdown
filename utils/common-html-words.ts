@@ -1,4 +1,5 @@
 import htmlTags from 'html-tags';
+import { htmlBlockNames } from 'micromark-util-html-tag-name';
 import { html as parse5Html } from 'parse5';
 import reactHtmlAttributes from 'react-html-attributes';
 import { allProps as reactNativeStylingProps } from 'react-native-known-styling-properties';
@@ -156,6 +157,9 @@ export const HTML_TABLE_STRUCTURE_TAGS = new Set([
  * the figure reassembly transform (`mdxishJsxToMdast`).
  */
 export const NON_REPARSED_BODY_TAGS = new Set(['figure', 'figcaption']);
+
+/** Block-level tags that open a CommonMark type-6 HTML block on their name alone. */
+export const HTML_BLOCK_TAG_NAMES: ReadonlySet<string> = new Set(htmlBlockNames);
 
 /**
  * The two HTML "foreign content" namespaces: SVG and MathML. Their descendants

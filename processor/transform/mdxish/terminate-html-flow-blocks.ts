@@ -1,13 +1,22 @@
 import { htmlRawNames } from 'micromark-util-html-tag-name';
 
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
-import { HTML_TABLE_STRUCTURE_TAGS } from '../../../utils/common-html-words';
+import { HTML_BLOCK_TAG_NAMES, HTML_TABLE_STRUCTURE_TAGS } from '../../../utils/common-html-words';
 
+import { findBalancedOpenerOffsets, isMarkdownPromotableHtmlTag } from './components/utils';
 import { indentWidth } from './indentation';
 
 const STANDALONE_HTML_LINE_REGEX = /^(<[a-z][^<>]*>|<\/[a-z][^<>]*>)+\s*$/;
 
 const HTML_LINE_WITH_CONTENT_REGEX = /^<[a-z][^<>]*>.*<\/[a-z][^<>]*>(?:[^<]*)$/;
+
+// A leading open/close tag followed by text (`<li> test`); captures the closer slash and tag name.
+const TAG_WITH_TRAILING_TEXT_REGEX = /^<(\/?)([a-z][a-z0-9-]*)(?=[\s/>])[^<>]*>\s*\S/;
+
+// Markdown blocks an HTML flow block would swallow as raw text and that render once split
+// off: magic block, heading (compact `#Heading` too), fenced code (placeholder). Lists and
+// blockquotes are left out: right after an HTML block they still don't render.
+const SWALLOWED_BLOCK_START_REGEX = /^(?:\[block:|#{1,6}(?!#)|___CODE_BLOCK_\d+___)/;
 
 // A line that is exactly one lowercase opening (or self-closing) tag — the shape
 // that opens a CommonMark type-6/7 HTML block and swallows the lines below it.
@@ -28,6 +37,45 @@ function isLineHtml(line: string) {
   return STANDALONE_HTML_LINE_REGEX.test(line) || HTML_LINE_WITH_CONTENT_REGEX.test(line);
 }
 
+const leadingWhitespace = (line: string) => line.length - line.trimStart().length;
+
+/**
+ * Line indexes in `lines[start..)` whose leading opener is balanced before the run's
+ * blank line (where the HTML flow block ends). Openers before `start` can't steal
+ * a closer from a later one, so starting mid-run is safe.
+ */
+function findBalancedOpenerLines(lines: string[], start: number) {
+  const lineOffsets: number[] = [];
+  let text = '';
+  let end = start;
+  for (; end < lines.length && lines[end].trim().length > 0; end += 1) {
+    lineOffsets.push(text.length + leadingWhitespace(lines[end]));
+    text += `${lines[end]}\n`;
+  }
+  const balanced = findBalancedOpenerOffsets(text);
+  const lineIndexes = lineOffsets.flatMap((offset, k) => (balanced.has(offset) ? [start + k] : []));
+  return { end, lines: new Set(lineIndexes) };
+}
+
+/** Memoizes `findBalancedOpenerLines` per run so the loop walks each run at most once. */
+function createBalancedOpenerLookup(lines: string[]) {
+  let run: ReturnType<typeof findBalancedOpenerLines> | undefined;
+  return (index: number) => {
+    if (!run || index >= run.end) run = findBalancedOpenerLines(lines, index);
+    return run.lines.has(index);
+  };
+}
+
+/**
+ * A type-6 tag with trailing text (`<li> test`) left open for the rest of its run.
+ * Balanced, promotable ones already render, as mdxish re-parses the whole HTML block.
+ */
+function leavesBlockTagOpen(line: string, isBalanced: () => boolean) {
+  const [, closerSlash, tagName] = TAG_WITH_TRAILING_TEXT_REGEX.exec(line.trim()) ?? [];
+  if (tagName === undefined || !HTML_BLOCK_TAG_NAMES.has(tagName)) return false;
+  return Boolean(closerSlash) || !isMarkdownPromotableHtmlTag(tagName) || !isBalanced();
+}
+
 // Per-tag {opens, closes} counts of RAW_CONTENT_TAGS on one line — feeds both the
 // per-line net-open check and the cumulative still-open depth tracking.
 function countRawContentTags(line: string): { closes: number; opens: number }[] {
@@ -37,9 +85,11 @@ function countRawContentTags(line: string): { closes: number; opens: number }[] 
   }));
 }
 
-interface RawContentFacts {
+interface BoundaryFacts {
   /** Any raw-content element is still open at the boundary after `line`. */
   insideRawContent: boolean;
+  /** `line` opens a type-6 HTML block via a tag with trailing text, left unclosed. Lazy: walks the run. */
+  leavesBlockOpen: () => boolean;
   /** A raw-content opener on `line` itself is left unclosed by that line. */
   lineLeavesRawOpen: boolean;
 }
@@ -51,7 +101,7 @@ interface RawContentFacts {
 function shouldTerminateBetween(
   line: string,
   next: string,
-  { insideRawContent, lineLeavesRawOpen }: RawContentFacts,
+  { insideRawContent, leavesBlockOpen, lineLeavesRawOpen }: BoundaryFacts,
 ): boolean {
   if (next.trim().length === 0) return false;
 
@@ -59,8 +109,18 @@ function shouldTerminateBetween(
   const nextIndent = indentWidth(next);
   const currentTrimmed = line.trim();
   const nextTrimmed = next.trim();
-  if (!isLineHtml(currentTrimmed) || isLineHtml(nextTrimmed) || lineLeavesRawOpen) {
-    return false;
+  if (isLineHtml(nextTrimmed) || lineLeavesRawOpen) return false;
+
+  // RM-16379: a type-6 opener with trailing text only splits before a markdown block, so
+  // legacy continuation lines (`<li>Step\nmore`) stay glued; the walk runs last.
+  if (!isLineHtml(currentTrimmed)) {
+    return (
+      currentIndent === 0 &&
+      nextIndent === 0 &&
+      !insideRawContent &&
+      SWALLOWED_BLOCK_START_REGEX.test(nextTrimmed) &&
+      leavesBlockOpen()
+    );
   }
 
   // Column-0 pairs keep the original (pre-relaxation) rule, deliberately ignoring
@@ -90,6 +150,7 @@ export function terminateHtmlFlowBlocks(content: string) {
   const { protectedContent, protectedCode } = protectCodeBlocks(content);
 
   const lines = protectedContent.split('\n');
+  const isOpenerBalanced = createBalancedOpenerLookup(lines);
   const result: string[] = [];
   // Per-tag count of still-open raw-content elements at the current boundary.
   const rawContentDepths = RAW_CONTENT_TAG_MATCHERS.map(() => 0);
@@ -104,11 +165,12 @@ export function terminateHtmlFlowBlocks(content: string) {
     });
 
     const next = lines[i + 1];
-    const rawContentFacts = {
+    const boundaryFacts = {
       insideRawContent: rawContentDepths.some(depth => depth > 0),
+      leavesBlockOpen: () => leavesBlockTagOpen(line, () => isOpenerBalanced(i)),
       lineLeavesRawOpen: tagCounts.some(({ opens, closes }) => opens > closes),
     };
-    if (next !== undefined && shouldTerminateBetween(line, next, rawContentFacts)) {
+    if (next !== undefined && shouldTerminateBetween(line, next, boundaryFacts)) {
       result.push('');
     }
   }
