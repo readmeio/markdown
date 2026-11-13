@@ -19,8 +19,6 @@ import gemoji from '../compile/gemoji';
 import variable from '../compile/variable';
 import { isText } from '../utils';
 
-import { extractText } from './extract-text';
-
 const titleParser = unified().use(remarkParse).use(remarkGfm);
 // The title paragraph may contain custom AST nodes that `toMarkdown` doesn't
 // natively understand
@@ -149,12 +147,7 @@ const processBlockquote = (
   isMdxish = false,
 ) => {
   if (!isCalloutStructure(node)) {
-    // Only stringify empty blockquotes (no extractable text content)
-    // Preserve blockquotes with actual content (e.g., headings, lists, etc.)
-    const content = extractText(node);
-    const isEmpty = !content || content.trim() === '';
-
-    if (isEmpty && index !== undefined && parent) {
+    if (node.children.length === 0 && index !== undefined && parent) {
       const textNode: Text = {
         type: 'text',
         value: '>',
