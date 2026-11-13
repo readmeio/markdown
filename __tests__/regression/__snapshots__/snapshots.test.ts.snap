@@ -564,6 +564,57 @@ exports[`Render engine regressions tests > indented-markdown-islands-in-html (md
 </div>"
 `;
 
+exports[`Render engine regressions tests > inline-component-escapes (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="inline-component-escapes"></div><div class="heading-text">Inline component escapes</div><a aria-label="Skip link to Inline component escapes" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inline-component-escapes"></a></h1>
+<p>Read <a href="https://example.com" target="" title="">*lit*</a> now.</p>
+<p>Read <a href="https://example.com" target="" title="">_lit_</a> now.</p>
+<p><a href="https://example.com" target="" title="">**lit**</a> at the start of a line.</p>
+<p>Read <a href="https://example.com" target="" title="">&lt;b&gt; tag</a> now.</p>
+<p>Read <a href="https://example.com" target="" title=""><strong>bold</strong> and <em>em</em></a> now.</p>
+<p>Read <a href="https://example.com" target="" title="">line one
+line two</a> now.</p>
+<p>Read <span>*lit*</span> now.</p>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="nested"></div><div class="heading-text">Nested</div><a aria-label="Skip link to Nested" class="heading-anchor-icon fa fa-regular fa-anchor" href="#nested"></a></h2>
+<ul>
+<li>
+<a href="https://example.com" target="" title="">*lit* in a <strong>list</strong></a>
+</li>
+</ul>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Cell</th></tr></thead><tbody><tr><td><a href="https://example.com" target="" title="">*lit* in a <strong>table</strong></a></td></tr></tbody></table></div></div>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="callout"></div><div class="heading-text">Callout</div><a aria-label="Skip link to Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout"></a></h3><p>Read <a href="https://example.com" target="" title="">*lit* in a <strong>callout</strong></a> now.</p></blockquote>
+<div><a href="https://example.com" target="" title="">*lit* in <strong>raw html</strong></a></div>"
+`;
+
+exports[`Render engine regressions tests > inline-component-escapes (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="inline-component-escapes"></div><div class="heading-text">Inline component escapes</div><a aria-label="Skip link to Inline component escapes" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inline-component-escapes"></a></h1>
+<p>Read <a href="https://example.com" target="" title="">*lit*</a> now.</p>
+<p>Read <a href="https://example.com" target="" title="">_lit_</a> now.</p>
+<p><a href="https://example.com" target="" title="">**lit**</a> at the start of a line.</p>
+<p>Read <a href="https://example.com" target="" title="">&lt;b&gt; tag</a> now.</p>
+<p>Read <a href="https://example.com" target="" title=""><strong>bold</strong> and <em>em</em></a> now.</p>
+<p>Read <a href="https://example.com" target="" title="">line one<br/>
+line two</a> now.</p>
+<p>Read <span>*lit*</span> now.</p>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="nested"></div><div class="heading-text">Nested</div><a aria-label="Skip link to Nested" class="heading-anchor-icon fa fa-regular fa-anchor" href="#nested"></a></h2>
+<ul>
+<li><a href="https://example.com" target="" title="">*lit* in a <strong>list</strong></a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Cell</th></tr></thead><tbody><tr><td><a href="https://example.com" target="" title="">*lit* in a <strong>table</strong></a></td></tr></tbody></table></div></div>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="callout"></div><div class="heading-text">Callout</div><a aria-label="Skip link to Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout"></a></h3><p>Read <a href="https://example.com" target="" title="">*lit* in a <strong>callout</strong></a> now.</p></blockquote>
+<div><a href="https://example.com" target="" title="">*lit* in <strong>raw html</strong></a></div>"
+`;
+
 exports[`Render engine regressions tests > inline-image-tailwind (mdx) 1`] = `
 "<p>An inline <span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span> image should stay on the same line as this text.</p>
 <p>Line 1</p>

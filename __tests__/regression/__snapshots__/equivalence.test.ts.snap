@@ -693,6 +693,36 @@ exports[`MDX↔MDXish equivalence > indented-markdown-islands-in-html 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > inline-component-escapes 1`] = `
+{
+  "changes": [
+    {
+      "kind": "text",
+      "left": "line one line two",
+      "path": "/p[6]/a[1]/#text[0]",
+      "right": "line one",
+      "severity": "content",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[6]/a[1]/br[1]",
+      "right": "<br>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[6]/a[1]/#text[2]",
+      "right": "#text(" line two")",
+      "severity": "content",
+    },
+  ],
+  "severity": "content",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > inline-image-tailwind 1`] = `
 {
   "changes": [
