@@ -802,6 +802,49 @@ interpolation should resolve from <code class="rdmd-code lang-undefined theme-un
 <p>Closing prose to anchor a trailing paragraph in the rendered tree.</p>"
 `;
 
+exports[`Render engine regressions tests > self-closing-inline-components (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="self-closing-inline-components"></div><div class="heading-text">Self-closing inline components</div><a aria-label="Skip link to Self-closing inline components" class="heading-anchor-icon fa fa-regular fa-anchor" href="#self-closing-inline-components"></a></h1>
+<p>Read <a href="https://example.com" target="" title=""></a> and <strong>more</strong> text, no space <a href="https://example.com" target="" title=""></a> before the slash.</p>
+<a href="https://example.com" target="" title=""></a>
+<p>This paragraph stays outside the anchor above.</p>
+<a href="https://example.com" target="" title=""></a>
+<p>A line right under the tag is <em>still</em> markdown.</p>
+<p>Keep <span translate="no"></span> and <strong>bold</strong> apart, and a <!-- --> too.</p>
+<ul>
+<li>list item <a href="https://example.com" target="" title=""></a> with <em>emphasis</em></li>
+</ul>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Column</th></tr></thead><tbody><tr><td>cell <a href="https://example.com" target="" title=""></a> text</td></tr></tbody></table></div></div>
+<div>Inside a wrapper <a href="https://example.com" target="" title=""></a> the text stays outside.</div>
+<p>A paired <a href="https://example.com" target="" title="">link</a> still wraps its text.</p>"
+`;
+
+exports[`Render engine regressions tests > self-closing-inline-components (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="self-closing-inline-components"></div><div class="heading-text">Self-closing inline components</div><a aria-label="Skip link to Self-closing inline components" class="heading-anchor-icon fa fa-regular fa-anchor" href="#self-closing-inline-components"></a></h1>
+<p>Read <span class="readme-tailwind"><a href="https://example.com" target="" title=""></a></span> and <strong>more</strong> text, no space <span class="readme-tailwind"><a href="https://example.com" target="" title=""></a></span> before the slash.</p>
+<div class="readme-tailwind"><a href="https://example.com" target="" title=""></a></div>
+<p>This paragraph stays outside the anchor above.</p>
+<div class="readme-tailwind"><a href="https://example.com" target="" title=""></a></div>
+<p>A line right under the tag is <em>still</em> markdown.</p>
+<p>Keep <span class="readme-tailwind"><span translate="no"></span></span> and <strong>bold</strong> apart, and a <span class="readme-tailwind"></span> too.</p>
+<ul>
+<li>list item <span class="readme-tailwind"><a href="https://example.com" target="" title=""></a></span> with <em>emphasis</em></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Column</th></tr></thead><tbody><tr><td>cell <span class="readme-tailwind"><a href="https://example.com" target="" title=""></a></span> text</td></tr></tbody></table></div></div>
+<div>Inside a wrapper <span class="readme-tailwind"><a href="https://example.com" target="" title=""></a></span> the text stays outside.</div>
+<p>A paired <a href="https://example.com" target="" title="">link</a> still wraps its text.</p>"
+`;
+
 exports[`Render engine regressions tests > style-and-jsx-expressions (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="style-and-jsx-expressions"></div><div class="heading-text">Style and JSX Expressions</div><a aria-label="Skip link to Style and JSX Expressions" class="heading-anchor-icon fa fa-regular fa-anchor" href="#style-and-jsx-expressions"></a></h1>
 <h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="html-in-jsx-expressions-should-get-rendered-and-also-applying-inline-styles"></div><div class="heading-text">HTML in JSX expressions should get rendered and also applying inline styles</div><a aria-label="Skip link to HTML in JSX expressions should get rendered and also applying inline styles" class="heading-anchor-icon fa fa-regular fa-anchor" href="#html-in-jsx-expressions-should-get-rendered-and-also-applying-inline-styles"></a></h2>

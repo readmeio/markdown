@@ -97,6 +97,61 @@ describe('inline HTML with expression attributes transformation to MDX text', ()
     expect(collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement')).toHaveLength(0);
   });
 
+  // RM-19074: left as html, parse5 ignores the `/` and the tag wraps the rest of its parent.
+  describe('self-closing inline components without expression attrs', () => {
+    const tags = [
+      '<Anchor href="https://example.com" />',
+      '<Anchor href="https://example.com"/>',
+      '<NoTranslate />',
+      '<Glossary />',
+    ];
+
+    it.each(tags)('promotes inline %s to an empty mdxJsxTextElement', tag => {
+      const tree = parse(`Read ${tag} and **more** text`);
+      const [inline] = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      expect(inline).toMatchObject({ type: 'mdxJsxTextElement', children: [] });
+      expect(collectNodes(tree, 'strong')).toHaveLength(1);
+      expect(collectNodes(tree, 'html')).toHaveLength(0);
+    });
+
+    it.each(tags)('promotes %s alone on a line to an empty mdxJsxFlowElement', tag => {
+      const tree = parse(`${tag}\n\nNext paragraph`);
+      const [flow] = collectNodes<MdxJsxFlowElement>(tree, 'mdxJsxFlowElement');
+      expect(flow).toMatchObject({ type: 'mdxJsxFlowElement', children: [] });
+      expect(tree.children[1]).toMatchObject({ type: 'paragraph' });
+    });
+
+    it('parses the lines after an own-line self-closing Anchor as markdown', () => {
+      const tree = parse('<Anchor href="https://example.com" />\nmore *text*');
+      expect(tree.children.map(node => node.type)).toStrictEqual(['mdxJsxFlowElement', 'paragraph']);
+      expect(collectNodes(tree, 'emphasis')).toHaveLength(1);
+    });
+
+    it('promotes a self-closing Anchor inside a list item', () => {
+      const tree = parse('- item <Anchor href="https://example.com" /> **b**');
+      expect(collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement')).toHaveLength(1);
+      expect(collectNodes(tree, 'html')).toHaveLength(0);
+    });
+
+    it('promotes a plain html wrapper whose only construct is a self-closing Anchor', () => {
+      const tree = parse('<div>Read <Anchor href="https://example.com" /> and more</div>');
+      const [wrapper, anchor] = collectNodes<MdxJsxFlowElement>(tree, 'mdxJsxFlowElement');
+      expect(wrapper).toMatchObject({ name: 'div' });
+      expect(anchor).toMatchObject({ name: 'Anchor', children: [] });
+      expect(collectNodes(tree, 'html')).toHaveLength(0);
+    });
+
+    it('leaves a plain html wrapper with a paired Anchor raw', () => {
+      const tree = parse('<div>Read <Anchor href="https://example.com">link</Anchor> and more</div>');
+      expect(tree.children).toMatchObject([{ type: 'html' }]);
+    });
+
+    it('leaves self-closing lowercase html for rehype-raw', () => {
+      const tree = parse('line<br />break');
+      expect(collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement')).toHaveLength(0);
+    });
+  });
+
   it('does not touch inline PascalCase components — mdxishComponentBlocks owns them', () => {
     // PascalCase is flow-level by design; it becomes `mdxJsxFlowElement` via
     // the block transformer even when authored inline, so the inline pass

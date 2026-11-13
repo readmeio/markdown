@@ -3,6 +3,8 @@ import type { MdxJsxAttribute, MdxJsxExpressionAttribute, MdxJsxTextElement } fr
 
 import { htmlRawNames } from 'micromark-util-html-tag-name';
 
+import { INLINE_COMPONENT_TAGS } from '../../../../lib/constants';
+import { parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { NON_REPARSED_BODY_TAGS } from '../../../../utils/common-html-words';
 import { walkTags } from '../tables/tag-walker';
 import { tableTags } from '../tables/utils';
@@ -15,6 +17,19 @@ export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
  * a custom MDX component (vs a lowercase HTML tag).
  */
 export const isPascalCase = (tag: string): boolean => /^[A-Z]/.test(tag);
+
+/**
+ * True for a self-closing inline component (`<Anchor />`). Left as raw html, parse5
+ * ignores the `/` on a non-void tag and it wraps everything after it (RM-19074).
+ */
+export const isSelfClosingInlineComponent = (tag: string, selfClosing: boolean): boolean =>
+  selfClosing && INLINE_COMPONENT_TAGS.has(tag);
+
+const isSelfClosingInlineComponentHtml = (node: Node): boolean => {
+  if (node.type !== 'html') return false;
+  const parsed = parseTag(((node as Html).value ?? '').trim());
+  return !!parsed && isSelfClosingInlineComponent(parsed.tag, parsed.selfClosing);
+};
 
 /**
  * True when the attribute list contains at least one JSX expression value
@@ -59,12 +74,14 @@ const PLAIN_CONTENT_TYPES = new Set<string>(['paragraph', 'text', 'html', 'mdxTe
 // Promoting plain HTML is only worth bypassing rehype-raw's parse5 pass when
 // the body parses into an actual markdown construct. Variables and glossary terms
 // count: parse5 renders `<<var>>` as a stray `<` plus a `<var>` tag, so a body that
-// holds nothing else still has to be promoted to resolve.
+// holds nothing else still has to be promoted to resolve. So does a self-closing
+// inline component, which parse5 would leave open.
 export const containsMarkdownConstruct = (nodes: Node[]): boolean =>
   nodes.some(
     node =>
       !PLAIN_CONTENT_TYPES.has(node.type) ||
       soleUserVariableExpression(node) !== null ||
+      isSelfClosingInlineComponentHtml(node) ||
       ('children' in node && Array.isArray(node.children) && containsMarkdownConstruct(node.children)),
   );
 
