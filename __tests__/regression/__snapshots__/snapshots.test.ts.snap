@@ -814,6 +814,7 @@ exports[`Render engine regressions tests > self-closing-inline-components (mdx) 
 <li>list item <a href="https://example.com" target="" title=""></a> with <em>emphasis</em></li>
 </ul>
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Column</th></tr></thead><tbody><tr><td>cell <a href="https://example.com" target="" title=""></a> text</td></tr></tbody></table></div></div>
+<div>Inside a wrapper <a href="https://example.com" target="" title=""></a> the text stays outside.</div>
 <p>A paired <a href="https://example.com" target="" title="">link</a> still wraps its text.</p>"
 `;
 
@@ -840,6 +841,7 @@ exports[`Render engine regressions tests > self-closing-inline-components (mdxis
 
 
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Column</th></tr></thead><tbody><tr><td>cell <span class="readme-tailwind"><a href="https://example.com" target="" title=""></a></span> text</td></tr></tbody></table></div></div>
+<div>Inside a wrapper <span class="readme-tailwind"><a href="https://example.com" target="" title=""></a></span> the text stays outside.</div>
 <p>A paired <a href="https://example.com" target="" title="">link</a> still wraps its text.</p>"
 `;
 

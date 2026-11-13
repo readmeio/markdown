@@ -17,4 +17,6 @@ Keep <NoTranslate /> and __bold__ apart, and a <Glossary /> too.
 | ------ |
 | cell <Anchor href="https://example.com" /> text |
 
+<div>Inside a wrapper <Anchor href="https://example.com" /> the text stays outside.</div>
+
 A paired <Anchor href="https://example.com">link</Anchor> still wraps its text.

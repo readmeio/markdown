@@ -133,6 +133,19 @@ describe('inline HTML with expression attributes transformation to MDX text', ()
       expect(collectNodes(tree, 'html')).toHaveLength(0);
     });
 
+    it('promotes a plain html wrapper whose only construct is a self-closing Anchor', () => {
+      const tree = parse('<div>Read <Anchor href="https://example.com" /> and more</div>');
+      const [wrapper, anchor] = collectNodes<MdxJsxFlowElement>(tree, 'mdxJsxFlowElement');
+      expect(wrapper).toMatchObject({ name: 'div' });
+      expect(anchor).toMatchObject({ name: 'Anchor', children: [] });
+      expect(collectNodes(tree, 'html')).toHaveLength(0);
+    });
+
+    it('leaves a plain html wrapper with a paired Anchor raw', () => {
+      const tree = parse('<div>Read <Anchor href="https://example.com">link</Anchor> and more</div>');
+      expect(tree.children).toMatchObject([{ type: 'html' }]);
+    });
+
     it('leaves self-closing lowercase html for rehype-raw', () => {
       const tree = parse('line<br />break');
       expect(collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement')).toHaveLength(0);

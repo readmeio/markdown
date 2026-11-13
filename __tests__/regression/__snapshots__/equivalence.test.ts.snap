@@ -1446,6 +1446,13 @@ exports[`MDX↔MDXish equivalence > self-closing-inline-components 1`] = `
       "right": "span",
       "severity": "structural",
     },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/div[9]/a[1]",
+      "right": "span",
+      "severity": "structural",
+    },
   ],
   "severity": "content",
   "status": "differ",

@@ -12,7 +12,7 @@ import {
   reparseMarkdownFragment,
 } from '../parse-markdown-fragment';
 
-import { hasExpressionAttr, isPascalCase, toMdxJsxTextElement } from './utils';
+import { hasExpressionAttr, isPascalCase, isSelfClosingInlineComponent, toMdxJsxTextElement } from './utils';
 
 const LEADING_SPACES_RE = /^[ \t]+/;
 const TRAILING_SPACES_RE = /[ \t]+$/;
@@ -100,9 +100,10 @@ const promoteInlineHtml = (
 
   // Plain inline HTML (no expressions) stays as an html node so rehype-raw
   // parses it with parse5 as normal. A tokenized tag is promoted as is, and so is a
-  // self-closing component: parse5 would ignore its `/` and wrap the rest (RM-19074).
-  const isSelfClosingComponent = selfClosing && isPascalCase(tag);
-  if (!hasExpressionAttr(attributes) && !node.data?.tokenized && !isSelfClosingComponent) return node;
+  // self-closing component, which parse5 would leave open.
+  if (!hasExpressionAttr(attributes) && !node.data?.tokenized && !isSelfClosingInlineComponent(tag, selfClosing)) {
+    return node;
+  }
 
   if (selfClosing) return toMdxJsxTextElement(tag, attributes, [], node.position);
 

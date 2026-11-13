@@ -2,11 +2,7 @@ import type { Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
-import {
-  GENERIC_MDX_COMPONENT_EXCLUDED_TAGS,
-  INLINE_COMPONENT_TAGS,
-  INLINE_ONLY_PARENT_TYPES,
-} from '../../../../lib/constants';
+import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS, INLINE_ONLY_PARENT_TYPES } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
 import {
@@ -24,6 +20,7 @@ import {
   hasExpressionAttr,
   isMarkdownPromotableHtmlTag,
   isPascalCase,
+  isSelfClosingInlineComponent,
   NESTED_TABLE_RE,
 } from './utils';
 
@@ -233,12 +230,10 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, documentSource:
     const parentNode = { position: node.position, value };
 
     // A block `<NoTranslate>` arrives here whole. An inline one stays with the inline pass.
-    // A self-closing inline component alone on a line is an html flow node; left raw,
-    // parse5 ignores its `/` and it swallows what follows (RM-19074).
-    const isFlowSelfClosingInline = selfClosing && INLINE_COMPONENT_TAGS.has(tag);
+    // So does a self-closing one alone on a line, which parse5 would leave open.
     const isBlockForm =
       !INLINE_ONLY_PARENT_TYPES.has(parent.type) &&
-      (isFlowSelfClosingInline || (!!node.data?.tokenized && !selfClosing));
+      (isSelfClosingInlineComponent(tag, selfClosing) || (!!node.data?.tokenized && !selfClosing));
     if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag) && !isBlockForm) return; // owned by dedicated transformers
 
     const isPascal = isPascalCase(tag);

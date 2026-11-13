@@ -13,7 +13,7 @@ with plain attributes, inline and on their own line.
 ## What it proves
 
 - Inline, the text after the tag stays outside it, with and without a space before `/>`,
-  in a paragraph, a list item and a table cell.
+  in a paragraph, a list item, a table cell and a plain html `<div>` wrapper.
 - On its own line, the next paragraph and the line right under it stay outside it.
 - A paired `<Anchor>` still wraps its own text.
 - The remaining engine diff is MDXish's `readme-tailwind` wrapper around each
@@ -23,4 +23,4 @@ with plain attributes, inline and on their own line.
 
 The self-closing checks in `processor/transform/mdxish/components/inline-html.ts`
 (`promoteInlineHtml`) and `processor/transform/mdxish/components/mdx-blocks.ts`
-(`isBlockForm`).
+(`isBlockForm`), and `containsMarkdownConstruct` in `components/utils.ts`.
