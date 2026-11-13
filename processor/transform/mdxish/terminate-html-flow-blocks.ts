@@ -13,10 +13,10 @@ const HTML_LINE_WITH_CONTENT_REGEX = /^<[a-z][^<>]*>.*<\/[a-z][^<>]*>(?:[^<]*)$/
 // A leading open/close tag followed by text (`<li> test`); captures the closer slash and tag name.
 const TAG_WITH_TRAILING_TEXT_REGEX = /^<(\/?)([a-z][a-z0-9-]*)(?=[\s/>])[^<>]*>\s*\S/;
 
-// Markdown blocks an HTML flow block would swallow as raw text: magic block, heading
-// (compact `#Heading` too), list item, blockquote, fenced code (placeholder), thematic break.
-const SWALLOWED_BLOCK_START_REGEX =
-  /^(?:\[block:|#{1,6}(?!#)|[-*+][ \t]|\d{1,9}[.)][ \t]|>|___CODE_BLOCK_\d+___|(?:[-*_][ \t]*){3,}$)/;
+// Markdown blocks an HTML flow block would swallow as raw text and that render once split
+// off: magic block, heading (compact `#Heading` too), fenced code (placeholder). Lists and
+// blockquotes are left out: right after an HTML block they still don't render.
+const SWALLOWED_BLOCK_START_REGEX = /^(?:\[block:|#{1,6}(?!#)|___CODE_BLOCK_\d+___)/;
 
 // A line that is exactly one lowercase opening (or self-closing) tag — the shape
 // that opens a CommonMark type-6/7 HTML block and swallows the lines below it.

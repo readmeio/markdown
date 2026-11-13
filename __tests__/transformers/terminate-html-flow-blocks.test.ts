@@ -265,10 +265,9 @@ text at column 0`);
       ['<li> test', '[block:parameters]'],
       ['<div class="x"> hi', '## Heading'],
       ['<div> hi', '#Compact heading'],
-      ['</li> text', '- item'],
-      ['<li> test', '1. step'],
-      ['<div> hi', '> quote'],
-      ['<div> hi', '---'],
+      // Prose starting with `#` is a compact heading in mdxish anyway (`normalizeCompactHeadings`).
+      ['<li> Tags:', '#docs #api'],
+      ['</li> text', '## Heading'],
       ['<li> test', '```js\ncode\n```'],
       ['<figure> intro', '[block:callout]\n{}\n[/block]\n</figure>'],
     ])('inserts blank line between %j and %j', (line, next) => {
@@ -277,7 +276,7 @@ text at column 0`);
 
     it.each([
       ['<b> bold text', '## Heading'],
-      ['<your-api-key> replace this', '- item'],
+      ['<your-api-key> replace this', '## Heading'],
       ['<https://example.com> is our docs', '## Heading'],
       ['<lit> test', '## Heading'],
       [' <li> test', '[block:parameters]'],
@@ -285,6 +284,11 @@ text at column 0`);
       ['<div> hi', '**bold**'],
       ['<li>Step one', 'more detail\n<li>Step two\n</ol>'],
       ['<p>Line one', '<br>Line two\n<br>Line three'],
+      // Lists, blockquotes and rules still wouldn't render after the HTML block, so splitting gains nothing.
+      ['<li> Range', '- 5 to 10 degrees'],
+      ['<li> test', '1999. was a year'],
+      ['<div> hi', '>= 5 items'],
+      ['<div> Title text', '---\nmore'],
     ])('does not insert between %j and %j', (line, next) => {
       const input = `${line}\n${next}`;
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
@@ -576,17 +580,20 @@ Some text
 
   describe('performance tests', () => {
     it('checks tag balance in linear time across a long unblanked legacy list', () => {
+      // Each `<li>` sits above a heading, so every one triggers the balance walk.
       const list = (items: number) =>
-        `${Array.from({ length: items }, (_, i) => `<li> item ${i}\ntext ${i}`).join('\n')}\n</li>`;
-      const time = (md: string) => {
-        terminateHtmlFlowBlocks(md);
-        const start = performance.now();
-        terminateHtmlFlowBlocks(md);
-        return performance.now() - start;
-      };
+        `${Array.from({ length: items }, (_, i) => `<li> item ${i}\n## Heading ${i}`).join('\n')}\n</li>`;
+      const fastest = (md: string) =>
+        Math.min(
+          ...Array.from({ length: 3 }, () => {
+            const start = performance.now();
+            terminateHtmlFlowBlocks(md);
+            return performance.now() - start;
+          }),
+        );
 
       // 8x the input; a per-line rescan would be ~64x slower.
-      expect(time(list(4000)) / Math.max(time(list(500)), 1)).toBeLessThan(20);
+      expect(fastest(list(4000)) / Math.max(fastest(list(500)), 1)).toBeLessThan(20);
     });
 
     it('does not catastrophically backtrack on tags with many spaces', () => {

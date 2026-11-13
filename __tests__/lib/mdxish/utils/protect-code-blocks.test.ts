@@ -58,6 +58,8 @@ describe('protectCodeBlocks', () => {
         ['an indented list item', '1. Step\n\n    ```js\n    body\n    ```', '1. Step\n\n    ___CODE_BLOCK_0___'],
         ['a list marker', '- ```js\n  body\n  ```', '- ___CODE_BLOCK_0___'],
         ['a blockquote', '> ```js\n> body\n> ```', '> ___CODE_BLOCK_0___'],
+        ['a nested list', '- - ```jsx\n    body\n    ```', '- - ___CODE_BLOCK_0___'],
+        ['a blockquote in a list', '- > ```jsx\n  > body\n  > ```', '- > ___CODE_BLOCK_0___'],
         ['CRLF line endings', '```js\r\nbody\r\n```\r\nafter', '___CODE_BLOCK_0___\r\nafter'],
       ])('protects a fence inside %s and keeps the prefix outside', (_name, input, expected) => {
         const { protectedCode, protectedContent } = protectCodeBlocks(input);
@@ -73,24 +75,40 @@ describe('protectCodeBlocks', () => {
         expect(blocksOf('text\n~~~\n<div>\n```js\ncode\n```')).toStrictEqual(['```js\ncode\n```']);
       });
 
+      it('does not close a blockquote fence outside its blockquote', () => {
+        const input = '> ~~~\n> x\n\nText {/* hidden */} here\n\n~~~jsx\nconst a = 1;\n~~~';
+        expect(blocksOf(input)).toStrictEqual(['~~~jsx\nconst a = 1;\n~~~']);
+      });
+
+      it('only closes with a closer at the same quote depth', () => {
+        expect(blocksOf('```js\n> ```\nbody\n```')).toStrictEqual(['```js\n> ```\nbody\n```']);
+        expect(blocksOf('> > ```js\n> > a\n> > ```')).toStrictEqual(['```js\n> > a\n> > ```']);
+        // A shallower line ends the inner blockquote, so its fence stays unclosed.
+        expect(blocksOf('> > ```js\n> > a\n> ```\n> > ```')).toStrictEqual([]);
+      });
+
       it('still protects a fence after a tilde fence its blockquote closed', () => {
         expect(blocksOf('> ~~~\n> x\n\nText\n\n```jsx\n{/* keep */}\n```')).toStrictEqual(['```jsx\n{/* keep */}\n```']);
       });
 
       it('scans in linear time across many code blocks', () => {
         const doc = (blocks: number) => '```js\ncode\n```\ntext\n'.repeat(blocks);
-        const time = (md: string) => {
-          protectCodeBlocks(md);
-          const start = performance.now();
-          protectCodeBlocks(md);
-          return performance.now() - start;
-        };
+        const time = (md: string) =>
+          Math.min(
+            ...Array.from({ length: 3 }, () => {
+              const start = performance.now();
+              protectCodeBlocks(md);
+              return performance.now() - start;
+            }),
+          );
 
         // 8x the input; rescanning the rest of the doc per block would be ~64x slower.
         expect(time(doc(16000)) / Math.max(time(doc(2000)), 1)).toBeLessThan(20);
-        // Unclosed openers must not each rescan to the end of the doc either.
+        // Unclosed openers must not each rescan to the end of the doc or blockquote either.
         const unclosed = (lines: number) => '~~~ x\ntext\n'.repeat(lines);
         expect(time(unclosed(16000)) / Math.max(time(unclosed(2000)), 1)).toBeLessThan(20);
+        const quoted = (lines: number) => `${'> ~~~ x\n> text\n'.repeat(lines)}\n~~~\n`;
+        expect(time(quoted(16000)) / Math.max(time(quoted(2000)), 1)).toBeLessThan(20);
       });
     });
 

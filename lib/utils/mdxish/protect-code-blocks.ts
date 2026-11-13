@@ -8,12 +8,19 @@ export interface ProtectCodeBlocksResult {
   protectedContent: string;
 }
 
-// A fence opener: container prefix (indent, `>`, list marker), then 3+ backticks or tildes, then the info string.
-// Indented code is disabled in mdxish, so any indent opens a fence.
-const FENCE_OPENER_REGEX = /^([ \t>]*(?:(?:[-*+]|\d{1,9}[.)])[ \t]+)?)(`{3,}|~{3,})([^\n]*)$/;
+// Container prefix: indents, `>` markers and list markers, nested in any order (`- > `, `1. - `).
+// Each alternative starts with a different character, so matching stays linear.
+const CONTAINER_PREFIX_REGEX = /^(?:[ \t>]|(?:[-*+]|\d{1,9}[.)])[ \t])*/;
 
-// A fence closer: container prefix, then 3+ backticks or tildes alone on the line.
-const FENCE_CLOSER_REGEX = /^[ \t>]*(`{3,}|~{3,})\s*$/;
+// A fence opener: container prefix, then 3+ backticks or tildes, then the info string.
+// Indented code is disabled in mdxish, so any indent opens a fence.
+const FENCE_OPENER_REGEX = /^((?:[ \t>]|(?:[-*+]|\d{1,9}[.)])[ \t])*)(`{3,}|~{3,})([^\n]*)$/;
+
+// A fence closer: indents and `>` markers, then 3+ backticks or tildes alone on the line.
+const FENCE_CLOSER_REGEX = /^([ \t>]*)(`{3,}|~{3,})\s*$/;
+
+/** Number of `>` markers in a container prefix. */
+const quoteDepth = (prefix: string) => prefix.split('>').length - 1;
 
 /** The fence (e.g. ```` ``` ````) a line opens, with its container prefix, or null. */
 function matchFenceOpener(line: string) {
@@ -23,32 +30,31 @@ function matchFenceOpener(line: string) {
   return { fence, prefix };
 }
 
-/** The bare fence (e.g. `~~~~`) a line could close with, or undefined. */
-const closerOf = (line: string) => FENCE_CLOSER_REGEX.exec(line)?.[1];
-
-/**
- * Per line, the longest closer of each fence character on any later line. Lets an
- * unclosed opener be skipped without rescanning the rest of the doc.
- */
-function findLongestLaterClosers(lines: string[]) {
-  // Keyed by fence character (`` ` `` or `~`).
-  const longest: Record<string, number> = { '`': 0, '~': 0 };
-  const perLine: Record<string, number>[] = [];
-  for (let i = lines.length - 1; i >= 0; i -= 1) {
-    perLine[i] = { ...longest };
-    const closer = closerOf(lines[i]);
-    if (closer) longest[closer[0]] = Math.max(longest[closer[0]], closer.length);
-  }
-  return perLine;
+/** True when `line` closes `fence` at quote depth `depth`: same character, at least as long. */
+function closesFence(line: string, fence: string, depth: number) {
+  const [, prefix, closer] = FENCE_CLOSER_REGEX.exec(line) ?? [];
+  return closer !== undefined && closer[0] === fence[0] && closer.length >= fence.length && quoteDepth(prefix) === depth;
 }
 
-/** Index of the first line after `from` that closes `fence`: same character, at least as long. */
-function findFenceCloser(lines: string[], from: number, fence: string) {
-  for (let i = from + 1; i < lines.length; i += 1) {
-    const closer = closerOf(lines[i]);
-    if (closer !== undefined && closer[0] === fence[0] && closer.length >= fence.length) return i;
-  }
-  return -1;
+/**
+ * Finds the line closing a fence opened on `from`. The search stops where the opener's
+ * blockquote ends. Failed searches are memoized per fence character and depth, so
+ * repeated unclosed openers don't each rescan the rest of the doc.
+ */
+function createFenceCloserFinder(lines: string[]) {
+  const failures = new Map<string, { length: number; stopAt: number }>();
+  return (from: number, fence: string, depth: number) => {
+    const key = `${fence[0]}${depth}`;
+    const failure = failures.get(key);
+    if (failure && from < failure.stopAt && fence.length >= failure.length) return -1;
+
+    let i = from + 1;
+    for (; i < lines.length && quoteDepth(CONTAINER_PREFIX_REGEX.exec(lines[i])?.[0] ?? '') >= depth; i += 1) {
+      if (closesFence(lines[i], fence, depth)) return i;
+    }
+    failures.set(key, { length: fence.length, stopAt: i });
+    return -1;
+  };
 }
 
 /**
@@ -58,14 +64,13 @@ function findFenceCloser(lines: string[], from: number, fence: string) {
  */
 function protectFencedBlocks(content: string, codeBlocks: string[]) {
   const lines = content.split('\n');
-  const longestLaterClosers = findLongestLaterClosers(lines);
+  const findCloser = createFenceCloserFinder(lines);
   const result: string[] = [];
   for (let i = 0; i < lines.length; i += 1) {
     const opener = matchFenceOpener(lines[i]);
-    const isClosed = opener && longestLaterClosers[i][opener.fence[0]] >= opener.fence.length;
+    const closeIndex = opener ? findCloser(i, opener.fence, quoteDepth(opener.prefix)) : -1;
 
-    if (isClosed) {
-      const closeIndex = findFenceCloser(lines, i, opener.fence);
+    if (opener && closeIndex !== -1) {
       const closer = lines[closeIndex].trimEnd();
       const block = [lines[i].slice(opener.prefix.length), ...lines.slice(i + 1, closeIndex), closer].join('\n');
       result.push(`${opener.prefix}___CODE_BLOCK_${codeBlocks.length}___${lines[closeIndex].slice(closer.length)}`);
