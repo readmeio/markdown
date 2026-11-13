@@ -31,11 +31,21 @@ describe('component boundaries', () => {
     expect(collectNodes(tree, 'mdxJsxFlowElement')).toHaveLength(2000);
   });
 
-  it('keeps a different sibling containing a same-name child separate', () => {
-    const parts = ['<Callout>first</Callout>', '<Other><Callout>nested</Callout></Other>', '<Callout>last</Callout>'];
+  it.each([
+    ['between', ['<Callout>first</Callout>', '<Other><Callout>nested</Callout></Other>', '<Callout>last</Callout>']],
+    ['after', ['<Callout>first</Callout>', '<Other><Callout>nested</Callout></Other>']],
+  ])('keeps a different sibling containing a same-name child separate (%s)', (_, parts) => {
     const { tree, sliceOf } = parseMdxishWithSlices(parts.join(''));
 
     expect(tree.children.map(sliceOf)).toStrictEqual(parts);
+  });
+
+  it('keeps inline html between components in one paragraph', () => {
+    const parts = ['<Callout>first</Callout>', 'text <b>bold</b> more', '<Callout>last</Callout>'];
+    const { tree, sliceOf } = parseMdxishWithSlices(parts.join(' '));
+
+    expect(tree.children.map(sliceOf)).toStrictEqual(parts);
+    expect(tree.children[1].type).toBe('paragraph');
   });
 
   describe.each([false, true])('source boundaries with safeMode=%s', safeMode => {

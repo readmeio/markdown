@@ -40,15 +40,20 @@ export function findComponentSiblingSpans(content: string, tag: string): { end: 
     const children = tree.children.flatMap(node =>
       node.type === 'paragraph' && 'children' in node ? node.children : [node],
     );
-    const components = children.filter(
-      (node): node is MdxJsxFlowElement | MdxJsxTextElement =>
-        node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement',
-    );
-    if (components.length < 2 || components[0].name !== tag || components[0].position?.start.offset !== 0) return [];
-    return components.map(node => ({
+    // Only same-name tags are ambiguous; other JSX stays in the gaps, parsed as markdown.
+    const components = children
+      .filter(
+        (node): node is MdxJsxFlowElement | MdxJsxTextElement =>
+          node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement',
+      )
+      .filter(node => node.name === tag);
+    if (components[0]?.position?.start.offset !== 0) return [];
+    const spans = components.map(node => ({
       start: node.position.start.offset - prefix.length,
       end: node.position.end.offset - prefix.length,
     }));
+    // A lone span covering everything has nothing to split off.
+    return spans.length === 1 && spans[0].end >= content.trimEnd().length ? [] : spans;
   } catch {
     // MDXish accepts non-JSX syntax; preserve its existing closing-tag recovery.
     return [];
