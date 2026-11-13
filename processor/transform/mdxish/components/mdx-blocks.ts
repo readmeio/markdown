@@ -2,7 +2,11 @@ import type { Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
-import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS, INLINE_ONLY_PARENT_TYPES } from '../../../../lib/constants';
+import {
+  GENERIC_MDX_COMPONENT_EXCLUDED_TAGS,
+  INLINE_COMPONENT_TAGS,
+  INLINE_ONLY_PARENT_TYPES,
+} from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
 import {
@@ -229,7 +233,12 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, documentSource:
     const parentNode = { position: node.position, value };
 
     // A block `<NoTranslate>` arrives here whole. An inline one stays with the inline pass.
-    const isBlockForm = !!node.data?.tokenized && !selfClosing && !INLINE_ONLY_PARENT_TYPES.has(parent.type);
+    // A self-closing inline component alone on a line is an html flow node; left raw,
+    // parse5 ignores its `/` and it swallows what follows (RM-19074).
+    const isFlowSelfClosingInline = selfClosing && INLINE_COMPONENT_TAGS.has(tag);
+    const isBlockForm =
+      !INLINE_ONLY_PARENT_TYPES.has(parent.type) &&
+      (isFlowSelfClosingInline || (!!node.data?.tokenized && !selfClosing));
     if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag) && !isBlockForm) return; // owned by dedicated transformers
 
     const isPascal = isPascalCase(tag);

@@ -1357,6 +1357,101 @@ exports[`MDX↔MDXish equivalence > rich 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > self-closing-inline-components 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/p[1]/a[1]",
+      "right": "span",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/p[1]/a[5]",
+      "right": "span",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/a[2]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/a[4]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[6]/span[1]",
+      "right": "readme-tailwind",
+      "severity": "structural",
+    },
+    {
+      "attrName": "translate",
+      "kind": "attr",
+      "left": "no",
+      "path": "/p[6]/span[1]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[6]/span[1]/span[0]",
+      "right": "<span translate="no"></span>",
+      "severity": "structural",
+    },
+    {
+      "kind": "text",
+      "left": " apart, and a too.",
+      "path": "/p[6]/#text[4]",
+      "right": " apart, and a ",
+      "severity": "content",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[6]/span[5]",
+      "right": "<span class="readme-tailwind"></span>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[6]/#text[6]",
+      "right": "#text(" too.")",
+      "severity": "content",
+    },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/ul[7]/li[0]/a[1]",
+      "right": "span",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/div[8]/div[0]/table[0]/tbody[1]/tr[0]/td[0]/a[1]",
+      "right": "span",
+      "severity": "structural",
+    },
+  ],
+  "severity": "content",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > style-and-jsx-expressions 1`] = `
 {
   "changes": [

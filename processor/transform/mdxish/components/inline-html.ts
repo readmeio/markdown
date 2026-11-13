@@ -99,8 +99,10 @@ const promoteInlineHtml = (
   if (isPascalCase(tag) && !INLINE_COMPONENT_TAGS.has(tag)) return node;
 
   // Plain inline HTML (no expressions) stays as an html node so rehype-raw
-  // parses it with parse5 as normal. A tokenized tag is promoted as is.
-  if (!hasExpressionAttr(attributes) && !node.data?.tokenized) return node;
+  // parses it with parse5 as normal. A tokenized tag is promoted as is, and so is a
+  // self-closing component: parse5 would ignore its `/` and wrap the rest (RM-19074).
+  const isSelfClosingComponent = selfClosing && isPascalCase(tag);
+  if (!hasExpressionAttr(attributes) && !node.data?.tokenized && !isSelfClosingComponent) return node;
 
   if (selfClosing) return toMdxJsxTextElement(tag, attributes, [], node.position);
 
