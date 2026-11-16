@@ -4,24 +4,32 @@
 
 ### Preprocessing Step
 
-> **See**: @lib/mdxish.ts#92-103
+> **See**: `preprocessContent` — @lib/mdxish.ts#109
 
 `preprocessContent` is a string-level preprocessor that runs before the markdown is handed to remarkParse. It exists because several syntactic patterns in ReadMe's flavor of markdown would confuse or break the standard CommonMark/MDX parser if fed to it directly. By patching the raw string first, these issues are sidestepped.
 
-It applies four transforms in sequence:
+It applies seven transforms in sequence (the function carries a matching docstring at @lib/mdxish.ts#96):
 
+1. **`normalizeClosingTagWhitespace()`**
+
+   Canonicalizes closing tags that contain stray whitespace (e.g. `</ td >` → `</td>`). Runs first so that `jsxTable` later sees a literal `</table>` and so the HTML-line classification in `terminateHtmlFlowBlocks` is accurate.
 1. **`normalizeTableSeparator()`**
 
    Fixes malformed GFM table separator rows — e.g. misplaced alignment colons like `|: ---` → `| :---`. Without this, remarkGfm would fail to recognize the table.
+1. **`collapseForeignContentBlankLines()`**
+
+   Collapses blank lines inside `<svg>`/`<math>` islands. A blank line inside foreign content would otherwise fragment it — the children spill out of the island, where parse5 drops the orphaned foreign tags (#1545).
 1. **`terminateHtmlFlowBlocks()`**
 
    Inserts blank lines after standalone HTML elements (like `<div>...</div>`) when the next line is regular markdown. CommonMark's HTML flow rules only terminate on blank lines, so without this, the parser would swallow subsequent markdown content into the HTML block token.
-1. **`preprocessJSXExpressions()`** (skipped in safeMode)
+1. **`closeSelfClosingHtmlTags()`**
 
-   Handles unbalanced braces before the MDX expression tokenizer sees them. Attribute expressions now flow through the tokenizer as `mdxJsxAttributeValueExpression` nodes and are evaluated later by the hast handler; preprocessing only escapes stray braces that would cause MDX parse errors.
-1. **`processSnakeCaseComponent()`**
+   Rewrites invalid "self-closing" HTML tags into explicit open/close pairs (e.g. `<i />` → `<i></i>`). HTML (unlike JSX) has no self-closing syntax for non-void elements, so leaving these would confuse the parser.
+1. **`normalizeCompactHeadings()`**
 
-   Remark's parser rejects tag names containing underscores (e.g. `<my_component>`). This step replaces known snake_case component names with safe placeholder names (`<MDXishSnakeCase0>`) and returns a mapping so they can be restored later by the `restoreSnakeCaseComponentNames` transformer in the run phase.
+   Normalizes compact ATX headings that omit the space after the hashes (e.g. `#Heading` → `# Heading`) so they are recognized as headings rather than paragraph text.
+
+> **Note:** Earlier revisions of this pipeline also ran a `preprocessJSXExpressions()` string transform to escape stray/unbalanced braces. That step was removed (#1429, #1531). MDX expressions are now handled at the parser level by the lenient expression tokenizer (`mdxExprTextOnly` = `mdxExpressionLenient()`), and attribute expressions flow through as `mdxJsxAttributeValueExpression` nodes that are evaluated later.
 
 ##### Where it sits in the flow
 
@@ -29,30 +37,38 @@ It applies four transforms in sequence:
                     preprocessContent (string → string)
                               │
                               ▼
-┌─────────────────────────────────────────────────────┐
-│  normalizeTableSeparator   — fix table syntax       │
-│  terminateHtmlFlowBlocks   — fix HTML flow          │
-│  preprocessJSXExpressions  — eval/escape JSX        │  before
-│  processSnakeCaseComponent — placeholder swap       │  parsing
-└─────────────────────────────┬───────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  normalizeClosingTagWhitespace — fix stray-space closers │
+│  normalizeTableSeparator       — fix table syntax        │
+│  collapseForeignContentBlankLines — keep svg/math whole  │  before
+│  terminateHtmlFlowBlocks       — fix HTML flow           │  parsing
+│  closeSelfClosingHtmlTags      — <i /> → <i></i>         │
+│  normalizeCompactHeadings      — #Heading → # Heading    │
+└─────────────────────────────┬─────────────────────────────┘
                               │
                               ▼
                       remarkParse (tokenize)
                               │
                               ▼
                     MDAST transformers...
-                         ...
-                    restoreSnakeCaseComponentNames  ◄── undo (4)
 ```
 
 ### Processor Pipeline
 
-> **See**: @lib/mdxish.ts#105-178
+> **See**: `mdxishAstProcessor` — @lib/mdxish.ts#126 (parser setup #150, `.use` chain #153)
 
-The core Xish engine which parses Markdown and converts it to an MDAST object. This is the base processor used for both the editor and rendering flows.
+The core Xish engine which parses Markdown and converts it to an MDAST object. This is the base processor used for both the editor and rendering flows. `mdxishAstProcessor` returns the *configured but un-run* processor (plus `parserReadyContent`); callers run it, or `mdxish()` extends it further (see below).
+
+`safeMode` skips all evaluation of user-authored code (MDX expressions, `export`s, attribute expressions) for security — in safe mode those stay as literal text.
+
+Several parser extensions and transformers are conditional:
+- `!safeMode` adds the MDX expression tokenizer, the ESM (`export`) tokenizer, and the JSX-comment tokenizer.
+- `newEditorTypes` adds `mdxishInlineMdxComponents` and `mdxishJsxToMdast`.
+- `useTailwind` adds `tailwindTransformer`.
+- `hardBreaks` (default `true`). By default it is on for mdxish as by design it follows legacy RDMD
 
 ```
-| ................ process (parse only) ...................... |
+| ................ process (parse + run to MDAST) ............ |
 | .. parse ........... | .............. run .................. |
 
                                                       NO COMPILER
@@ -69,41 +85,57 @@ Input ->- | Parser | ->- Syntax Tree ->- |    N/A   |   returned
   ┌────────────┘          ┌───┴──────────────────────────────┐
   │                       │                                  │
   │  PARSER               │  MDAST TRANSFORMERS              │
-  │  (micromark)          │  (remark plugins)                │
+  │  (micromark)          │  (remark plugins, in .use order) │
   │                       │                                  │
   │  remarkParse          │  remarkFrontmatter               │
-  │    + extensions:      │  normalizeEmphasisAST            │
-  │    · magicBlock       │  magicBlockTransformer           │
+  │   micromarkExts:      │  normalizeEmphasisAST            │
+  │    · jsxTable         │  mdxishMdxComponentBlocks        │
+  │    · noTranslate      │  mdxishInlineMdxHtmlBlocks       │
+  │    · magicBlock       │  mdxishTables                    │
+  │    · mdxComponent     │  mdxishHtmlBlocks                │
+  │    · gemoji           │  magicBlockTransformer           │
   │    · legacyVariable   │  imageTransformer                │
   │    · looseHtmlEntity  │  defaultTransformers             │
-  │    · mdxExprTextOnly  │    (callouts, codeTabs,          │
-  │                       │     gemoji, embeds)              │
-  │  + fromMarkdown:      │  mdxishComponentBlocks           │
-  │    · magicBlock       │  restoreSnakeCaseComponentNames  │
-  │    · legacyVariable   │  mdxishTables                    │
-  │    · emptyTaskList…   │  mdxishHtmlBlocks                │
-  │    · looseHtmlEntity  │  mdxishJsxToMdast?               │
-  │    · mdxExpression…   │  variablesTextTransformer        │
-  │                       │  tailwindTransformer?            │
-  │                       │  remarkGfm                       │
+  │    · htmlBlockComp.   │    (callouts, codeTabs, embeds)  │
+  │    · mdxExprTextOnly? │  headingIdsTransformer           │
+  │    · mdxjsEsm?        │                                  │
+  │    · jsxComment?      │                                  │
+  │                       │  mdxishInlineMdxComponents?      │
+  │   fromMarkdownExts:   │  mdxishJsxToMdast?               │
+  │    · jsxTable         │  variablesTextTransformer        │
+  │    · noTranslate      │  tailwindTransformer?            │
+  │    · magicBlock       │  remarkGfm                       │
+  │    · mdxComponent     │                                  │
+  │    · gemoji           │                                  │
+  │    · legacyVariable   │                                  │
+  │    · emptyTaskList…   │                                  │
+  │    · looseHtmlEntity  │                                  │
+  │    · htmlBlockComp.   │                                  │
+  │    · mdxExpression…?  │                                  │
+  │    · mdxjsEsm…?       │                                  │
   │                       │                                  │
   └───────────────────────┴──────────────────────────────────┘
+      ? = added only when !safeMode (parser) / when the
+          matching opt is set (transformers).
+      Insertion isn't append-only: mdxExprTextOnly / mdxExpression
+      are spliced in right after gemoji, and jsxComment is prepended
+      to the micromark list so it claims `{/* … */}` before magicBlock.
 ```
 
 ## `mdxish()`
 
 ### Preprocessing Step
 
-> **See**: @lib/mdxish.ts#209-212
+> **See**: @lib/mdxish.ts#232
 
 These three lines are a protect-strip-restore pattern that removes JSX comments (`{/* ... */}`) from the markdown before anything else processes it. Here's the step-by-step:
 
 1. **`protectCodeBlocks(mdContent)`**
 
-   Replaces fenced code blocks and inline code with placeholder tokens (`___CODE_BLOCK_0___`, `___INLINE_CODE_0___`), stashing the originals in arrays. This prevents the next step from stripping things that look like JSX comments but are actually inside code.
+   Replaces fenced code blocks and inline code with placeholder tokens (`___CODE_BLOCK_0___`, `___INLINE_CODE_0___`), stashing the originals so they can be restored later. This prevents the next step from stripping things that look like JSX comments but are actually inside code.
 2. **`removeJSXComments(protectedContent)`**
 
-   Strips all JSX comment expressions from the (now code-protected) string via a single regex. With code blocks safely out of the way, this only hits actual JSX comments in prose/component markup.
+   Strips all JSX comment expressions from the (now code-protected) string. With code blocks safely out of the way, this only hits actual JSX comments in prose/component markup.
 3. **`restoreCodeBlocks(withoutComments, protectedCode)`**
 
    Swaps the placeholder tokens back to their original code content, yielding the final `contentWithoutComments` string.
@@ -121,19 +153,21 @@ mdContent (raw input)
     │
     ▼
 ┌──────────────────────────────┐
-│  protectCodeBlocks           │  ◄── lines 209-212
+│  protectCodeBlocks           │  ◄── line 291
 │  removeJSXComments           │      (in mdxish())
 │  restoreCodeBlocks           │
 └──────────────┬───────────────┘
                │ contentWithoutComments
                ▼
-┌──────────────────────────────┐
-│  preprocessContent           │  ◄── inside mdxishAstProcessor()
-│    normalizeTableSeparator   │
-│    terminateHtmlFlowBlocks   │
-│    preprocessJSXExpressions  │
-│    processSnakeCaseComponent │
-└──────────────┬───────────────┘
+┌───────────────────────────────────┐
+│  preprocessContent                │  ◄── inside mdxishAstProcessor()
+│    normalizeClosingTagWhitespace  │
+│    normalizeTableSeparator        │
+│    collapseForeignContentBlankLines
+│    terminateHtmlFlowBlocks        │
+│    closeSelfClosingHtmlTags       │
+│    normalizeCompactHeadings       │
+└──────────────┬────────────────────┘
                │ parserReadyContent
                ▼
          remarkParse → transformers → ...
@@ -141,10 +175,18 @@ mdContent (raw input)
 
 ### Processor Pipeline
 
-> **See**: @lib/mdxish.ts#214-239
+> **See**: `mdxish` — @lib/mdxish.ts#223 (appended `.use` chain #238)
+
+The steps after parsing live in `mdxishRenderProcessor(opts)`, which `mdxish()` runs on the same VFile as the parse. `mdxishHeadingIds(tree)` (@lib/mdxishHeadingIds.ts) reuses them in safe mode on an mdast a caller already has, to report the anchor id each heading renders with. It returns `null` when an `export` or an expression that needs running could change those ids.
+
+`mdxish()` takes the base processor from `mdxishAstProcessor()` and appends the remaining MDAST transformers, the MDAST → HAST bridge (`remarkRehype`), and the HAST (rehype) transformers, then runs it and returns the resulting HAST tree. As with the base processor there is no compiler/stringify stage — a tree is returned directly.
+
+The `!safeMode`-only stages are the expression/export evaluators and the deferred-attribute resolver.
+
+`hardBreaks` (default `true`) adds the `hardBreaks` plugin, which turns every newline (\n) into a `<br>` and splits the lines.
 
 ```
-| ................ process (parse + run only) ................. |
+| ................ process (parse + run to HAST) ............. |
 | .. parse ........... | .............. run ................... |
 
                                                       NO COMPILER
@@ -157,30 +199,85 @@ Input ->- | Parser | ->- Syntax Tree ->- |    N/A   |   returned
                |       | Transformers |
                |       +--------------+
                |              |
-               |              |
   ┌────────────┘          ┌───┴───────────────────────────────────────────┐
   │                       │                                               │
   │  PARSER               │  MDAST TRANSFORMERS          HAST XFORMERS    │
-  │  (micromark)          │  (remark plugins)            (rehype)         │
+  │  (as base, above)     │  (remark plugins)            (rehype)         │
   │                       │                                               │
-  │  remarkParse          │  remarkFrontmatter           preserveBool…    │
-  │    + extensions:      │  normalizeEmphasisAST         rehypeRaw       │
-  │    · magicBlock       │  magicBlockTransformer        restoreBool…    │
-  │    · legacyVariable   │  imageTransformer             rehypeFlatten…  │
-  │    · looseHtmlEntity  │  defaultTransformers          mdxishMermaid…  │
-  │    · mdxExprTextOnly  │    (callouts, codeTabs,       generateSlug…   │
-  │                       │     gemoji, embeds)           rehypeMdxish…   │
-  │  + fromMarkdown:      │  mdxishComponentBlocks                        │
-  │    · magicBlock       │  restoreSnakeCase…        ▲                   │
-  │    · legacyVariable   │  mdxishTables             │                   │
-  │    · emptyTaskList…   │  mdxishHtmlBlocks         │                   │
-  │    · looseHtmlEntity  │  mdxishJsxToMdast?        │  bridge:          │
-  │    · mdxExpression…   │  variablesTextTransformer │  remarkRehype     │
-  │                       │  tailwindTransformer?     │  (MDAST → HAST)   │
-  │                       │  remarkGfm                │                   │
-  │                       │  evaluateExpressions?     │                   │
-  │                       │  remarkBreaks             │                   │
-  │                       │  variablesCodeResolver ───┘                   │
+  │  …base pipeline…      │  …base MDAST transformers…   preserveBool…    │
+  │                       │  evaluateExports?            rehypeRaw        │
+  │                       │  hardBreaks                  restoreBool…     │
+  │                       │  evaluateExpressions?        resolveDeferred…?│
+  │                       │  evaluateStyleBlockExpr?     normalizeMdxJsx… │
+  │                       │  variablesCodeResolver ──┐   rehypeFlatten…   │
+  │                       │                          │   mdxishMermaid…   │
+  │                       │                          │   generateSlug…    │
+  │                       │              bridge:      │   rehypeMdxish…    │
+  │                       │              remarkRehype ┘                    │
+  │                       │              (MDAST → HAST,                    │
+  │                       │               mdxComponentHandlers)           │
   │                       │                                               │
   └───────────────────────┴───────────────────────────────────────────────┘
+      ? = added only when !safeMode
+
+  rehypeRaw passes through `html-block` and `mdx-jsx` nodes so they bypass
+  parse5's string-only HTML round-trip.
 ```
+
+## `mdxishMdastToMd()`
+
+> **See**: @lib/mdxish.ts#196
+
+The reverse direction: serializes an MDAST back into a markdown string (used by the editor's "view as markdown" / round-trip path). It runs a small `remark`/`remark-stringify` pipeline that re-serializes the ReadMe-flavored nodes back to their authored JSX before stringifying:
+
+- `mdxishCalloutToJsx` / `mdxishTablesToJsx` — turn callout and `table` nodes back into `<Callout>` / `<Table>` JSX.
+- `mdxJsxStringify` — registers the `mdast-util-mdx-jsx` toMarkdown extension so JSX nodes serialize.
+- `remarkStringify` is configured with `bullet: '-'`, `emphasis: '_'`, and an `unsafe` rule that escapes literal `{`/`}` in phrasing so they don't re-parse as (often unterminated) MDX expressions on the next round trip.
+
+## Node positions and sub-parsers
+
+> **See**: @processor/transform/mdxish/parse-markdown-fragment.ts
+
+Every node's `position` is an offset into the page (`parserReadyContent`). The editor slices the page by these offsets to keep untouched markdown byte-for-byte and to anchor comments, so a position pointing anywhere else silently corrupts saves.
+
+Some content is parsed a second time on its own: component bodies, inline components, Image captions, table cells and magic blocks. A fresh `unified()` parse gives offsets into that snippet, not the page. Nothing fails when this happens: rendering looks right and only the editor goes wrong. So any code that re-parses must map positions back itself:
+
+- **Markdown cut from the page** (a component body, a caption): parse it with `reparseMarkdownFragment`, which returns children already positioned in the page.
+- **Text your own processor parses** (e.g. a table's cell re-parse): run its output through `mapReparsedPositionsToDocument`.
+- **Text not written verbatim in the page** (e.g. JSON inside a magic block): give the new nodes the parent's whole range.
+
+Never insert sub-parsed nodes with their own positions. `__tests__/regression/positions.test.ts` checks every regression fixture for nodes that fall outside their parent or the document.
+
+## Custom Tokenizers (micromark extensions)
+
+Most of MDXish's flavored syntax is recognized at **parse time** by custom micromark tokenizers rather than reconstructed from strings afterwards. micromark is the low-level scanner unified/remark runs first: it walks the source character by character and emits *tokens*, which remark then assembles into the MDAST. Teaching it a new token makes a construct a first-class node from the start and safe from being fragmented by other constructs. This is why the pipeline favors tokenizers over string preprocessing.
+
+### How an extension is wired
+
+Each extension is a **pair**, registered through the two arrays in `mdxishAstProcessor` (@lib/mdxish.ts#151):
+
+- a micromark tokenizer in `lib/micromark/*` (listed under `micromarkExtensions`) that emits the raw tokens, and
+- a fromMarkdown handler in `lib/mdast-util/*` (listed under `fromMarkdownExtensions`) that turns those tokens into an MDAST node.
+
+A tokenizer that claims a whole tag (`mdxComponent`, `noTranslate`) has to step over code spans, fences and `{…}` expressions in the body, where a `<` or `>` is not a tag. That scanning lives once in `createOpaqueRegions` (@lib/micromark/util/opaque-regions.ts): the host hands it `consume` and a `lineEnding` hook, so each tokenizer keeps its own line-ending rules, and a fix to the scanning lands in both.
+
+A tokenizer registers itself under one or more **constructs**, keyed by the character that triggers it:
+
+- **flow** — block-level constructs that start at the beginning of a line.
+- **text** — inline constructs that appear inside a paragraph or other text.
+
+A construct may set `concrete: true` to keep container markers (`>` for blockquotes, `-`/`*` for list items) from interrupting it mid-body. Registration **order matters**: micromark tries the last-registered extension first, so the pipeline splices or prepends constructs to win the race for a shared trigger character — e.g. `jsxComment` is prepended so it claims `{/* … */}` before other `{`-openers, and the MDX expression extension is registered *text-only* (`mdxExpressionLenient()`, no flow construct) so a line-leading `{` can't hijack a block that owns it.
+
+The pipeline also **disables** one core CommonMark construct: `disableIndentedCode` (@processor/utils.ts) turns off indented code blocks, matching MDX (`micromark-extension-mdx-md`). Content indented 4+ columns parses as ordinary markdown/HTML at any depth, and code requires an explicit fence (CX-3739). Both the main parser and the component-body re-parser (`reparseMarkdownFragment`) register it.
+
+### Example: magic blocks
+
+Magic blocks (@lib/micromark/magic-block/syntax.ts) parse ReadMe's legacy JSON block syntax into first-class nodes that survive any context:
+
+```markdown
+[block:image]
+{"images":[{"image":["https://example.com/img.png","caption",{"width":"300"}]}]}
+[/block]
+```
+
+The recognized block types live in `KNOWN_BLOCK_TYPES` (@lib/micromark/magic-block/syntax.ts#34); unknown types are left untokenized. The tokenizer registers the `[` opener under both constructs — a **flow** construct (`tokenizeMagicBlockFlow`) for block-level, multiline blocks at the document root, marked `concrete: true` so blockquote/list markers can't interrupt it mid-body; and a **text** construct (`tokenizeMagicBlockText`) for blocks nested in list items and paragraphs. `lib/mdast-util/magic-block` then converts the tokens to MDAST, and `magicBlockTransformer` expands them into the final nodes (images, code blocks, callouts, embeds, etc.).

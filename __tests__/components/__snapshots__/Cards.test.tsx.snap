@@ -1,5 +1,85 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Cards > given Cards with Card children > mdx: renders a CardsGrid wrapper containing Card children 1`] = `
+<div>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          First
+        </div>
+        First content
+      </div>
+    </div>
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          Second
+        </div>
+        Second content
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Cards > given Cards with Card children > mdxish: renders a CardsGrid wrapper containing Card children 1`] = `
+<div>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          First
+        </div>
+        <p>
+          First content
+        </p>
+      </div>
+    </div>
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          Second
+        </div>
+        <p>
+          Second content
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Cards > given a Card with href > mdx: renders a Card as an anchor element 1`] = `
 <div>
   <div
@@ -169,86 +249,6 @@ exports[`Cards > given a Card without href > mdxish: renders a Card as a div ele
         </div>
         <p>
           Static
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`Cards > given a Cards with Card children > mdx: renders a CardsGrid wrapper containing Card children 1`] = `
-<div>
-  <div
-    class="CardsGrid"
-    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
-  >
-    <div
-      class="Card Card_card"
-    >
-      <div
-        class="Card-content"
-      >
-        <div
-          class="Card-title"
-        >
-          First
-        </div>
-        First content
-      </div>
-    </div>
-    <div
-      class="Card Card_card"
-    >
-      <div
-        class="Card-content"
-      >
-        <div
-          class="Card-title"
-        >
-          Second
-        </div>
-        Second content
-      </div>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`Cards > given a Cards with Card children > mdxish: renders a CardsGrid wrapper containing Card children 1`] = `
-<div>
-  <div
-    class="CardsGrid"
-    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
-  >
-    <div
-      class="Card Card_card"
-    >
-      <div
-        class="Card-content"
-      >
-        <div
-          class="Card-title"
-        >
-          First
-        </div>
-        <p>
-          First content
-        </p>
-      </div>
-    </div>
-    <div
-      class="Card Card_card"
-    >
-      <div
-        class="Card-content"
-      >
-        <div
-          class="Card-title"
-        >
-          Second
-        </div>
-        <p>
-          Second content
         </p>
       </div>
     </div>

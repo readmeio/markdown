@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 
+import useRestartAnimatedImages from '../../hooks/useRestartAnimatedImages';
+import useRevealHashTarget from '../../hooks/useRevealHashTarget';
+import Icon from '../Icon';
+import { noTranslateTagsToSpans } from '../NoTranslate';
+
 import './style.scss';
 
 export const Tab = ({ children }: React.PropsWithChildren) => {
@@ -12,6 +17,8 @@ interface TabsProps {
 
 const Tabs = ({ children }: TabsProps) => {
   const [activeTab, setActiveTab] = useState(0);
+  const panelRefs = useRestartAnimatedImages(activeTab);
+  useRevealHashTarget(panelRefs, setActiveTab);
   // React passes `children` as a single element when there's only one child, so normalize.
   const tabs = React.Children.toArray(children) as React.ReactElement[];
 
@@ -19,24 +26,38 @@ const Tabs = ({ children }: TabsProps) => {
     <div className="TabGroup">
       <header>
         <nav className="TabGroup-nav">
-          {tabs.map((tab, index: number) => (
-            <button
-              key={tab.props.title}
-              className={`TabGroup-tab${activeTab === index ? '_active' : ''}`}
-              onClick={() => setActiveTab(index)}
-            >
-              {tab.props.icon && (
-                <i
-                  className={`TabGroup-icon fa-duotone fa-solid ${tab.props.icon}`}
-                  style={{ color: `${tab.props.iconColor}` }}
-                ></i>
-              )}
-              {tab.props.title}
-            </button>
-          ))}
+          {tabs.map((tab, index: number) => {
+            const normalizedTitle = noTranslateTagsToSpans(tab.props.title);
+
+            return (
+              <button
+                key={tab.key}
+                className={`TabGroup-tab${activeTab === index ? '_active' : ''}`}
+                onClick={() => setActiveTab(index)}
+              >
+                {tab.props.icon && (
+                  <Icon className="TabGroup-icon" icon={tab.props.icon} iconColor={tab.props.iconColor} />
+                )}
+                {normalizedTitle}
+              </button>
+            );
+          })}
         </nav>
       </header>
-      <section>{tabs[activeTab]}</section>
+      <section>
+        {/* Keep every panel mounted so runtime Tailwind can scan inactive tabs' classes on first paint */}
+        {tabs.map((tab, index: number) => (
+          <div
+            key={tab.key}
+            ref={el => {
+              panelRefs.current[index] = el;
+            }}
+            hidden={index !== activeTab}
+          >
+            {tab}
+          </div>
+        ))}
+      </section>
     </div>
   );
 };

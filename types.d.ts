@@ -27,8 +27,17 @@ import type { Position } from 'unist';
  * attribute expressions evaluate to real JS values (objects, arrays, numbers)
  * which don't fit hast's HTML-attribute-oriented `PropertyValue` union.
  */
+export interface MdxJsxData {
+  /**
+   * Attribute expressions deferred by `mdxJsxElementHandler` (keyed by prop name) for
+   * `resolveDeferredAttributeExpressionProps` to evaluate past rehypeRaw's clone.
+   */
+  deferredExpressions?: Record<string, string>;
+}
+
 export interface MdxJsx {
   children: ElementContent[];
+  data?: MdxJsxData;
   position?: Position;
   properties: Properties;
   tagName: string;
@@ -74,12 +83,12 @@ export interface EmbedBlock extends Node {
     hName: 'Embed' | 'embed';
     hProperties: Record<string, unknown> & {
       favicon?: string;
-      height?:string;
+      height?: string;
       href?: string;
       html?: string;
       iframe?: boolean;
       image?: string;
-      provider?:string;
+      provider?: string;
       providerName?: string;
       providerUrl?: string;
       title: string;
@@ -96,7 +105,7 @@ export interface EmbedBlock extends Node {
 
 export interface Figure extends Node {
   children: [ImageBlock & { url: string }, FigCaption];
-  data: {
+  data: Data & {
     hName: 'figure';
   };
   type: NodeTypes.figure;
@@ -104,7 +113,7 @@ export interface Figure extends Node {
 
 export interface FigCaption extends Node {
   children: BlockContent[];
-  data: {
+  data: Data & {
     hName: 'figcaption';
   };
   type: NodeTypes.figcaption;
@@ -196,7 +205,7 @@ export interface Variable extends Node {
 }
 
 export interface Glossary extends Node {
-  children: [{ type: 'text'; value: string }];
+  children: [Text];
   data: Data & {
     hName: 'Glossary';
     hProperties: { term: string };
@@ -220,7 +229,26 @@ export interface Anchor extends Node {
   type: NodeTypes.anchor;
 }
 
+export interface NoTranslate extends Node {
+  children: PhrasingContent[];
+  data: Data & { hName: 'NoTranslate' };
+  position?: Position;
+  type: NodeTypes.noTranslate;
+}
+
 declare module 'mdast' {
+  interface Data {
+    /** Set by a dedicated tokenizer (`lib/micromark/no-translate`) on an html node that holds a whole tag. */
+    tokenized?: boolean;
+  }
+
+  interface TableData {
+    /** Authored as lowercase `<table>`; the serializer keeps that spelling when there is no alignment to encode. */
+    lowercaseTable?: boolean;
+    /** Per-column CSS widths (`"30%"`, `"200px"`), indexed like `align`. */
+    widths?: (string | null)[];
+  }
+
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
@@ -239,14 +267,14 @@ declare module 'mdast' {
   interface PhrasingContentMap {
     [NodeTypes.anchor]: Anchor;
     [NodeTypes.emoji]: Gemoji;
-    [NodeTypes.i]: FaEmoji;
     [NodeTypes.glossary]: Glossary;
-    [NodeTypes.variable]: Variable;
+    [NodeTypes.i]: FaEmoji;
+    [NodeTypes.noTranslate]: NoTranslate;
     [NodeTypes.plain]: Plain;
+    [NodeTypes.variable]: Variable;
   }
 
   interface RootContentMap {
-    Link: Embed | Link;
     [NodeTypes.anchor]: Anchor;
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
@@ -257,12 +285,14 @@ declare module 'mdast' {
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.imageBlock]: ImageBlock;
+    [NodeTypes.noTranslate]: NoTranslate;
     [NodeTypes.plain]: Plain;
     [NodeTypes.recipe]: Recipe;
     [NodeTypes.reusableContent]: ReusableContent;
     [NodeTypes.tableau]: Tableau;
     [NodeTypes.tutorialTile]: Recipe;
     [NodeTypes.variable]: Variable;
+    Link: Embed | Link;
   }
 }
 
@@ -278,7 +308,7 @@ interface TocList extends Element {
 
 interface Variables {
   defaults: { default: string; name: string }[];
-  user: Record<string, string>;
+  user: Record<string, unknown>;
 }
 
 interface TocListItem extends Element {

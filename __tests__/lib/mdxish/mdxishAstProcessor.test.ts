@@ -1,7 +1,8 @@
-import type { Root, Table } from 'mdast';
+import type { Parent, Root, Table } from 'mdast';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
 import { mdxishAstProcessor, mdxishMdastToMd } from '../../../lib/mdxish';
-import { roundTripMdxish } from '../../helpers';
+import { parseMdxishWithSlices, roundTripMdxish, sourceSlicesUnder } from '../../helpers';
 
 describe('mdxishAstProcessor', () => {
   describe('deferred processing (handled by mdxish rendering pipeline)', () => {
@@ -17,7 +18,7 @@ describe('mdxishAstProcessor', () => {
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
       // IMPORTANT: Must call runSync() to execute transformers (e.g., evaluateExpression).
       // This is why the test couldn't catch the regression in RM-15705.
-      const mdast = processor.runSync(processor.parse(parserReadyContent));
+      const mdast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent);
       // The mdast should still have mdxTextExpression nodes - evaluation happens in mdxish()
       const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
       expect(hasMdxExpression).toBe(true);
@@ -26,7 +27,7 @@ describe('mdxishAstProcessor', () => {
     it('should preserve attribute expressions as mdxJsxAttributeValueExpression nodes', () => {
       const md = '<Component attr={1+1} />';
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
-      const mdast = processor.runSync(processor.parse(parserReadyContent));
+      const mdast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent);
 
       expect(mdast).toMatchObject({
         type: 'root',
@@ -50,12 +51,342 @@ describe('mdxishAstProcessor', () => {
     });
   });
 
+  describe('component node positions', () => {
+    it('keeps a lowercase tag inline with trailing content on the same line', () => {
+      const md =
+        '<button className="pill" style={{ backgroundColor: "#ffc107" }}>PrPr</button> ***service-explorer***: Message brokers are now surfaced as entities.';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+      const mdast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent);
+
+      expect(mdast).toMatchObject({
+        type: 'root',
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              { type: 'mdxJsxTextElement', name: 'button' },
+              { type: 'text', value: ' ' },
+              { type: 'emphasis' },
+              { type: 'text', value: ': Message brokers are now surfaced as entities.' },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('ends a component node position at its closing tag when trailing content follows on the same line', () => {
+      const md =
+        '<Component attr={1+1}>PrPr</Component> ***service-explorer***: Message brokers are now surfaced as entities.';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+      const mdast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent);
+
+      // Offset 38 is the end of `</Component>`; the trailing text is a separate sibling.
+      expect(mdast).toMatchObject({
+        type: 'root',
+        children: [
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Component',
+            position: {
+              start: { line: 1, column: 1, offset: 0 },
+              end: { line: 1, column: 39, offset: 38 },
+            },
+          },
+          { type: 'paragraph' },
+        ],
+      });
+    });
+  });
+
+  // CX-3772: WYSIWYG mangled tab-block content when nodes re-parsed from a component body
+  // carried offsets into that body. Their positions must slice the document.
+  describe('re-parsed component body positions (CX-3772)', () => {
+    // `Variable` declares no `type`, so it survives the discriminant check and the cast
+    // is what actually reaches `name`.
+    const findJsxChild = (parent: Parent, name: string): MdxJsxFlowElement =>
+      parent.children.find(
+        (child): child is MdxJsxFlowElement =>
+          child.type === 'mdxJsxFlowElement' && (child as MdxJsxFlowElement).name === name,
+      )!;
+
+    it('resolves every node in a nested component body to its own source', () => {
+      const md = [
+        '<Tabs>',
+        '  <Tab title="Accounts">',
+        '    ### Common Account Fields',
+        '',
+        '    <ExampleComponent />',
+        '  </Tab>',
+        '</Tabs>',
+      ].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      const tabs = findJsxChild(tree, 'Tabs');
+      expect(sliceOf(tabs)).toBe(md);
+
+      const tab = findJsxChild(tabs, 'Tab');
+      expect(sliceOf(tab)).toBe(
+        ['<Tab title="Accounts">', '    ### Common Account Fields', '', '    <ExampleComponent />', '  </Tab>'].join(
+          '\n',
+        ),
+      );
+
+      const heading = tab.children.find(child => child.type === 'heading')!;
+      expect(sliceOf(heading)).toBe('### Common Account Fields');
+      expect(sliceOf(findJsxChild(tab, 'ExampleComponent'))).toBe('  <ExampleComponent />');
+    });
+
+    it('resolves expression nodes inside a component body', () => {
+      const md = ['<Wrapper>', '  {1 + 1}', '</Wrapper>'].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      const expression = findJsxChild(tree, 'Wrapper').children.find(child => child.type === 'mdxFlowExpression')!;
+      expect(sliceOf(expression)).toBe('{1 + 1}');
+    });
+
+    it('resolves siblings spliced after a self-closing component against their own source', () => {
+      const md = ['<Wrapper>', '  <ExampleComponent />', '  Some *sibling* text', '</Wrapper>'].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      const wrapper = findJsxChild(tree, 'Wrapper');
+      const paragraph = wrapper.children.find(child => child.type === 'paragraph')!;
+      expect(sliceOf(paragraph)).toBe('Some *sibling* text');
+
+      const emphasis = (paragraph as Parent).children.find(child => child.type === 'emphasis')!;
+      expect(sliceOf(emphasis)).toBe('*sibling*');
+    });
+
+    it('resolves a multi-line self-closing component under a list item inside a body (CX-3940)', () => {
+      const md = [
+        '<Tabs>',
+        '  <Tab title="One">',
+        '    - four',
+        '      <ExampleComponent',
+        '      header="x"',
+        '      /> trailing',
+        '  </Tab>',
+        '</Tabs>',
+      ].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      const tab = findJsxChild(findJsxChild(tree, 'Tabs'), 'Tab');
+      const listItem = (tab.children.find(child => child.type === 'list') as Parent).children[0] as Parent;
+      expect(listItem.children).toMatchObject([
+        { type: 'paragraph', children: [{ type: 'text', value: 'four' }] },
+        { type: 'mdxJsxFlowElement', name: 'ExampleComponent' },
+        { type: 'paragraph', children: [{ type: 'text', value: 'trailing' }] },
+      ]);
+      expect(sliceOf(findJsxChild(listItem, 'ExampleComponent'))).toBe('<ExampleComponent\n      header="x"\n      />');
+    });
+
+    it('resolves deeply indented bodies against the dedented source', () => {
+      const md = [
+        '<Tabs>',
+        '    <Tab title="One">',
+        '',
+        '        <ExampleComponent />',
+        '',
+        '    </Tab>',
+        '</Tabs>',
+      ].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      const tab = findJsxChild(findJsxChild(tree, 'Tabs'), 'Tab');
+      expect(sliceOf(findJsxChild(tab, 'ExampleComponent'))).toBe('<ExampleComponent />');
+    });
+
+    it('resolves ReadMe components nested inside other components at every depth', () => {
+      const md = [
+        '<Tabs>',
+        '  <Tab title="One">',
+        '    <Cards columns={2}>',
+        '      <Card title="First" icon="fa-rocket">',
+        '        Card **body** text',
+        '      </Card>',
+        '    </Cards>',
+        '  </Tab>',
+        '</Tabs>',
+      ].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      const tab = findJsxChild(findJsxChild(tree, 'Tabs'), 'Tab');
+      const cards = findJsxChild(tab, 'Cards');
+      expect(sliceOf(cards)).toBe(
+        [
+          '<Cards columns={2}>',
+          '      <Card title="First" icon="fa-rocket">',
+          '        Card **body** text',
+          '      </Card>',
+          '    </Cards>',
+        ].join('\n'),
+      );
+
+      const card = findJsxChild(cards, 'Card');
+      expect(sliceOf(card)).toBe(
+        ['<Card title="First" icon="fa-rocket">', '        Card **body** text', '      </Card>'].join('\n'),
+      );
+
+      const paragraph = card.children.find(child => child.type === 'paragraph')!;
+      expect(sliceOf(paragraph)).toBe('Card **body** text');
+
+      const strong = (paragraph as Parent).children.find(child => child.type === 'strong')!;
+      expect(sliceOf(strong)).toBe('**body**');
+    });
+
+    it('resolves a multi-line HTML sequence and the markdown between its tags', () => {
+      const md = ['<Wrapper>', '  <div>', '    A **bold** move', '  </div>', '</Wrapper>'].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      // A multi-line lowercase tag stays a pair of html nodes with markdown between; the
+      // body re-parse adds a blank line after `<div>` that the document doesn't have.
+      const wrapper = findJsxChild(tree, 'Wrapper');
+      const [openingTag, closingTag] = wrapper.children.filter(child => child.type === 'html');
+      expect(sliceOf(openingTag)).toBe('<div>');
+      expect(sliceOf(closingTag)).toBe('</div>');
+
+      const paragraph = wrapper.children.find(child => child.type === 'paragraph')!;
+      expect(sliceOf(paragraph)).toBe('A **bold** move');
+      expect(sliceOf((paragraph as Parent).children.find(child => child.type === 'strong')!)).toBe('**bold**');
+    });
+
+    it('resolves children of a single-line lowercase HTML tag promoted for markdown parsing', () => {
+      const md = ['<Wrapper>', '  <div>A **bold** move</div>', '</Wrapper>'].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      // The body keeps its indent (RM-17790), and remark reports an indented html node's
+      // position from the line start — so the span opens on the indent, as it does for
+      // indented html outside a component body.
+      const div = findJsxChild(findJsxChild(tree, 'Wrapper'), 'div');
+      expect(sliceOf(div)).toBe('  <div>A **bold** move</div>');
+
+      // A lowercase tag unwraps its sole paragraph, so phrasing sits directly under `div`.
+      const strong = (div as Parent).children.find(child => child.type === 'strong')!;
+      expect(sliceOf(strong)).toBe('**bold**');
+    });
+
+    it('resolves lowercase HTML promoted through an MDX expression attribute', () => {
+      const md = ['<Wrapper>', '  <button style={{ color: "red" }}>Click me</button>', '</Wrapper>'].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      const button = findJsxChild(findJsxChild(tree, 'Wrapper'), 'button');
+      expect(sliceOf(button)).toBe('  <button style={{ color: "red" }}>Click me</button>');
+    });
+
+    it('resolves a component nested inside a list item of a component body', () => {
+      const md = [
+        '<Tabs>',
+        '    <Tab title="One">',
+        '        - item one',
+        '        - <ExampleComponent />',
+        '    </Tab>',
+        '</Tabs>',
+      ].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      const tab = findJsxChild(findJsxChild(tree, 'Tabs'), 'Tab');
+      const list = tab.children.find(child => child.type === 'list')!;
+      const nested = findJsxChild((list as Parent).children[1] as Parent, 'ExampleComponent');
+      expect(sliceOf(nested)).toBe('<ExampleComponent />');
+    });
+
+    it('resolves sibling components separated by extra blank lines', () => {
+      const md = [
+        '<Wrapper>',
+        '',
+        '  <First />',
+        '',
+        '',
+        '  <Second>',
+        '    content',
+        '  </Second>',
+        '',
+        '</Wrapper>',
+      ].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      const wrapper = findJsxChild(tree, 'Wrapper');
+      const first = findJsxChild(wrapper, 'First');
+      const second = findJsxChild(wrapper, 'Second');
+
+      expect(sliceOf(first)).toBe('<First />');
+      expect(sliceOf(second)).toBe(['<Second>', '    content', '  </Second>'].join('\n'));
+    });
+
+    // The inline path re-parses bodies too, so it must map them onto the document the same way.
+    it('resolves the re-parsed body of an inline component', () => {
+      const md = 'Lead in <span style={{ color: "red" }}>an **emphatic** label</span> and out.';
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      const paragraph = tree.children[0] as Parent;
+      const span = paragraph.children.find(child => child.type === 'mdxJsxTextElement')!;
+      expect(sliceOf(span)).toBe('<span style={{ color: "red" }}>an **emphatic** label</span>');
+
+      const strong = (span as Parent).children.find(child => child.type === 'strong')!;
+      expect(sliceOf(strong)).toBe('**emphatic**');
+    });
+
+    it('resolves the re-parsed body of an inline component inside a blockquote callout', () => {
+      const md = '> 📘 Title\n>\n> Lead <span style={{ color: "red" }}>an **emphatic** label</span> out';
+      expect(sourceSlicesUnder(md, ({ type }) => type === 'mdxJsxTextElement')).toStrictEqual([
+        ['span', '<span style={{ color: "red" }}>an **emphatic** label</span>'],
+        ['text', 'an '],
+        ['strong', '**emphatic**'],
+        ['text', 'emphatic'],
+        ['text', ' label'],
+      ]);
+    });
+
+    it.each([
+      ['inside a blockquote', '> <Wrapper>\n>   Some **bold** text\n> </Wrapper>', [['paragraph', 'Some **bold** text'], ['text', 'Some '], ['strong', '**bold**'], ['text', 'bold'], ['text', ' text']]],
+      ['with CRLF line endings', '<Tabs>\r\n  <Tab title="One">\r\n    **x** and __y__\r\n  </Tab>\r\n</Tabs>', [['paragraph', '**x** and __y__'], ['strong', '**x**'], ['text', 'x'], ['text', ' and '], ['strong', '__y__'], ['text', 'y']]],
+      ['indented with tabs', '<Wrapper>\n\t\t*one* and _two_\n</Wrapper>', [['paragraph', '*one* and _two_'], ['emphasis', '*one*'], ['text', 'one'], ['text', ' and '], ['emphasis', '_two_'], ['text', 'two']]],
+    ])('resolves a component body %s', (_, md, slices) => {
+      expect(sourceSlicesUnder(md, ({ type }) => type === 'paragraph')).toStrictEqual(slices);
+    }); // prettier-ignore
+
+    it('resolves trailing content after a closing tag on the same line', () => {
+      const md = ['<Wrapper>', '  <Inner>**a**</Inner> trailing __b__', '</Wrapper>'].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      const wrapper = findJsxChild(tree, 'Wrapper');
+      expect(wrapper.children.map(sliceOf)).toStrictEqual(['  <Inner>**a**</Inner>', 'trailing __b__']);
+      expect(sliceOf((findJsxChild(wrapper, 'Inner').children[0] as Parent).children[0])).toBe('**a**');
+    });
+
+    // CX-4004: `mdxishJsxToMdast` replaces the re-parsed JSX node with a new mdast node.
+    it('resolves a component converted to an mdast node inside a component body', () => {
+      const md = [
+        'Hello world',
+        '',
+        '<Tabs>',
+        '  <Tab title="One">',
+        '    <Callout icon="📘" theme="info">',
+        '      Some **bold** {bucket}',
+        '    </Callout>',
+        '  </Tab>',
+        '</Tabs>',
+      ].join('\n');
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+
+      const tab = findJsxChild(findJsxChild(tree, 'Tabs'), 'Tab');
+      const callout = tab.children.find(child => child.type === 'rdme-callout')!;
+      expect(sliceOf(callout)).toBe(
+        ['<Callout icon="📘" theme="info">', '      Some **bold** {bucket}', '    </Callout>'].join('\n'),
+      );
+
+      // `children[0]` is the synthesized (positionless) title placeholder.
+      const [, paragraph] = (callout as Parent).children;
+      expect(sliceOf(paragraph)).toBe('Some **bold** {bucket}');
+      expect(sliceOf((paragraph as Parent).children.find(child => child.type === 'strong')!)).toBe('**bold**');
+    });
+  });
+
   it('should return a unified processor and parser-ready content for simple text', () => {
     const md = 'Rafe is **cool**!';
     const { processor, parserReadyContent } = mdxishAstProcessor(md);
     expect(parserReadyContent).toBe(md);
     expect(processor).toBeDefined();
-    expect(typeof processor.parse).toBe('function');
+    expect(processor.parse).toBeTypeOf('function');
 
     const ast = processor.parse(parserReadyContent);
     // @ts-expect-error - custom matcher
@@ -95,7 +426,7 @@ describe('mdxishAstProcessor', () => {
     const { processor, parserReadyContent } = mdxishAstProcessor(md);
     // Need to run the processor to apply transformers
     const parsedAst = processor.parse(parserReadyContent);
-    const ast = processor.runSync(parsedAst) as Root;
+    const ast = processor.runSync(parsedAst, parserReadyContent) as Root;
 
     expect(ast.type).toBe('root');
     expect(ast.children).toHaveLength(1);
@@ -206,7 +537,7 @@ describe('mdxishAstProcessor', () => {
 </Table>`;
 
       const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-      const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+      const ast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
 
       const tableNode = ast.children[0] as Table;
       expect(tableNode.type).toBe('table');
@@ -228,11 +559,11 @@ describe('mdxishAstProcessor', () => {
 </Table>`;
 
       const { processor: withEditor, parserReadyContent: src1 } = mdxishAstProcessor(md, { newEditorTypes: true });
-      const withEditorAst = withEditor.runSync(withEditor.parse(src1)) as Root;
+      const withEditorAst = withEditor.runSync(withEditor.parse(src1), src1) as Root;
       expect(withEditorAst.children[0].type).toBe('table');
 
       const { processor: withoutEditor, parserReadyContent: src2 } = mdxishAstProcessor(md);
-      const withoutEditorAst = withoutEditor.runSync(withoutEditor.parse(src2)) as Root;
+      const withoutEditorAst = withoutEditor.runSync(withoutEditor.parse(src2), src2) as Root;
       expect(withoutEditorAst.children[0].type).toBe('table');
     });
 
@@ -269,11 +600,231 @@ describe('mdxishAstProcessor', () => {
       expect(markdown).toContain('align={[null,"center",null]}');
 
       const { processor, parserReadyContent } = mdxishAstProcessor(markdown, { newEditorTypes: true });
-      const parsed = processor.runSync(processor.parse(parserReadyContent)) as Root;
+      const parsed = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
 
       const tableNode = parsed.children[0] as Table;
       expect(tableNode.type).toBe('table');
       expect(tableNode.align).toStrictEqual([null, 'center', null]);
+    });
+
+    describe('column widths', () => {
+      const parse = (md: string): Table => {
+        const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+        const ast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
+        return ast.children[0] as Table;
+      };
+
+      const jsxTable = (headerCells: string): string => `<Table>
+  <thead>
+    <tr>
+      ${headerCells}
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>a</td>
+      <td>b</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      it('reads widths from the header cell style object', () => {
+        const table = parse(jsxTable('<th style={{ width: "30%" }}>Name</th>\n<th>Description</th>'));
+
+        expect(table.data?.widths).toStrictEqual(['30%', null]);
+      });
+
+      it.each([
+        ['a string style attribute', '<th style="text-align: center; width: 30%">Name</th>'],
+        ['a width attribute', '<th width="30%">Name</th>'],
+        [
+          'a width attribute beside an alignment-only style object',
+          '<th style={{ textAlign: "center" }} width="30%">Name</th>',
+        ],
+        [
+          'a width attribute beside an alignment-only style string',
+          '<th style="text-align: center" width="30%">Name</th>',
+        ],
+        ['a style object left as a string, as safe mode does', '<th style=\'{ width: "30%" }\'>Name</th>'],
+        ['a width attribute beside an empty style width', '<th style={{ width: "" }} width="30%">Name</th>'],
+        [
+          'a width attribute beside a blank style width declaration',
+          '<th style="width: ; text-align: center" width="30%">Name</th>',
+        ],
+      ])('reads widths from %s', (_label, header) => {
+        const table = parse(jsxTable(`${header}\n<th>Description</th>`));
+
+        expect(table.data?.widths).toStrictEqual(['30%', null]);
+      });
+
+      it('reads a width attribute the way HTML does, dropping anything after the dimension', () => {
+        const table = parse(jsxTable('<th width="30%; color: red">Name</th>\n<th width="200 px">Description</th>'));
+
+        expect(table.data?.widths).toStrictEqual(['30%', '200px']);
+      });
+
+      it.each([
+        ['a numeric style value', '<th style={{ width: 200 }}>Name</th>'],
+        ['a unitless width attribute', '<th width="200">Name</th>'],
+      ])('treats %s as pixels', (_label, header) => {
+        const table = parse(jsxTable(`${header}\n<th>Description</th>`));
+
+        expect(table.data?.widths).toStrictEqual(['200px', null]);
+      });
+
+      it.each([
+        [
+          'a CSS function with commas in a style string',
+          '<th style="width: clamp(100px, 50%, 60vw); text-align: center">Name</th>',
+          'clamp(100px, 50%, 60vw)',
+        ],
+        [
+          'a CSS function with commas in a stringified style object',
+          '<th style=\'{ textAlign: "center", width: "var(--w, 240px)" }\'>Name</th>',
+          'var(--w, 240px)',
+        ],
+        ['a width declared after another property', '<th style="text-align: center; width: 30%">Name</th>', '30%'],
+      ])('keeps the whole value for %s', (_label, header, expected) => {
+        const table = parse(jsxTable(`${header}\n<th>Description</th>`));
+
+        expect(table.data?.widths).toStrictEqual([expected, null]);
+      });
+
+      it('keeps widths when safe mode leaves attribute expressions unevaluated', () => {
+        const md = jsxTable('<th style={{ width: "30%" }}>Name</th>\n<th>Description</th>');
+        const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true, safeMode: true });
+        const ast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
+
+        expect((ast.children[0] as Table).data?.widths).toStrictEqual(['30%', null]);
+      });
+
+      const lowercase = (headers: string) => `<table>
+  <thead>
+    <tr>
+${headers}
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>a</td>
+      <td>b</td>
+    </tr>
+  </tbody>
+</table>`;
+
+      it.each([
+        ['an HTML style width', '<th style="width: 30%">Name</th>'],
+        ['a width attribute', '<th width="30%">Name</th>'],
+      ])('reads %s off a lowercase table and keeps it editable', (_label, header) => {
+        const table = parse(lowercase(`      ${header}\n      <th>Description</th>`));
+
+        expect(table.type).toBe('table');
+        expect(table.data).toStrictEqual({ lowercaseTable: true, widths: ['30%', null] });
+      });
+
+      it.each([
+        ['a width on a body cell', '<td width="30%">a</td>'],
+        ['an attribute on the body section', '<tbody class="x"><tr><td>a</td>'],
+      ])('keeps a lowercase table as JSX when %s is present', (_label, body) => {
+        const md = lowercase('      <th style="width: 30%">Name</th>\n      <th>Description</th>').replace(
+          '<tbody>\n    <tr>\n      <td>a</td>',
+          `<tbody>\n    <tr>\n      ${body}`.replace(
+            '<tbody>\n    <tr>\n      <tbody class="x"><tr>',
+            '<tbody class="x">\n    <tr>',
+          ),
+        );
+
+        expect(parse(md).type).toBe('mdxJsxFlowElement');
+      });
+
+      it('keeps a lowercase table as JSX when the table element itself has attributes', () => {
+        const md = lowercase('      <th style="width: 30%">Name</th>\n      <th>Description</th>').replace(
+          '<table>',
+          '<table class="x">',
+        );
+
+        expect(parse(md).type).toBe('mdxJsxFlowElement');
+      });
+
+      it('keeps a lowercase table as JSX when a width attribute has no readable value', () => {
+        const table = parse(lowercase('      <th width="auto">Name</th>\n      <th>Description</th>'));
+
+        expect(table.type).toBe('mdxJsxFlowElement');
+      });
+
+      it('keeps a lowercase table as JSX when a header cell carries more than a width', () => {
+        const table = parse(
+          lowercase('      <th style="width: 30%; color: red">Name</th>\n      <th>Description</th>'),
+        );
+
+        expect(table.type).toBe('mdxJsxFlowElement');
+      });
+
+      it('leaves lowercase tables with widths as JSX on the render path, so the attribute still renders', () => {
+        const md = lowercase('      <th style="width: 30%">Name</th>\n      <th>Description</th>');
+        const { processor, parserReadyContent } = mdxishAstProcessor(md);
+        const ast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
+
+        expect(ast.children[0].type).toBe('mdxJsxFlowElement');
+      });
+
+      it('writes a width set in the editor back onto a lowercase table in HTML form', () => {
+        const table = parse(lowercase('      <th>Name</th>\n      <th>Description</th>'));
+        expect(table.data?.lowercaseTable).toBe(true);
+
+        table.data = { ...table.data, widths: ['30%', null] };
+        const markdown = mdxishMdastToMd({ type: 'root', children: [table] });
+        expect(markdown).toMatch(/^<table>/);
+        expect(markdown).toContain('<th style="width: 30%">');
+        expect(markdown).not.toContain('<Table');
+
+        const reopened = parse(markdown);
+        expect(reopened.type).toBe('table');
+        expect(reopened.data).toStrictEqual({ lowercaseTable: true, widths: ['30%', null] });
+      });
+
+      it('leaves data unset when no header cell has a width', () => {
+        const table = parse(jsxTable('<th style={{ textAlign: "center" }}>Name</th>\n<th>Description</th>'));
+
+        expect(table.data).toBeUndefined();
+      });
+
+      it('preserves widths through a serialize → parse roundtrip', () => {
+        const mdast: Root = {
+          type: 'root',
+          children: [
+            {
+              type: 'table',
+              align: [null, 'right'],
+              data: { widths: ['25%', '75%'] },
+              children: [
+                {
+                  type: 'tableRow',
+                  children: [
+                    { type: 'tableCell', children: [{ type: 'text', value: 'Name' }] },
+                    { type: 'tableCell', children: [{ type: 'text', value: 'Desc' }] },
+                  ],
+                },
+                {
+                  type: 'tableRow',
+                  children: [
+                    { type: 'tableCell', children: [{ type: 'text', value: 'foo' }] },
+                    { type: 'tableCell', children: [{ type: 'text', value: 'bar' }] },
+                  ],
+                },
+              ],
+            },
+          ],
+        };
+
+        const markdown = mdxishMdastToMd(mdast);
+        expect(markdown).toContain('<th style={{ width: "25%" }}>');
+        expect(markdown).toContain('<th style={{ textAlign: "right", width: "75%" }}>');
+
+        const table = parse(markdown);
+        expect(table.align).toStrictEqual([null, 'right']);
+        expect(table.data?.widths).toStrictEqual(['25%', '75%']);
+      });
     });
 
     it('should keep header-less JSX Tables as JSX elements', () => {
@@ -286,7 +837,7 @@ describe('mdxishAstProcessor', () => {
 </Table>`;
 
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
-      const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+      const ast = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as Root;
 
       expect(ast.children[0].type).not.toBe('table');
     });
@@ -302,11 +853,17 @@ Content here
       expect(out).not.toMatch(/^>\s*📘\s+Content here/);
 
       const second = mdxishAstProcessor(out, { newEditorTypes: true });
-      const tree2 = second.processor.runSync(second.processor.parse(second.parserReadyContent)) as Root;
-      const callout = tree2.children[0] as { children: { type: string }[]; data?: { hProperties?: { empty?: boolean } } };
+      const tree2 = second.processor.runSync(
+        second.processor.parse(second.parserReadyContent),
+        second.parserReadyContent,
+      ) as Root;
+      const callout = tree2.children[0] as {
+        children: { type: string }[];
+        data?: { hProperties?: { empty?: boolean } };
+      };
 
       expect(callout.data?.hProperties?.empty).toBe(true);
-      const firstChildText = ((callout.children[0] as { children?: { value?: string }[] }).children?.[0]?.value) ?? '';
+      const firstChildText = (callout.children[0] as { children?: { value?: string }[] }).children?.[0]?.value ?? '';
       expect(firstChildText).toBe('');
       expect(callout.children[1]).toMatchObject({
         type: 'paragraph',

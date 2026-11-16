@@ -1,5 +1,5 @@
-import type { MdastOpts } from './ast-processor';
 import type { MdastComponents } from '../types';
+import type { MdastOpts } from './ast-processor';
 
 import remarkRehype from 'remark-rehype';
 
@@ -10,7 +10,7 @@ import mdast from './mdast';
 
 const hast = (text: string, opts: MdastOpts = {}) => {
   const components: MdastComponents = Object.entries(opts.components || {}).reduce((memo, [name, doc]) => {
-    memo[name] = mdast(doc);
+    memo[name] = mdast(doc, { safeMode: opts.safeMode });
     return memo;
   }, {});
 

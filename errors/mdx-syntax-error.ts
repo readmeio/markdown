@@ -14,7 +14,7 @@ export default class MdxSyntaxError extends SyntaxError {
       messages.push(doc.split('\n')[line - 1]);
 
       if (typeof column !== 'undefined') {
-        const prefix = new Array(column).map(() => '').join(' ');
+        const prefix = ' '.repeat(Math.max(column - 1, 0));
         messages.push(`${prefix}↑ ${message}`);
       }
     }

@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import type { Literal, Node, Paragraph, Parents, Table, TableCell } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';

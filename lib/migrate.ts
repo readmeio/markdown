@@ -4,7 +4,7 @@ import migrateHtmlTags from '../processor/transform/migrate-html-tags';
 import migrateLinkReferences from '../processor/transform/migrate-link-references';
 
 import mdastV6 from './mdastV6';
-import mdx from './mdx';
+import { mdx } from './mdx';
 import migrateComments from './utils/migrateComments';
 
 const migrateDoc = (doc: string, { rdmd }): string => {

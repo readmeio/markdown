@@ -38,7 +38,7 @@ describe('Parse RDMD Callouts', () => {
 
     it('allows trailing spaces after the icon', () => {
       const text = `
-> 🛑 
+> 🛑
 > Compact headings must be followed by two line breaks before the following block.`;
 
       const tree = mdast(text);
@@ -78,9 +78,7 @@ describe('Parse RDMD Callouts', () => {
 
     const tree = mdast(text);
     // Title
-    expect(tree.children[0].children[0].children[0].value).toBe(
-      'Undocumented Behavior',
-    );
+    expect(tree.children[0].children[0].children[0].value).toBe('Undocumented Behavior');
     // Body
     expect(tree.children[0].children[1].children[0].value).toBe(
       'Lorem ipsum dolor  sit amet consectetur adipisicing elit.',
@@ -91,17 +89,15 @@ describe('Parse RDMD Callouts', () => {
 describe('emoji modifier support', () => {
   const emojis = ['📘', '🚧', '⚠️', '👍', '✅', '❗️', '❗', '🛑', '⁉️', '‼️', 'ℹ️', '⚠'];
 
-  emojis.forEach(emoji => {
-    it(`render a callout for ${emoji}`, () => {
-      const text = `
+  it.each(emojis)(`render a callout for %s`, emoji => {
+    const text = `
 > ${emoji}
 >
 > Lorem ipsum dolor sit amet consectetur adipisicing elit.`;
 
-      const ast = mdast(text);
+    const ast = mdast(text);
 
-      expect(ast.children[0].type).toBe('rdme-callout');
-      expect(ast.children[0].data.hProperties.icon).toStrictEqual(emoji);
-    });
+    expect(ast.children[0].type).toBe('rdme-callout');
+    expect(ast.children[0].data.hProperties.icon).toStrictEqual(emoji);
   });
 });

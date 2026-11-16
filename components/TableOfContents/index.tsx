@@ -59,15 +59,15 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
 
   useEffect(() => {
     const nav = navRef.current;
-    if (!nav || typeof IntersectionObserver === 'undefined' || !tocKey) return undefined;
+    if (!nav || typeof IntersectionObserver === 'undefined' || !tocKey) return;
 
     const linkMap = buildLinkMap(nav);
-    if (linkMap.size === 0) return undefined;
+    if (linkMap.size === 0) return;
 
     const headings = [...linkMap.keys()]
       .map(id => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
-    if (headings.length === 0) return undefined;
+    if (headings.length === 0) return;
 
     let activeId: string | null = null;
     let clickLocked = false;
@@ -76,11 +76,43 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
 
     const isAtBottom = () => {
       if (scrollParent instanceof Window) {
-        return document.documentElement.scrollHeight > window.innerHeight
-          && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - SCROLL_BOTTOM_TOLERANCE;
+        return (
+          document.documentElement.scrollHeight > window.innerHeight &&
+          window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - SCROLL_BOTTOM_TOLERANCE
+        );
       }
-      return scrollParent.scrollHeight > scrollParent.clientHeight
-        && scrollParent.scrollTop + scrollParent.clientHeight >= scrollParent.scrollHeight - SCROLL_BOTTOM_TOLERANCE;
+      return (
+        scrollParent.scrollHeight > scrollParent.clientHeight &&
+        scrollParent.scrollTop + scrollParent.clientHeight >= scrollParent.scrollHeight - SCROLL_BOTTOM_TOLERANCE
+      );
+    };
+
+    /**
+     * Keeps the active link visible within the TOC's own scroll container —
+     * the same result as `scrollIntoView({ block: 'nearest' })`, but scoped to
+     * a single scroller. `scrollIntoView` adjusts *every* scrollable ancestor,
+     * and starting a scroll on the page's content scroller cancels any
+     * in-flight smooth scroll there — e.g. the hub's scroll-to-top reset when
+     * navigating between pages (CX-3667).
+     */
+    const scrollTOCLinkIntoView = (link: HTMLAnchorElement) => {
+      const tocScroller = getScrollParent(link);
+      // Without a TOC-local scroll area, the link's nearest scrollable
+      // ancestor is the window (`getScrollParent`'s fallback) or the scroller
+      // holding the page content — never auto-scroll those just to reveal a
+      // TOC link.
+      if (!(tocScroller instanceof HTMLElement) || tocScroller.contains(headings[0])) return;
+
+      const scrollerRect = tocScroller.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+      if (linkRect.top < scrollerRect.top) {
+        tocScroller.scrollTo?.({ top: tocScroller.scrollTop + (linkRect.top - scrollerRect.top), behavior: 'smooth' });
+      } else if (linkRect.bottom > scrollerRect.bottom) {
+        tocScroller.scrollTo?.({
+          top: tocScroller.scrollTop + (linkRect.bottom - scrollerRect.bottom),
+          behavior: 'smooth',
+        });
+      }
     };
 
     const activate = (id: string | null) => {
@@ -99,6 +131,8 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
           const linkRect = link.getBoundingClientRect();
           nav.style.setProperty('--ToC-border-active-height', `${linkRect.height}px`);
           nav.style.setProperty('--ToC-border-active-top', `${linkRect.top - navRect.top}px`);
+
+          scrollTOCLinkIntoView(link);
         }
       }
     };
@@ -129,7 +163,9 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
     // Check on scroll so bottom-of-page detection works even when
     // no headings are crossing the intersection boundary.
     const scrollTarget = scrollParent instanceof Window ? window : scrollParent;
-    const onScroll = () => { updateActive(); };
+    const onScroll = () => {
+      updateActive();
+    };
 
     // Click a ToC link → immediately activate it, suppress the observer
     // until the smooth scroll finishes, then hand control back.
@@ -159,22 +195,34 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
       unlockTimer = window.setTimeout(unlock, 500);
     };
 
-    headings.forEach(el => { observer.observe(el); });
+    headings.forEach(el => {
+      observer.observe(el);
+    });
     scrollTarget.addEventListener('scroll', onScroll, { passive: true });
     nav.addEventListener('click', onClick);
 
     // Set initial active state for the first heading visible in the viewport,
     // falling back to the first heading if none is in the observation zone yet.
-    const initialHeading = headings.find(el => {
-      const rect = el.getBoundingClientRect();
-      return rect.top >= 0 && rect.top < window.innerHeight * VISIBLE_RATIO;
-    }) || headings[0];
+    const initialHeading =
+      headings.find(el => {
+        const rect = el.getBoundingClientRect();
+        return rect.top >= 0 && rect.top < window.innerHeight * VISIBLE_RATIO;
+      }) || headings[0];
     activate(initialHeading.id);
+
+    // Snap the active indicator to its initial position without animating, then
+    // enable transitions so only subsequent scroll updates animate. The forced
+    // reflow (reading layout) commits the snapped position as the transition
+    // baseline — otherwise enabling the transition in the same style recalc would
+    // animate it in from height 0 every time the TOC (re)mounts.
+    nav.getBoundingClientRect();
+    nav.dataset.tocReady = 'true';
 
     return () => {
       observer.disconnect();
       scrollTarget.removeEventListener('scroll', onScroll);
       nav.removeEventListener('click', onClick);
+      delete nav.dataset.tocReady;
     };
   }, [navRef, tocKey]);
 }

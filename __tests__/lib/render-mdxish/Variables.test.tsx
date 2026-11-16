@@ -1,10 +1,41 @@
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { mdxish, renderMdxish } from '../../../lib';
 
-describe('render mdxish variables in code', () => {
+describe('render mdxish variables', () => {
+  it.each([
+    {
+      expected: '[{"apiKey":"rdme_123"}]',
+      md: '{user.keys}',
+      name: 'arrays',
+      user: { keys: [{ apiKey: 'rdme_123' }] },
+    },
+    {
+      expected: '{"plan":"enterprise"}',
+      md: '{user.profile}',
+      name: 'objects',
+      user: { profile: { plan: 'enterprise' } },
+    },
+    {
+      expected: '25',
+      md: '{user.limit}',
+      name: 'primitives',
+      user: { limit: 25 },
+    },
+  ])('supports structured user variables: $name', ({ expected, md, user }) => {
+    const variables = {
+      user,
+      defaults: [],
+    };
+    const mod = renderMdxish(mdxish(md, { variables }), { variables });
+
+    render(<mod.default />);
+
+    expect(screen.getByText(expected)).toBeVisible();
+  });
+
   it('resolves legacy and mdx variables in inline code', () => {
     const md = 'Use `<<apiKey>>` and `{user.region}`';
     const variables = {

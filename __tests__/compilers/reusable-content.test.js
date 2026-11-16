@@ -73,9 +73,7 @@ describe('mdxish reusable content compiler', () => {
 
     // Component is recognized and preserved in HAST
     expect(hast.children.length).toBeGreaterThan(0);
-    const component = hast.children.find(
-      child => child.type === 'element' && child.tagName === 'Defined',
-    );
+    const component = hast.children.find(child => child.type === 'element' && child.tagName === 'Defined');
     expect(component).toBeDefined();
   });
 
@@ -90,9 +88,7 @@ describe('mdxish reusable content compiler', () => {
 
     // Component is recognized and preserved in HAST
     expect(hast.children.length).toBeGreaterThan(0);
-    const component = hast.children.find(
-      child => child.type === 'element' && child.tagName === 'MyCustomComponent',
-    );
+    const component = hast.children.find(child => child.type === 'element' && child.tagName === 'MyCustomComponent');
     expect(component).toBeDefined();
   });
 
@@ -108,9 +104,7 @@ describe('mdxish reusable content compiler', () => {
         },
       });
 
-      const component = hast.children.find(
-        child => child.type === 'element' && child.tagName === 'Defined',
-      );
+      const component = hast.children.find(child => child.type === 'element' && child.tagName === 'Defined');
       expect(component).toBeDefined();
       expect(component.type).toBe('element');
     });

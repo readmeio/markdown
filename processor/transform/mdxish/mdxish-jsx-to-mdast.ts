@@ -1,6 +1,6 @@
+import type { Anchor, Callout, NoTranslate, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
 import type { MagicBlockEmbed, MagicBlockImage } from './magic-blocks/types';
 import type { FigureNode } from './types';
-import type { Anchor, Callout, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
 import type { Html, Node, Paragraph, Parent, PhrasingContent, RootContent, Table, TableCell, TableRow } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
@@ -8,11 +8,13 @@ import type { Plugin } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
-import { mdast } from '../../../lib';
 import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
+import { findQuotedAttributeValue } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { getAttrs, isMDXElement } from '../../utils';
 
-import { unwrapSoleParagraph } from './tables/utils';
+import { getDocumentSource, type MarkdownFragment, reparseMarkdownFragment } from './parse-markdown-fragment';
+import { getCellWidth, hasOnlyWidthAttributes } from './tables/cell-width';
+import { tableTags, unwrapSoleParagraph } from './tables/utils';
 
 function toImageAlign(value: string | undefined): ImageAlign | undefined {
   if (value === 'left' || value === 'center' || value === 'right') {
@@ -213,11 +215,7 @@ function reassembleHtmlFigures(tree: Parent) {
       const nextNode = children[i + 1];
       const imageNode = nextNode ? findImageInNode(nextNode) : undefined;
 
-      if (
-        node.type === 'html' &&
-        FIGURE_OPEN_REGEX.test((node as Html).value.trim()) &&
-        imageNode
-      ) {
+      if (node.type === 'html' && FIGURE_OPEN_REGEX.test((node as Html).value.trim()) && imageNode) {
         const { captionText, endIndex, foundClose } = scanForFigcaptionAndClose(children, i + 2);
 
         if (foundClose) {
@@ -304,11 +302,32 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
   };
 };
 
+/** Transforms an inline `<NoTranslate>` JSX element into a readme-no-translate MDAST node. */
+const transformNoTranslate = (jsx: MdxJsxTextElement): NoTranslate => ({
+  type: NodeTypes.noTranslate,
+  children: jsx.children,
+  data: { hName: 'NoTranslate' },
+  position: jsx.position,
+});
+
+/** The `<Image>` tag's caption as written; the whole tag when it isn't a quoted attribute. */
+const findCaptionFragment = (image: MdxJsxFlowElement, documentSource: string): MarkdownFragment => {
+  const value = documentSource.slice(image.position?.start.offset, image.position?.end.offset);
+  const parentNode = { position: image.position, value };
+  const caption = findQuotedAttributeValue(value, 'caption');
+  if (!caption) return { parentNode, offsetInParentNode: 0, rawText: value };
+  return { parentNode, offsetInParentNode: caption.start, rawText: value.slice(caption.start, caption.end) };
+};
+
+/** Parses an image caption's markdown, positioned where the caption sits in the `<Image>` tag. */
+const parseCaptionChildren = (caption: string, image: MdxJsxFlowElement, documentSource: string): RootContent[] =>
+  reparseMarkdownFragment(findCaptionFragment(image, documentSource), caption, { documentSource });
+
 /**
  * Transforms an `<Image />` JSX element into an image-block MDAST node.
  * Normalizes attributes (align, border, width→sizing) and parses caption markdown into children.
  */
-const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
+const transformImage = (jsx: MdxJsxFlowElement, documentSource: string): ImageBlock => {
   const attrs = getAttrs<ImageAttrs>(jsx);
   const {
     align,
@@ -350,7 +369,7 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     alt,
     border: toBool(border),
     caption,
-    children: caption ? mdast(caption).children : [],
+    children: caption ? parseCaptionChildren(caption, jsx, documentSource) : [],
     className,
     framed: toBool(framed),
     height: height !== undefined ? String(height) : undefined,
@@ -381,10 +400,7 @@ const transformCallout = (jsx: MdxJsxFlowElement): Callout => {
   const hasHeadingFirst = jsxChildren[0]?.type === 'heading';
   const children = hasHeadingFirst
     ? jsxChildren
-    : ([
-        { type: 'paragraph', children: [{ type: 'text', value: '' }] },
-        ...jsxChildren,
-      ] as Callout['children']);
+    : ([{ type: 'paragraph', children: [{ type: 'text', value: '' }] }, ...jsxChildren] as Callout['children']);
 
   return {
     type: NodeTypes.callout,
@@ -568,9 +584,7 @@ const wrapBareCellsInRow = (node: Node): void => {
     if (section.name !== 'thead' && section.name !== 'tbody') return;
 
     const children = section.children as Node[];
-    const hasRow = children.some(
-      c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr',
-    );
+    const hasRow = children.some(c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr');
     if (hasRow) return;
 
     const unwrapped = children.flatMap(c => {
@@ -594,10 +608,40 @@ const wrapBareCellsInRow = (node: Node): void => {
 };
 
 /**
- * Converts a JSX <Table> element to an MDAST table node with alignment.
- * Returns null for header-less tables since MDAST always promotes the first row to <thead>.
+ * A lowercase <table> reaches here only because `mdxishTables` kept it as JSX for its
+ * attributes. Widths on first-row cells are the one attribute mdast can carry; anything
+ * else stays JSX so it still renders.
+ */
+const lowercaseTableIsConvertible = (jsx: MdxJsxFlowElement): boolean => {
+  if (jsx.attributes.length > 0) return false;
+
+  const headerCells = new Set<Node>();
+  let headerRowSeen = false;
+  let convertible = true;
+  visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
+    if (child.name === 'tr' && !headerRowSeen) {
+      headerRowSeen = true;
+      visit(child as Node, isTableCell, cell => {
+        headerCells.add(cell);
+      });
+    }
+    if (child.name === null || !tableTags.has(child.name) || child.attributes.length === 0) return;
+    if (!headerCells.has(child) || !hasOnlyWidthAttributes(child) || getCellWidth(child) === null) {
+      convertible = false;
+    }
+  });
+  return convertible;
+};
+
+/**
+ * Converts a JSX <Table>, or a lowercase <table> carrying only widths, to an MDAST table
+ * node with alignment and widths. Returns null for header-less tables since MDAST always
+ * promotes the first row to <thead>.
  */
 const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
+  const isLowercase = jsx.name === 'table';
+  if (isLowercase && !lowercaseTableIsConvertible(jsx)) return null;
+
   wrapBareCellsInRow(jsx as Node);
 
   let hasThead = false;
@@ -611,6 +655,7 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
   const align = Array.isArray(alignAttr) ? alignAttr : null;
 
   const rows: TableRow[] = [];
+  const widths: (string | null)[] = [];
 
   visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name !== 'thead' && child.name !== 'tbody') return;
@@ -619,6 +664,7 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
       if (row.name !== 'tr') return;
 
       const cells: TableCell[] = [];
+      const isHeaderRow = rows.length === 0;
 
       visit(row as Node, isTableCell, (cell: MdxJsxFlowElement & { name: 'td' | 'th' }) => {
         const parsedChildren = unwrapSoleParagraph(cell.children as Node[]);
@@ -628,6 +674,8 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
           children: parsedChildren,
           position: cell.position,
         } as TableCell);
+
+        if (isHeaderRow) widths.push(getCellWidth(cell));
       });
 
       rows.push({
@@ -644,11 +692,17 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
       ? align.slice(0, columnCount).concat(Array.from({ length: Math.max(0, columnCount - align.length) }, () => null))
       : Array.from({ length: columnCount }, () => null);
 
+  const data = {
+    ...(isLowercase && { lowercaseTable: true }),
+    ...(widths.some(Boolean) && { widths }),
+  };
+
   return {
     type: 'table',
     align: alignArray,
     position: jsx.position,
     children: rows,
+    ...(Object.keys(data).length > 0 && { data }),
   };
 };
 
@@ -675,7 +729,7 @@ const transformFigure = (jsx: MdxJsxFlowElement): FigureNode | null => {
   return buildFigureNode(imageNode, captionText, jsx.position);
 };
 
-type ComponentTransformer = (jsx: MdxJsxFlowElement) => Node | null;
+type ComponentTransformer = (jsx: MdxJsxFlowElement, documentSource: string) => Node | null;
 
 const COMPONENT_MAP: Record<string, ComponentTransformer> = {
   Callout: transformCallout,
@@ -684,6 +738,7 @@ const COMPONENT_MAP: Record<string, ComponentTransformer> = {
   figure: transformFigure,
   Recipe: transformRecipe,
   Table: transformTable,
+  table: transformTable,
 };
 
 /**
@@ -700,7 +755,9 @@ const COMPONENT_MAP: Record<string, ComponentTransformer> = {
  *
  * This is controlled by the `newEditorTypes` flag to maintain backwards compatibility.
  */
-const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
+const mdxishJsxToMdast: Plugin<[], Parent> = () => (tree, file) => {
+  const documentSource = getDocumentSource(file);
+
   // Block JSX components (Image, Callout, Embed, Recipe)
   visit(tree, 'mdxJsxFlowElement', (node: MdxJsxFlowElement, index, parent: Parent | undefined) => {
     if (!parent || index === undefined || !node.name) return;
@@ -708,20 +765,21 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     const transformer = COMPONENT_MAP[node.name];
     if (!transformer) return;
 
-    const newNode = transformer(node);
+    const newNode = transformer(node, documentSource);
     if (!newNode) return;
 
-    // Replace the JSX node with the MDAST node
-    (parent.children as Node[])[index] = newNode;
+    (parent.children as Node[]).splice(index, 1, newNode);
   });
 
-  // Inline JSX components (Anchor)
+  // Inline JSX components (Anchor, NoTranslate)
   visit(tree, 'mdxJsxTextElement', (node: MdxJsxTextElement, index, parent: Parent | undefined) => {
     if (!parent || index === undefined || !node.name) return;
 
     if (node.name === 'Anchor') {
       const newNode = transformAnchor(node);
       (parent.children as Node[])[index] = newNode;
+    } else if (node.name === 'NoTranslate') {
+      (parent.children as Node[])[index] = transformNoTranslate(node);
     }
   });
 

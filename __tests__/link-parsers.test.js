@@ -1,3 +1,4 @@
+// oxlint-disable vitest/no-disabled-tests
 import { mdast } from '../index';
 
 test.skip('a link with label', () => {

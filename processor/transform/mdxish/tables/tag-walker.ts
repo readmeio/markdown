@@ -5,7 +5,7 @@ import { Parser } from 'htmlparser2';
  */
 export const maskNonTagRegions = (html: string): string =>
   html
-    .replace(/```[\s\S]*?```|``(?:[^`]|`(?!`))*``|`[^`\n]*`/g, m => ' '.repeat(m.length))
+    .replace(/```[\s\S]*?```|~{3,}[\s\S]*?~{3,}|``(?:[^`]|`(?!`))*``|`[^`\n]*`/g, m => ' '.repeat(m.length))
     // `<<NAME>>` is legacy variable syntax — without masking,
     // htmlparser2 sees the inner `<NAME>` as a tag. Blanking any `<<` also
     // covers malformed variants like `<<string>`.
@@ -45,7 +45,7 @@ interface TagWalkHandlers {
  * tag-balance events. `start`/`end` use the original-string offsets, so
  * callers can splice against the input directly.
  */
-export const walkTags = (html: string, handlers: TagWalkHandlers)=> {
+export const walkTags = (html: string, handlers: TagWalkHandlers) => {
   const masked = maskNonTagRegions(html);
   // htmlparser2's endIndex points at the `>` (inclusive); +1 lands just past
   // it, which is what callers want for splicing.

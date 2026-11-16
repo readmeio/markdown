@@ -1,6 +1,7 @@
 import { mdast, mdx, mix } from '../../index';
 
 describe('yaml compiler', () => {
+  // oxlint-disable-next-line vitest/no-disabled-tests
   it.skip('correctly writes out yaml', () => {
     const txt = `
 ---
@@ -24,7 +25,7 @@ Document content!
 describe('mix yaml compiler', () => {
   it('correctly handles yaml frontmatter', () => {
     // NOTE: the '---' MUST be at the ABSOLUTE BEGINNING of the file, adding a space or newline will break the parser
-    const txt = `--- 
+    const txt = `---
 title: This is test
 author: A frontmatter test
 ---

@@ -1,0 +1,48 @@
+/**
+ * Dark styles keyed off `$root`'s own `data-color-mode`, not any ancestor.
+ * Unlike `dark-mode` (which matches ANY ancestor carrying the attribute —
+ * see the warning on that mixin), this only fires when `$root` itself
+ * declares the dark/system mode. None of this package's components carry
+ * `data-color-mode` on their own root, so callers must pass the selector
+ * for whichever wrapper actually carries it in their consuming app — there
+ * is no default.
+ *
+ * IMPORTANT: this package ships one precompiled `dist/main.css` — there is
+ * no build step where a consumer can supply their own value for `$root`.
+ * Whatever gets passed at each `@include` call site below is permanent for
+ * every installer of this package. Call sites currently hardcode
+ * `'.rm-ReadMe'`, readme's hub color-mode wrapper, because readme is this
+ * package's only real consumer today. If that ever changes, this becomes
+ * silently wrong (not an error — dark mode just never activates) for any
+ * consumer without that exact class in their DOM, and `$root` should be
+ * dropped in favor of each component resolving its own nearest
+ * `[data-color-mode]` ancestor at mount via `Element.closest()` and
+ * stamping it onto its own root, so the CSS can self-anchor with no
+ * hardcoded selector at all.
+ *
+ * $global: wrap the root-anchor selector in :global(), for use when this
+ * file is imported into a CSS-module context (mirrors `dark-mode`'s param).
+ */
+@mixin when-color-mode-dark($root, $global: false) {
+  @if $global {
+    :global(#{$root}[data-color-mode='dark']) & {
+      @content;
+    }
+
+    :global(#{$root}[data-color-mode='system']) & {
+      @media (prefers-color-scheme: dark) {
+        @content;
+      }
+    }
+  } @else {
+    #{$root}[data-color-mode='dark'] & {
+      @content;
+    }
+
+    #{$root}[data-color-mode='system'] & {
+      @media (prefers-color-scheme: dark) {
+        @content;
+      }
+    }
+  }
+}

@@ -41,10 +41,7 @@ describe('images transformer', () => {
     expect(imgs.length).toBeGreaterThanOrEqual(2);
 
     const srcs = imgs.map(i => i.properties?.src ?? '');
-    expect(srcs).toStrictEqual(expect.arrayContaining([
-      'https://example.com/b.png',
-      'https://example.com/a.png',
-    ]));
+    expect(srcs).toStrictEqual(expect.arrayContaining(['https://example.com/b.png', 'https://example.com/a.png']));
   });
 
   it('can parse attributes', () => {

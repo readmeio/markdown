@@ -69,7 +69,6 @@ function Anchor(props: Props) {
   });
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
     <a {...attrs} href={getHref(href, baseUrl)} target={target} title={title} {...docLink(href)}>
       {unwrappedChildren}
     </a>

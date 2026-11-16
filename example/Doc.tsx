@@ -44,6 +44,13 @@ const variables = {
   user: {
     email: 'kelly@readme.io',
     name: 'kelly joseph price',
+    // Structured values, as JWT logins can send
+    keys: [
+      { name: 'production', apiKey: 'rdme_prod_123' },
+      { name: 'sandbox', apiKey: 'rdme_test_456' },
+    ],
+    plan: { tier: 'enterprise', seats: 25 },
+    roles: ['admin', 'editor'],
   },
   defaults: [
     {
@@ -71,6 +78,7 @@ const Doc = () => {
   const lazyImages = searchParams.has('lazyImages');
   const safeMode = searchParams.has('safeMode');
   const copyButtons = searchParams.has('copyButtons');
+  const mermaidControls = searchParams.has('mermaidControls');
   const darkModeDataAttribute = searchParams.has('darkModeDataAttribute');
   const showAst = searchParams.has('showAst');
   const newEditorTypes = searchParams.has('newEditorTypes');
@@ -135,6 +143,7 @@ const Doc = () => {
         });
         const content = await mdx.run(code, {
           components: executedComponents,
+          mermaidControls,
           terms,
           variables,
         });
@@ -163,14 +172,31 @@ const Doc = () => {
       try {
         const sanitized = await sanitize('mdxish');
         if (sanitized === null) return;
-        const tree = mdx.mdxish(sanitized, { components: executedComponents, variables, newEditorTypes, useTailwind: true, safeMode });
-        const vdom = mdx.renderMdxish(tree, { components: executedComponents, terms, variables, useTailwind: true });
+        const tree = mdx.mdxish(sanitized, {
+          components: executedComponents,
+          variables,
+          newEditorTypes,
+          useTailwind: true,
+          safeMode,
+        });
+        const vdom = mdx.renderMdxish(tree, {
+          components: executedComponents,
+          mermaidControls,
+          terms,
+          variables,
+          useTailwind: true,
+        });
         setMdxishError(null);
         setMdxishResult(vdom);
         if (showAst) {
           setMdxishHast(tree);
           try {
-            const { processor, parserReadyContent } = mdx.mdxishAstProcessor(sanitized, { components: executedComponents, variables, newEditorTypes, safeMode });
+            const { processor, parserReadyContent } = mdx.mdxishAstProcessor(sanitized, {
+              components: executedComponents,
+              variables,
+              newEditorTypes,
+              safeMode,
+            });
             setMdxishMdast(processor.runSync(processor.parse(parserReadyContent)));
           } catch {
             setMdxishMdast(null);
@@ -205,8 +231,19 @@ const Doc = () => {
     if (showRmdx || (!legacy && !mdxish)) renderRMDX();
     if (mdxish) renderXish();
     if (legacy) renderRDMD();
-  }, [doc, lazyImages, safeMode, copyButtons, showRmdx, legacy, mdxish, stripComments, showAst, newEditorTypes]);
-
+  }, [
+    doc,
+    lazyImages,
+    safeMode,
+    copyButtons,
+    mermaidControls,
+    showRmdx,
+    legacy,
+    mdxish,
+    stripComments,
+    showAst,
+    newEditorTypes,
+  ]);
 
   const darkMode = darkModeDataAttribute ? 'data-theme' : null;
 
@@ -243,7 +280,11 @@ const Doc = () => {
           <TailwindStyle darkModeDataAttribute={darkMode}>
             <div style={{ display: 'flex', gap: '2rem' }}>
               <div className="markdown-body">{content}</div>
-              {showToc && Toc && <div className="content-toc"><Toc /></div>}
+              {showToc && Toc && (
+                <div className="content-toc">
+                  <Toc />
+                </div>
+              )}
             </div>
           </TailwindStyle>
         </RenderError>
@@ -263,37 +304,21 @@ const Doc = () => {
         {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
         {(strippedMarkdown !== null || showAst) && (
           <div className="rdmd-demo--view-toggle">
-            <button
-              className={view === 'rendered' ? 'active' : ''}
-              onClick={() => setView('rendered')}
-              type="button"
-            >
+            <button className={view === 'rendered' ? 'active' : ''} onClick={() => setView('rendered')} type="button">
               Rendered
             </button>
             {strippedMarkdown !== null && (
-              <button
-                className={view === 'markdown' ? 'active' : ''}
-                onClick={() => setView('markdown')}
-                type="button"
-              >
+              <button className={view === 'markdown' ? 'active' : ''} onClick={() => setView('markdown')} type="button">
                 Markdown
               </button>
             )}
             {showAst && (
-              <button
-                className={view === 'mdast' ? 'active' : ''}
-                onClick={() => setView('mdast')}
-                type="button"
-              >
+              <button className={view === 'mdast' ? 'active' : ''} onClick={() => setView('mdast')} type="button">
                 MDAST
               </button>
             )}
             {showAst && (
-              <button
-                className={view === 'hast' ? 'active' : ''}
-                onClick={() => setView('hast')}
-                type="button"
-              >
+              <button className={view === 'hast' ? 'active' : ''} onClick={() => setView('hast')} type="button">
                 HAST
               </button>
             )}
@@ -311,11 +336,21 @@ const Doc = () => {
             {activePipelines.map(p => {
               const ast =
                 view === 'mdast'
-                  ? p === 'rmdx' ? rmdxMdast : p === 'mdxish' ? mdxishMdast : null
-                  : p === 'rmdx' ? rmdxHast : p === 'mdxish' ? mdxishHast : null;
+                  ? p === 'rmdx'
+                    ? rmdxMdast
+                    : p === 'mdxish'
+                      ? mdxishMdast
+                      : null
+                  : p === 'rmdx'
+                    ? rmdxHast
+                    : p === 'mdxish'
+                      ? mdxishHast
+                      : null;
               return (
                 <div key={p} className="rdmd-demo--panel">
-                  <div className="rdmd-demo--panel-label">{pipelineLabels[p]} {view.toUpperCase()}</div>
+                  <div className="rdmd-demo--panel-label">
+                    {pipelineLabels[p]} {view.toUpperCase()}
+                  </div>
                   {ast ? (
                     <pre className="rdmd-demo--ast-output">{JSON.stringify(ast, null, 2)}</pre>
                   ) : (

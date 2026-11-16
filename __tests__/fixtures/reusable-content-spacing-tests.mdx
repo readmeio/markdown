@@ -1,0 +1,22 @@
+{/*
+  A component that renders several sibling blocks — like a reusable content block
+  with multiple Accordions — is wrapped in one `.readme-tailwind` div. Its block
+  children should be spaced like normal document children, and a wrapper at the
+  document edge shouldn't add an extra gap above the first block or below the last.
+*/}
+
+export const StackedBlocks = () => (
+  <>
+    <div className="bg-blue-100 text-black p-3 rounded-xl">First block</div>
+    <div className="bg-blue-100 text-black p-3 rounded-xl">Second block</div>
+    <div className="bg-blue-100 text-black p-3 rounded-xl">Third block</div>
+  </>
+);
+
+<StackedBlocks />
+
+Regular markdown paragraph between two wrapped components. The wrapper above and
+the one below should sit on the same 15px rhythm as this text, and the blocks
+inside each wrapper should be evenly spaced from one another.
+
+<StackedBlocks />

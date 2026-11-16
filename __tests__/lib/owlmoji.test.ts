@@ -1,6 +1,7 @@
 import { nameToEmoji } from 'gemoji';
 
 import Owlmoji from '../../lib/owlmoji';
+import { owlmojiDetails } from '../../lib/owlmoji-details';
 
 describe('Owlmoji', () => {
   describe('kind', () => {
@@ -28,6 +29,6 @@ describe('Owlmoji', () => {
   });
 
   it('owlmoji collection matches the snapshot', () => {
-    expect(Owlmoji.owlmoji).toMatchSnapshot();
+    expect(owlmojiDetails).toMatchSnapshot();
   });
 });
