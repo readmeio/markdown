@@ -322,11 +322,9 @@ describe('GFM footnotes', () => {
     });
 
     // Nothing is added to the cell's source, so an unterminated fence has nothing to swallow.
-    it('keeps an unterminated fence in a cell to its own text', () => {
-      const md = withNote(table('```js\nconst a = 1;'));
-      expect(findElementByTagName(mdxish(md), 'code')?.children).toStrictEqual([
-        expect.objectContaining({ type: 'text', value: 'const a = 1;\n' }),
-      ]);
+    it('renders an unterminated fence in a cell the same with or without footnotes', () => {
+      const md = table('```js\nconst a = 1;');
+      expect(cellOf(withNote(md))).toBe(cellOf(md));
     });
 
     // The table processors are cached per label set, so a later page must not reuse an earlier page's labels.
