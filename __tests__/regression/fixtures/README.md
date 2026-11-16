@@ -39,7 +39,6 @@ __tests__/regression/fixtures/
 │
 │  ── Table regression fixtures ──
 ├── jsx-table-multiline-cells/  ← blank-line paragraphs preserved in a <Table> cell
-├── jsx-table-cell-block-markers/ ← `- foo`, `#`, `\-` in single-line cells stay literal text
 ├── jsx-table-unclosed-cells/   ← asymmetric/unclosed tags in <Table> cells recovered
 ├── table-unwrapped-rows/       ← cells/rows missing their <tr> and <tbody> wrappers
 ├── htmlblock-in-table/         ← <HTMLBlock> rendered inside a <Table> cell

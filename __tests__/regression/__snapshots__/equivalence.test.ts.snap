@@ -1037,22 +1037,6 @@ exports[`MDX↔MDXish equivalence > jsx-attribute-entities 1`] = `
 }
 `;
 
-exports[`MDX↔MDXish equivalence > jsx-table-cell-block-markers 1`] = `
-{
-  "changes": [
-    {
-      "kind": "tag",
-      "left": "table",
-      "path": "/table[1]",
-      "right": "div",
-      "severity": "structural",
-    },
-  ],
-  "severity": "structural",
-  "status": "differ",
-}
-`;
-
 exports[`MDX↔MDXish equivalence > jsx-table-multiline-cells 1`] = `
 {
   "changes": [

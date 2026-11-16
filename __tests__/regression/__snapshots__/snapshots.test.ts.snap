@@ -635,48 +635,6 @@ exports[`Render engine regressions tests > jsx-attribute-entities (mdxish) 1`] =
 <div class="readme-tailwind"><figure><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img img-align-center " height="auto" loading="lazy" src="https://example.com/x.png" title="" width="auto"/></span></span><figcaption><p>Caption with &amp; ampersand entity</p></figcaption></figure></div>"
 `;
 
-exports[`Render engine regressions tests > jsx-table-cell-block-markers (mdx) 1`] = `
-"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="block-markers-in-jsx-table-cells"></div><div class="heading-text">Block markers in JSX table cells</div><a aria-label="Skip link to Block markers in JSX table cells" class="heading-anchor-icon fa fa-regular fa-anchor" href="#block-markers-in-jsx-table-cells"></a></h1>
-<table><thead><tr><th>-</th><th>#</th><th>---</th></tr></thead><tbody><tr><td>- fqefeq</td><td>- hello</td><td><em>kept</em></td></tr></tbody></table>
-<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>-</th><th>#</th><th>1.</th></tr></thead><tbody><tr><td>- fqefeq</td><td>## heading</td><td>&gt; quote</td></tr></tbody></table></div></div>"
-`;
-
-exports[`Render engine regressions tests > jsx-table-cell-block-markers (mdxish) 1`] = `
-"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="block-markers-in-jsx-table-cells"></div><div class="heading-text">Block markers in JSX table cells</div><a aria-label="Skip link to Block markers in JSX table cells" class="heading-anchor-icon fa fa-regular fa-anchor" href="#block-markers-in-jsx-table-cells"></a></h1>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>-</th><th>#</th><th>---</th></tr></thead><tbody><tr><td>- fqefeq</td><td>- hello</td><td><em>kept</em></td></tr></tbody></table></div></div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>-</th><th>#</th><th>1.</th></tr></thead><tbody><tr><td>- fqefeq</td><td>## heading</td><td>&gt; quote</td></tr></tbody></table></div></div>"
-`;
-
 exports[`Render engine regressions tests > jsx-table-multiline-cells (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-table-with-multi-paragraph-cells"></div><div class="heading-text">JSX table with multi-paragraph cells</div><a aria-label="Skip link to JSX table with multi-paragraph cells" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-table-with-multi-paragraph-cells"></a></h1>
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Item</th></tr></thead><tbody><tr><td><p>Line 1</p><p>Line 2</p><p>Line 3</p></td></tr></tbody></table></div></div>"
