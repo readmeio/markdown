@@ -81,5 +81,15 @@ const x = 1;
       const { container } = render(<Content />);
       expect(container).toHaveTextContent('a b c and bold');
     });
+
+    it('renders markup children as is instead of highlighting them', () => {
+      const { container } = render(
+        <Code>
+          a <strong>b</strong> c
+        </Code>,
+      );
+      expect(container.querySelector('code.rdmd-code strong')).toHaveTextContent('b');
+      expect(container).toHaveTextContent('a b c');
+    });
   });
 });
