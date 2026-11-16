@@ -25,6 +25,10 @@ interface Options {
 // untouched (their children are namespaced XML, not HTML tags/components).
 const FOREIGN_CONTENT_ROOTS = new Set<string>(FOREIGN_CONTENT_TAGS);
 
+// The markdown parser already parsed these children. Parsing them again drops
+// line breaks and turns escaped text back into markup.
+const PARSED_CHILDREN_COMPONENTS = new Set(['NoTranslate']);
+
 function isElementContentNode(node: Root['children'][number]): node is ElementContent {
   return node.type === 'element' || node.type === 'text' || node.type === 'comment';
 }
@@ -122,7 +126,11 @@ function tryProcessMarkdown(processMarkdown: (content: string) => Root, content:
 }
 
 /** Parse and replace text children with processed markdown */
-function parseTextChildren(node: Element, processMarkdown: (content: string) => Root, components: CustomComponents): void {
+function parseTextChildren(
+  node: Element,
+  processMarkdown: (content: string) => Root,
+  components: CustomComponents,
+): void {
   if (!node.children?.length) return;
 
   // First pass: Recursively process text children as they may contain stringified markdown / mdx content
@@ -163,9 +171,9 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
       return true;
     });
 
-    const allComponents = meaningfulChildren.length > 0 && meaningfulChildren.every(
-      gc => gc.type === 'element' && getComponentName(gc.tagName, components),
-    );
+    const allComponents =
+      meaningfulChildren.length > 0 &&
+      meaningfulChildren.every(gc => gc.type === 'element' && getComponentName(gc.tagName, components));
 
     if (!allComponents) return [child];
 
@@ -218,7 +226,6 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
       // Skip foreign-content subtrees: their namespaced children (<path>, <mrow>, …)
       // aren't HTML tags or components, so the "unknown component" removal below would
       // otherwise delete them. (svg/math themselves are standard HTML tags, kept.)
-      // eslint-disable-next-line consistent-return
       if (FOREIGN_CONTENT_ROOTS.has(node.tagName)) return SKIP;
 
       // Parse Image caption as markdown so it renders formatted (bold, code,
@@ -228,7 +235,9 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
       if (node.tagName === 'img' && typeof node.properties?.caption === 'string' && !node.children?.length) {
         const caption = node.properties.caption as string;
         const captionHast = tryProcessMarkdown(processMarkdown, caption);
-        node.children = captionHast ? (captionHast.children ?? []).filter(isElementContentNode) : [{ type: 'text', value: caption }];
+        node.children = captionHast
+          ? (captionHast.children ?? []).filter(isElementContentNode)
+          : [{ type: 'text', value: caption }];
       }
 
       // Skip runtime components and standard HTML tags
@@ -250,7 +259,7 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
 
       node.tagName = componentName;
       normalizeProperties(node);
-      parseTextChildren(node, processMarkdown, allComponents);
+      if (!PARSED_CHILDREN_COMPONENTS.has(componentName)) parseTextChildren(node, processMarkdown, allComponents);
     });
 
     // Remove unknown components in reverse order to preserve indices

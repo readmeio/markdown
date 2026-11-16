@@ -137,8 +137,7 @@ describe('diff()', () => {
   describe('determinism', () => {
     it('repeated calls with the same inputs return deeply equal results', () => {
       const leftHtml = '<div><h1>Title</h1><p>Content</p><ul><li>A</li><li>B</li></ul></div>';
-      const rightHtml =
-        '<div><h1>Title</h1><p>Content changed</p><ul><li>A</li><li>B</li><li>C</li></ul></div>';
+      const rightHtml = '<div><h1>Title</h1><p>Content changed</p><ul><li>A</li><li>B</li><li>C</li></ul></div>';
 
       const result1 = diff(leftHtml, rightHtml);
       const result2 = diff(leftHtml, rightHtml);

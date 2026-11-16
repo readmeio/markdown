@@ -36,12 +36,67 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
 
+      # Compare package.json before/after; @semantic-release/npm writes the
+      # next version locally only when it actually releases.
+      #
+      - name: Record version
+        id: pre_release
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
       # Build, version, and tag a new release.
       #
       - name: Publish release
         run: npm run release # configured in .releaserc
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }} # auth push to remote repo
+
+      # After publish so later failures cannot skip it. continue-on-error so
+      # a dispatch failure cannot skip push / next sync / docs.
+      - name: Notify consumers
+        if: vars.CONSUMER_DISPATCH_REPOS != ''
+        continue-on-error: true
+        env:
+          CONSUMER_DISPATCH_REPOS: ${{ vars.CONSUMER_DISPATCH_REPOS }}
+          GH_TOKEN: ${{ secrets.CONSUMER_DISPATCH_TOKEN }}
+          PREVIOUS_VERSION: ${{ steps.pre_release.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN}" ]; then
+            echo 'CONSUMER_DISPATCH_REPOS is set but CONSUMER_DISPATCH_TOKEN is empty.'
+            exit 1
+          fi
+
+          version="$(node -p "require('./package.json').version")"
+          if [ "${version}" = "${PREVIOUS_VERSION}" ]; then
+            echo "No new version published (${version}); skipping consumer notify."
+            exit 0
+          fi
+
+          name="$(node -p "require('./package.json').name")"
+          release_url="https://github.com/${GITHUB_REPOSITORY}/releases/tag/v${version}"
+          payload="$(jq -n \
+            --arg branch "${GITHUB_REF_NAME}" \
+            --arg package "${name}" \
+            --arg release_url "${release_url}" \
+            --arg version "${version}" \
+            '{event_type:"package-released",client_payload:{branch:$branch,package:$package,release_url:$release_url,version:$version}}')"
+
+          failed=0
+          IFS=',' read -ra repos <<< "${CONSUMER_DISPATCH_REPOS}"
+          for repo in "${repos[@]}"; do
+            repo="${repo// /}"
+            [ -z "${repo}" ] && continue
+            if [[ ! "${repo}" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+              echo "Skipping invalid repo '${repo}' (expected owner/repo)."
+              continue
+            fi
+            echo "Dispatching package-released to ${repo} (${name}@${version})"
+            if ! gh api --method POST "repos/${repo}/dispatches" --input - <<<"${payload}"; then
+              echo "Failed to dispatch to ${repo}"
+              failed=1
+            fi
+          done
+          exit "${failed}"
 
       # Push release changes to the remote.
       #
@@ -51,15 +106,16 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
 
-      # Merge latest release back to next.
+      # Fast-forward next to the release commit. If next moved during publish,
+      # this push fails and you merge main into next by hand.
       #
       - name: Sync main to next
-        if: "github.ref == 'refs/heads/main'"
+        if: github.ref == 'refs/heads/main'
+        continue-on-error: true
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GH_TOKEN }}
           branch: refs/heads/next
-        continue-on-error: true
+          github_token: ${{ secrets.GH_TOKEN }}
 
       # Sync docs to rdmd.readme.io
       #

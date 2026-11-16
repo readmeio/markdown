@@ -22,19 +22,19 @@ endif
 run: build ## Run npm scripts in a docker container. (default: make test.browser)
 	docker run -it --rm ${MOUNTS} markdown $(RUN_ARGS)
 
-ci: build ## CI runner for `npm run test.browser -- --ci`
+ci: build ## CI runner for `npm run test.browser`
 	# We don't mount root because CI doesn't care about live changes,
 	# except for grabbing the snapshot diffs, so we mount __tests__.
 	# Mounting root would break `make emoji` in the Dockerfile.
 	docker run -i \
 		--volume ${PWD}/__tests__:${DOCKER_WORKSPACE}/__tests__ \
 		--env NODE_VERSION=${NODE_VERSION} \
-		markdown test.browser -- --ci
+		markdown test.browser
 
-# I would like this to be `updateSnapshots` but I think it's better to
-# be consistent with jest.
-updateSnapshot: build ## Run `npm run test.browser -- --updateSnapshot`
-	docker run -i --rm ${MOUNTS} markdown test.browser -- --updateSnapshot
+# The target name stays `updateSnapshot` so existing docs and CI keep working.
+# Vitest writes new references when `--update` is set.
+updateSnapshot: build ## Run `npm run test.browser -- --update`
+	docker run -i --rm ${MOUNTS} markdown test.browser -- --update
 
 shell: build ## Docker shell.
 	docker run -it --rm ${MOUNTS} --entrypoint /bin/bash markdown

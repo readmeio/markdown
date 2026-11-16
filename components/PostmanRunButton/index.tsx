@@ -41,7 +41,6 @@ const PostmanRunButton = ({
         if (scriptElement) document.head.removeChild(scriptElement);
       };
     }
-    return undefined;
   }, []);
 
   return (

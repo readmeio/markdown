@@ -2,56 +2,13 @@ import type { Html, Node, PhrasingContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxExpressionAttribute, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
 import { htmlRawNames } from 'micromark-util-html-tag-name';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import { unified } from 'unified';
 
-import { NodeTypes } from '../../../../enums';
-import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { NON_REPARSED_BODY_TAGS } from '../../../../utils/common-html-words';
 import { walkTags } from '../tables/tag-walker';
 import { tableTags } from '../tables/utils';
+import { soleUserVariableExpression } from '../variables-text';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
-
-const buildInlineMdProcessor = (safeMode: boolean) => {
-  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, { safeMode });
-
-  return unified()
-    .data('micromarkExtensions', micromarkExtensions)
-    .data('fromMarkdownExtensions', fromMarkdownExtensions)
-    .use(remarkParse)
-    .use(remarkGfm);
-};
-
-const processorCache = new Map<boolean, ReturnType<typeof buildInlineMdProcessor>>();
-
-/**
- * Unified processor for re-parsing the body of an MDX component
- * Memoized based on the argument value so we don't pay the construction cost on every parse
- * Currently the argument is only safeMode, but we could add more arguments in the future,
- * in which case the key would need to be extend to include the new arguments.
- */
-export const getInlineMdProcessor = ({ safeMode = false }: { safeMode?: boolean } = {}) => {
-  let processor = processorCache.get(safeMode);
-  if (!processor) {
-    processor = buildInlineMdProcessor(safeMode);
-    processorCache.set(safeMode, processor);
-  }
-  return processor;
-};
-
-/**
- * Mark re-parsed subtree roots with the string their positions index into, so consumers
- * slicing by offset use the right source (see `Data.reparseSource`). Only roots are
- * stamped; descendants resolve via their nearest stamped ancestor. Roots a deeper
- * re-parse already stamped keep their own string.
- */
-export const stampReparseSource = (roots: Node[], reparseSource: string) => {
-  roots.forEach(root => {
-    if (!root.data?.reparseSource) root.data = { ...root.data, reparseSource };
-  });
-};
 
 /**
  * True when a tag name starts with an uppercase letter — ReadMe's marker for
@@ -66,9 +23,7 @@ export const isPascalCase = (tag: string): boolean => /^[A-Z]/.test(tag);
  * signal to decide eligibility.
  */
 export const hasExpressionAttr = (attributes: MdxAttributes): boolean =>
-  attributes.some(
-    attr => attr.type === 'mdxJsxAttribute' && typeof attr.value === 'object' && attr.value !== null,
-  );
+  attributes.some(attr => attr.type === 'mdxJsxAttribute' && typeof attr.value === 'object' && attr.value !== null);
 
 /**
  * Factory for the `mdxJsxTextElement` node shape. `position` is optional
@@ -97,23 +52,19 @@ export const NESTED_TABLE_RE = /<table[\s>]/i;
 export const isMarkdownPromotableHtmlTag = (tag: string): boolean => !NON_PROMOTABLE_PLAIN_TAGS.has(tag);
 
 // Expression nodes count as plain so `<div>{1+1}</div>` keeps its current
-// literal-brace behavior; variables/glossary already resolve inside raw html.
-const PLAIN_CONTENT_TYPES = new Set<string>([
-  'paragraph',
-  'text',
-  'html',
-  'mdxTextExpression',
-  'mdxFlowExpression',
-  NodeTypes.variable,
-  NodeTypes.glossary,
-]);
+// literal-brace behavior — authors put CSS-shaped braces in these bodies, and only
+// a reference that names a real variable may resolve.
+const PLAIN_CONTENT_TYPES = new Set<string>(['paragraph', 'text', 'html', 'mdxTextExpression', 'mdxFlowExpression']);
 
 // Promoting plain HTML is only worth bypassing rehype-raw's parse5 pass when
-// the body parses into an actual markdown construct.
+// the body parses into an actual markdown construct. Variables and glossary terms
+// count: parse5 renders `<<var>>` as a stray `<` plus a `<var>` tag, so a body that
+// holds nothing else still has to be promoted to resolve.
 export const containsMarkdownConstruct = (nodes: Node[]): boolean =>
   nodes.some(
     node =>
       !PLAIN_CONTENT_TYPES.has(node.type) ||
+      soleUserVariableExpression(node) !== null ||
       ('children' in node && Array.isArray(node.children) && containsMarkdownConstruct(node.children)),
   );
 

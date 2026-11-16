@@ -673,3 +673,55 @@ describe('html tags rendering', () => {
     });
   });
 });
+
+describe('mdxish list item with an empty first line', () => {
+  const firstItemChildren = (md: string) =>
+    findElementByTagName(mdxish(md), 'li')!
+      .children.filter((child): child is Element => child.type === 'element')
+      .map(child => child.tagName);
+
+  it.each([
+    ['a bullet sublist', '-\n  - B', ['br', 'ul']],
+    ['an ordered sublist', '1.\n   1. B', ['br', 'ol']],
+    ['a blockquote', '-\n  > quote', ['br', 'blockquote']],
+    ['a fenced code block', '-\n  ```\n  code\n  ```', ['br', 'pre']],
+    ['a sublist inside a component body', '<Tabs>\n<Tab title="One">\n\n-\n  - B\n\n</Tab>\n</Tabs>', ['br', 'ul']],
+  ])('keeps the empty line above %s', (_, md, expected) => {
+    expect(firstItemChildren(md)).toStrictEqual(expected);
+  });
+
+  it('keeps a sublist written on the marker’s line on that line', () => {
+    expect(firstItemChildren('- - B')).toStrictEqual(['ul']);
+  });
+});
+
+describe('mdxish tight list item with text and a block', () => {
+  const itemChildren = (md: string, index = 0) =>
+    findAllElementsByTagName(mdxish(md), 'li')
+      .at(index)!
+      .children.filter((child): child is Element => child.type === 'element')
+      .map(child => child.tagName);
+
+  // The editor always wraps item text in <p>, and the block after it relies on that margin
+  it.each([
+    ['a callout', '1. one\n2. text\n   > 📘\n   > body', 1, ['p', 'Callout']],
+    ['a fenced code block', '- text\n  ```\n  code\n  ```', 0, ['p', 'pre']],
+  ])('wraps the text in <p> when followed by %s', (_, md, index, expected) => {
+    expect(itemChildren(md, index)).toStrictEqual(expected);
+  });
+
+  it('keeps the other items of the list tight', () => {
+    expect(itemChildren('1. one\n2. text\n   > 📘\n   > body', 0)).toStrictEqual([]);
+  });
+
+  it('keeps text followed only by a sublist unwrapped', () => {
+    expect(itemChildren('- text\n  - nested')).toStrictEqual(['ul']);
+  });
+
+  it.each([
+    ['a link definition', '- [ref]: /url\n  text\n- next'],
+    ['an HTML comment', '- text\n  <!-- note -->\n- next'],
+  ])('keeps text next to %s unwrapped', (_, md) => {
+    expect(itemChildren(md)).toStrictEqual([]);
+  });
+});

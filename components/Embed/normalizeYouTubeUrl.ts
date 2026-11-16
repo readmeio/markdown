@@ -1,6 +1,13 @@
 // YouTube watch/share URLs (youtube.com/watch?v=ID, youtu.be/ID) set X-Frame-Options
 // and refuse to be framed. The player only allows embedding via youtube.com/embed/ID.
-const YOUTUBE_HOSTS = new Set(['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be', 'www.youtu.be', 'm.youtu.be']);
+const YOUTUBE_HOSTS = new Set([
+  'youtube.com',
+  'www.youtube.com',
+  'm.youtube.com',
+  'youtu.be',
+  'www.youtu.be',
+  'm.youtu.be',
+]);
 
 // /embed/ accepts `start` (integer seconds), not the watch-page `t` value which may carry units (e.g. 596s, 1h2m3s).
 const toStartSeconds = (timestamp: string): string | null => {

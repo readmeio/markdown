@@ -1,5 +1,30 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Render engine regressions tests > block-no-translate (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > block-no-translate (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="block-notranslate"></div><div class="heading-text">Block NoTranslate</div><a aria-label="Skip link to Block NoTranslate" class="heading-anchor-icon fa fa-regular fa-anchor" href="#block-notranslate"></a></h1>
+<div class="readme-tailwind"><div class="readme-no-translate" translate="no"><p>Acme Cloud keeps <strong>every</strong> name as is.</p><ul>
+<li>Acme CLI</li>
+<li>Acme <span translate="no">Studio</span></li>
+</ul></div></div>
+<p>Text after the block.</p>
+<div class="readme-tailwind"><div class="readme-no-translate" translate="no"><ul>
+<li>Acme CLI</li>
+<li>Acme SDK</li>
+</ul></div></div>
+<div class="readme-tailwind"><div class="readme-no-translate" translate="no"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Acme callout</p></blockquote></div></div>
+<p>Some text<br/>
+<span class="readme-tailwind"><span translate="no">Acme</span></span></p>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heads-up"></div><div class="heading-text">Heads up</div><a aria-label="Skip link to Heads up" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heads-up"></a></h3><div class="readme-tailwind"><div class="readme-no-translate" translate="no"><p>Acme Cloud is the product name.</p></div></div></blockquote>
+<ul>
+<li>
+<p>Install</p>
+<div class="readme-tailwind"><div class="readme-no-translate" translate="no"><p>Acme CLI</p></div></div>
+</li>
+</ul>"
+`;
+
 exports[`Render engine regressions tests > callout-icons (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="callout-rendering-across-engines"></div><div class="heading-text">Callout rendering across engines</div><a aria-label="Skip link to Callout rendering across engines" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout-rendering-across-engines"></a></h1>
 <blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading"></a></h3><p>Body</p></blockquote>
@@ -48,6 +73,26 @@ exports[`Render engine regressions tests > compact-headings (mdxish) 1`] = `
 <h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h3"></div><div class="heading-text">Normal h3</div><a aria-label="Skip link to Normal h3" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h3"></a></h3>"
 `;
 
+exports[`Render engine regressions tests > components-under-list-items (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > components-under-list-items (mdxish) 1`] = `
+"<ul>
+<li>
+<p>one</p>
+<div class="readme-tailwind"><ol class="steps"><li class="step"><p>First, install the dependencies.</p></li></ol></div>
+</li>
+<li>
+<p>two</p>
+<div class="readme-tailwind"><pre><code>Test content
+</code></pre></div>
+</li>
+<li>
+<p>three</p>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>This is an MDX-style callout component.</p></blockquote></div>
+</li>
+</ul>"
+`;
+
 exports[`Render engine regressions tests > consecutive-emojis-fa (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="emoji-rendering"></div><div class="heading-text">Emoji rendering</div><a aria-label="Skip link to Emoji rendering" class="heading-anchor-icon fa fa-regular fa-anchor" href="#emoji-rendering"></a></h1>
 <p>Consecutive gemojis: <!-- -->😁<!-- -->:grin: should both render side by side.</p>
@@ -78,7 +123,7 @@ exports[`Render engine regressions tests > convergent (mdxish) 1`] = `
 
 exports[`Render engine regressions tests > deprecated-html-tags (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="deprecated-html-tags"></div><div class="heading-text">Deprecated HTML tags</div><a aria-label="Skip link to Deprecated HTML tags" class="heading-anchor-icon fa fa-regular fa-anchor" href="#deprecated-html-tags"></a></h1>
-<div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:3"><div class="Card Card_card"><div class="Card-content"><center><strong>Centralized Model Management and Visibility</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Precise Control Over Model Access</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Unified Security and Permissions in the JFrog Platform</strong></center></div></div></div>
+<div class="CardsGrid CardsGrid_wrap" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:3"><div class="Card Card_card"><div class="Card-content"><center><strong>Centralized Model Management and Visibility</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Precise Control Over Model Access</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Unified Security and Permissions in the JFrog Platform</strong></center></div></div></div>
 <center><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-blank-line-separated-island-inside-a-center"></div><div class="heading-text">A blank-line separated island inside a <code class="rdmd-code lang-undefined theme-undefined">&lt;center&gt;</code></div><a aria-label="Skip link to A blank-line separated island inside a ,[object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-blank-line-separated-island-inside-a-center"></a></h2><p><a href="https://example.com" target="" title=""><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="logo" class="img  " height="auto" loading="lazy" src="https://example.com/logo.png" title="" width="auto"/></span></span></a></p></center>
 <p>Inline legacy formatting: <font color="red" size="4"><strong>red</strong></font>, <big>big</big>,
 <strike>gone</strike>, <tt>mono</tt>, <acronym title="HyperText Markup Language">HTML</acronym>.</p>
@@ -90,7 +135,7 @@ exports[`Render engine regressions tests > deprecated-html-tags (mdx) 1`] = `
 
 exports[`Render engine regressions tests > deprecated-html-tags (mdxish) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="deprecated-html-tags"></div><div class="heading-text">Deprecated HTML tags</div><a aria-label="Skip link to Deprecated HTML tags" class="heading-anchor-icon fa fa-regular fa-anchor" href="#deprecated-html-tags"></a></h1>
-<div class="readme-tailwind"><div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:3"><div class="Card Card_card"><div class="Card-content"><center><strong>Centralized Model Management and Visibility</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Precise Control Over Model Access</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Unified Security and Permissions in the JFrog Platform</strong></center></div></div></div></div>
+<div class="readme-tailwind"><div class="CardsGrid CardsGrid_wrap" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:3"><div class="Card Card_card"><div class="Card-content"><center><strong>Centralized Model Management and Visibility</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Precise Control Over Model Access</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Unified Security and Permissions in the JFrog Platform</strong></center></div></div></div></div>
 <center>
 <h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-blank-line-separated-island-inside-a-center"></div><div class="heading-text">A blank-line separated island inside a <code class="rdmd-code lang-undefined theme-undefined">&lt;center&gt;</code></div><a aria-label="Skip link to A blank-line separated island inside a ,[object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-blank-line-separated-island-inside-a-center"></a></h2>
 <p><a href="https://example.com" target="" title=""><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="logo" class="img  " height="auto" loading="lazy" src="https://example.com/logo.png" title="" width="auto"/></span></span></a></p>
@@ -151,6 +196,60 @@ exports[`Render engine regressions tests > expressions-in-tables (mdx) 1`] = `""
 exports[`Render engine regressions tests > expressions-in-tables (mdxish) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="expressions-inside-raw-table-cells"></div><div class="heading-text">Expressions inside raw table cells</div><a aria-label="Skip link to Expressions inside raw table cells" class="heading-anchor-icon fa fa-regular fa-anchor" href="#expressions-inside-raw-table-cells"></a></h1>
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Command</th><th>Description</th><th>random syntax</th></tr></thead><tbody><tr><td><code class="rdmd-code lang-undefined theme-undefined">random-mtls-truststore</code></td><td>With the <code class="rdmd-code lang-undefined theme-undefined">--version</code> flag, this randoms your CA set for a specific version.<br/><br/><blockquote><b>Note:</b> If you don&#x27;t provide the <code class="rdmd-code lang-undefined theme-undefined">--version</code> flag, by default, it randoms the <code class="rdmd-code lang-undefined theme-undefined">latest</code> CA set version whether it is active or not.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-mtls-truststore --version {your-ca-set-version-number}{your-ca-set-name}</code></td></tr><tr><td rowspan="4"><code class="rdmd-code lang-undefined theme-undefined">random-property</code></td><td>With the <code class="rdmd-code lang-undefined theme-undefined">--version</code> flag, this randoms your property&#x27;s rules without includes for a specific version. <br/><br/><blockquote><b>Note:</b> If you don&#x27;t provide the <code class="rdmd-code lang-undefined theme-undefined">--version</code> flag, by default, it randoms the <code class="rdmd-code lang-undefined theme-undefined">latest</code> property version whether it is active or not.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property --version {your-property-version-number}{your-property-name}</code><br/><br/><code class="rdmd-code lang-undefined theme-undefined"> random-property {your-property-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--rs-as-hcl</code> flag, this randoms your property&#x27;s rules as the <code class="rdmd-code lang-undefined theme-undefined">_property_rules_builder</code> data source in HCL format.<br/><br/><blockquote><b>Note:</b> Must be a valid dated rule format ≥ <code class="rdmd-code lang-undefined theme-undefined">v2023-01-05</code>. Cannot use <code class="rdmd-code lang-undefined theme-undefined">latest</code>.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property --rs-as-hcl {your-property-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--split-depth</code> flag, this randoms rules into a dedicated module. Each rule will be placed in a separate file up to a specified nesting level.<br/><br/><blockquote><b>Note:</b> You can use this flag only along with the <code class="rdmd-code lang-undefined theme-undefined">--rs-as-hcl</code> flag.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property --split-depth={nesting-level-number-value} --rs-as-hcl {your-property-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--r-format</code> flag, this randoms your property configuration using the specified rule format version. This affects only the randomed configuration and doesn&#x27;t modify the property on the server.<br/><br/><blockquote><b>Notes:</b><ul><li>Must be a valid dated rule format, for example, <code class="rdmd-code lang-undefined theme-undefined">v2024-02-12</code>. The <code class="rdmd-code lang-undefined theme-undefined">latest</code> value is allowed only for properties that use the JSON rule format.</li><li>To protect your settings for behaviors and criteria that aren&#x27;t backwards compatible, updating your rule format on import only works with versions greater than the one you&#x27;re on.</li></ul></blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property --r-format your-rule-formatyour-property-name</code></td></tr><tr><td rowspan="4"><code class="rdmd-code lang-undefined theme-undefined">random-property-include</code></td><td>randoms your property&#x27;s include.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property-include {your-contract-id}{your-property-include-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--rs-as-hcl</code> flag, this randoms your property&#x27;s include as the <code class="rdmd-code lang-undefined theme-undefined">_property_rules_builder</code> data source in HCL format.<br/><br/><blockquote><b>Note:</b> Must be a valid dated rule format ≥ <code class="rdmd-code lang-undefined theme-undefined">v1</code>. Cannot use <code class="rdmd-code lang-undefined theme-undefined">latest</code>.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property-include --rs-as-hcl {your-contract-id}{your-property-include-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--split-depth</code> flag, this randoms rules into a dedicated module. Each rule will be placed in a separate file up to a specified nesting level.<br/><br/><blockquote><b>Note:</b> You can use this flag only along with the <code class="rdmd-code lang-undefined theme-undefined">--rs-as-hcl</code> flag.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property-include --split-depth={nesting-level-number-value} --rs-as-hcl {your-contract-id}{your-property-include-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--r-format</code> flag <br/><br/><blockquote><b>Notes:</b><ul><li> Must be a valid dated rule format, for example, <code class="rdmd-code lang-undefined theme-undefined">v2024-02-12</code>. Cannot use <code class="rdmd-code lang-undefined theme-undefined">latest</code>.</li><li>To protect your settings for behaviors and criteria that aren&#x27;t backwards compatible, updating your rule format on import only works with versions greater than the one you&#x27;re on.</li></ul></blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property-include --r-format your-rule-format{your-contract-id}your-property-include-name</code></td></tr><tr><td><code class="rdmd-code lang-undefined theme-undefined">random-reportinggroup</code></td><td>randoms your reporting group configuration.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-reportinggroup {your-reporting-group-name}</code></td></tr><tr><td rowspan="8"><code class="rdmd-code lang-undefined theme-undefined">random-zone</code></td><td>With the <code class="rdmd-code lang-undefined theme-undefined">--resources</code> flag, this generates a JSON-formatted resource file. <code class="rdmd-code lang-undefined theme-undefined">--createconfig</code> uses this file as input.<br/><br/><blockquote><b>Note:</b> randoming a configuration for an <code class="rdmd-code lang-undefined theme-undefined">ALIAS</code> zone isn&#x27;t currently supported.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --resources {your-dns-zone-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--createconfig</code> flag, this generates configurations based on the values in the output files from <code class="rdmd-code lang-undefined theme-undefined">--resources</code>.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --createconfig {your-dns-zone-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--importscript</code> flag, this generates an import script for the generated zone configuration.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --importscript {your-dns-zone-name}</code></td></tr><tr><td>With the advanced <code class="rdmd-code lang-undefined theme-undefined">--recordname</code> option for the <code class="rdmd-code lang-undefined theme-undefined">--resources</code> and <code class="rdmd-code lang-undefined theme-undefined">--createconfig</code> flags, this filters the generated resource list by a given record name.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --resources --recordname {your-record-name}{your-dns-zone-name}</code></td></tr><tr><td>With the advanced <code class="rdmd-code lang-undefined theme-undefined">--namesonly</code>option for the <code class="rdmd-code lang-undefined theme-undefined">--resources</code> and <code class="rdmd-code lang-undefined theme-undefined">--createconfig</code> flags, this generates a resource file with recordset names only for all associated record types.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --resources --namesonly {your-dns-zone-name}</code><br/><br/><code class="rdmd-code lang-undefined theme-undefined"> random-zone --createconfig --namesonly {your-dns-zone-name}</code></td></tr><tr><td>With the advanced <code class="rdmd-code lang-undefined theme-undefined">--segmentconfig</code> option for the <code class="rdmd-code lang-undefined theme-undefined">--createconfig</code> flag, this generates a modularized configuration.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --createconfig --segmentconfig {your-dns-zone-name}</code></td></tr><tr><td>With the advanced <code class="rdmd-code lang-undefined theme-undefined">--configonly</code> option for the <code class="rdmd-code lang-undefined theme-undefined">--createconfig</code> flag, this generates a zone configuration without JSON itemization. The configuration generated varies based on which set of flags you use.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --createconfig --configonly {your-dns-zone-name}</code></td></tr></tbody></table></div></div>"
+`;
+
+exports[`Render engine regressions tests > footnotes-in-table (mdx) 1`] = `
+"<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Term</th><th>Definition</th></tr></thead><tbody><tr><td>Example<sup><a id="user-content-fnref-1" data-footnote-ref="true" aria-describedby="footnote-label" href="#user-content-fn-1" target="" title="">1</a></sup></td><td><strong>Bold</strong> with a note<sup><a id="user-content-fnref-note" data-footnote-ref="true" aria-describedby="footnote-label" href="#user-content-fn-note" target="" title="">2</a></sup></td></tr></tbody></table></div></div>
+<table><thead><tr><th>Term</th></tr></thead><tbody><tr><td>Lowercase<sup><a id="user-content-fnref-1-2" data-footnote-ref="true" aria-describedby="footnote-label" href="#user-content-fn-1" target="" title="">1</a></sup></td></tr></tbody></table>
+<section data-footnotes="true" class="footnotes"><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="footnote-label"></div><div class="heading-text">Footnotes</div><a aria-label="Skip link to Footnotes" class="heading-anchor-icon fa fa-regular fa-anchor" href="#footnote-label"></a></h2>
+<ol>
+<li id="user-content-fn-1">
+<p>The first note. <a data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref" href="#user-content-fnref-1" target="" title="">↩</a> <a data-footnote-backref="" aria-label="Back to reference 1-2" class="data-footnote-backref" href="#user-content-fnref-1-2" target="" title="">↩<sup>2</sup></a></p>
+</li>
+<li id="user-content-fn-note">
+<p>A named note. <a data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref" href="#user-content-fnref-note" target="" title="">↩</a></p>
+</li>
+</ol>
+</section>"
+`;
+
+exports[`Render engine regressions tests > footnotes-in-table (mdxish) 1`] = `
+"
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Term</th><th>Definition</th></tr></thead><tbody><tr><td>Example<sup><a id="user-content-fnref-1" data-footnote-ref="true" aria-describedby="footnote-label" ariaDescribedBy="footnote-label" href="#user-content-fn-1" target="" title="">1</a></sup></td><td><strong>Bold</strong> with a note<sup><a id="user-content-fnref-note" data-footnote-ref="true" aria-describedby="footnote-label" ariaDescribedBy="footnote-label" href="#user-content-fn-note" target="" title="">2</a></sup></td></tr></tbody></table></div></div>
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Term</th></tr></thead><tbody><tr><td>Lowercase<sup><a id="user-content-fnref-1-2" data-footnote-ref="true" aria-describedby="footnote-label" ariaDescribedBy="footnote-label" href="#user-content-fn-1" target="" title="">1</a></sup></td></tr></tbody></table></div></div>
+<section data-footnotes="true" class="footnotes"><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="footnote-label"></div><div class="heading-text">Footnotes</div><a aria-label="Skip link to Footnotes" class="heading-anchor-icon fa fa-regular fa-anchor" href="#footnote-label"></a></h2>
+<ol>
+<li id="user-content-fn-1">
+<p>The first note. <a data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref" href="#user-content-fnref-1" target="" title="">↩</a> <a data-footnote-backref="" aria-label="Back to reference 1-2" class="data-footnote-backref" href="#user-content-fnref-1-2" target="" title="">↩<sup>2</sup></a></p>
+</li>
+<li id="user-content-fn-note">
+<p>A named note. <a data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref" href="#user-content-fnref-note" target="" title="">↩</a></p>
+</li>
+</ol>
+</section>"
 `;
 
 exports[`Render engine regressions tests > htmlblock (mdx) 1`] = `
@@ -519,6 +618,63 @@ exports[`Render engine regressions tests > indented-markdown-islands-in-html (md
 </div>"
 `;
 
+exports[`Render engine regressions tests > inline-image-tailwind (mdx) 1`] = `
+"<p>An inline <span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span> image should stay on the same line as this text.</p>
+<p>Line 1</p>
+<span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span>
+<p>Line 2</p>
+<span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span>
+<p>A plain inline <span>span</span> tag stays inline as regular HTML.</p>"
+`;
+
+exports[`Render engine regressions tests > inline-image-tailwind (mdxish) 1`] = `
+"<p>An inline <span class="readme-tailwind"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span></span> image should stay on the same line as this text.</p>
+<p>Line 1</p>
+<div class="readme-tailwind"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span></div>
+<p>Line 2</p>
+<div class="readme-tailwind"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span></div>
+<p>A plain inline <span>span</span> tag stays inline as regular HTML.</p>"
+`;
+
+exports[`Render engine regressions tests > inline-no-translate (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="inline-notranslate"></div><div class="heading-text">Inline NoTranslate</div><a aria-label="Skip link to Inline NoTranslate" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inline-notranslate"></a></h1>
+<p>Hello <span translate="no">Acme <strong>Cloud</strong></span> world.</p>
+<p><span translate="no">Acme</span> is great.</p>
+<p>Use <span translate="no"><a href="https://example.com" target="" title="">Acme</a>, <code class="rdmd-code lang-undefined theme-undefined">acme run</code> and <em>Acme</em></span> today.</p>
+<ul>
+<li>Install <span translate="no">Acme CLI</span> first</li>
+</ul>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Product</th><th>Notes</th></tr></thead><tbody><tr><td><span translate="no">Acme</span></td><td>Keep the name</td></tr></tbody></table></div></div>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="acme-heads-up"></div><div class="heading-text"><span translate="no">Acme</span> heads up</div><a aria-label="Skip link to [object Object], heads up" class="heading-anchor-icon fa fa-regular fa-anchor" href="#acme-heads-up"></a></h3><p><span translate="no">Acme Cloud</span> is the product name.</p></blockquote>
+<details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><span>Set up <span translate="no">Acme</span> first</span></summary><div class="Accordion-content"><p>The title prop holds a NoTranslate.</p></div></details>"
+`;
+
+exports[`Render engine regressions tests > inline-no-translate (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="inline-notranslate"></div><div class="heading-text">Inline NoTranslate</div><a aria-label="Skip link to Inline NoTranslate" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inline-notranslate"></a></h1>
+<p>Hello <span class="readme-tailwind"><span translate="no">Acme <strong>Cloud</strong></span></span> world.</p>
+<p><span class="readme-tailwind"><span translate="no">Acme</span></span> is great.</p>
+<p>Use <span class="readme-tailwind"><span translate="no"><a href="https://example.com" target="" title="">Acme</a>, <code class="rdmd-code lang-undefined theme-undefined">acme run</code> and <em>Acme</em></span></span> today.</p>
+<ul>
+<li>Install <span class="readme-tailwind"><span translate="no">Acme CLI</span></span> first</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Product</th><th>Notes</th></tr></thead><tbody><tr><td><span class="readme-tailwind"><span translate="no">Acme</span></span></td><td>Keep the name</td></tr></tbody></table></div></div>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="acme-heads-up"></div><div class="heading-text"><span class="readme-tailwind"><span translate="no">Acme</span></span> heads up</div><a aria-label="Skip link to ,[object Object], heads up" class="heading-anchor-icon fa fa-regular fa-anchor" href="#acme-heads-up"></a></h3><p><span class="readme-tailwind"><span translate="no">Acme Cloud</span></span> is the product name.</p></blockquote>
+<div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><span>Set up <span translate="no">Acme</span> first</span></summary><div class="Accordion-content"><p>The title prop holds a NoTranslate.</p></div></details></div>"
+`;
+
 exports[`Render engine regressions tests > jsx-attribute-entities (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-attribute-entities"></div><div class="heading-text">JSX attribute entities</div><a aria-label="Skip link to JSX attribute entities" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-attribute-entities"></a></h1>
 <blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p>Numeric-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the construction sign.</p></blockquote>
@@ -626,7 +782,60 @@ exports[`Render engine regressions tests > mistaken-table-closer (mdxish) 1`] = 
 <li>This behavior is not required for any Enhanced TLS certificates.</li>
 <li>There are no options for this behavior.</li>
 </ul>
+</blockquote>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><th class="page-label-version">Version: <code class="rdmd-code lang-undefined theme-undefined">v2026-07-21</code></th><th class="page-label-includes">Includes use: Yes</th></thead></table></div></div>
+<p><strong>Behavior name:</strong> Auto Domain Validation</p>
+<blockquote>
+<p><strong>Notes:</strong></p>
+<ul>
+<li>This behavior is not required for any Enhanced TLS certificates.</li>
+</ul>
 </blockquote>"
+`;
+
+exports[`Render engine regressions tests > multiline-jsx-expressions (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="multiline-jsx-expressions"></div><div class="heading-text">Multiline JSX expressions</div><a aria-label="Skip link to Multiline JSX expressions" class="heading-anchor-icon fa fa-regular fa-anchor" href="#multiline-jsx-expressions"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-conditional-whose-branch-sits-on-its-own-line"></div><div class="heading-text">A conditional whose branch sits on its own line</div><a aria-label="Skip link to A conditional whose branch sits on its own line" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-conditional-whose-branch-sits-on-its-own-line"></a></h2>
+<blockquote class="callout callout_info" theme="info">Ask your CSM for a higher limit.</blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-list-rendered-from-data"></div><div class="heading-text">A list rendered from data</div><a aria-label="Skip link to A list rendered from data" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-list-rendered-from-data"></a></h2>
+<!-- -->
+<blockquote class="callout callout_okay" theme="okay">Region <!-- -->us</blockquote><blockquote class="callout callout_okay" theme="okay">Region <!-- -->eu</blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-callback-body-with-a-blank-line-between-statements"></div><div class="heading-text">A callback body with a blank line between statements</div><a aria-label="Skip link to A callback body with a blank line between statements" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-callback-body-with-a-blank-line-between-statements"></a></h2>
+<blockquote class="callout callout_okay" theme="okay">US</blockquote><blockquote class="callout callout_okay" theme="okay">EU</blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inline-and-text-results-keep-their-paragraph"></div><div class="heading-text">Inline and text results keep their paragraph</div><a aria-label="Skip link to Inline and text results keep their paragraph" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inline-and-text-results-keep-their-paragraph"></a></h2>
+<a href="/reference">API reference</a>
+<!-- -->GET / POST<!-- -->
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inside-components"></div><div class="heading-text">Inside components</div><a aria-label="Skip link to Inside components" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inside-components"></a></h2>
+<div class="TabGroup"><header><nav class="TabGroup-nav"><button class="TabGroup-tab_active">Enterprise</button><button class="TabGroup-tab">Free</button></nav></header><section><div><div class="TabContent"><blockquote class="callout callout_info" theme="info">Enterprise tab</blockquote></div></div><div hidden=""><div class="TabContent"><p>Nothing here.</p></div></div></section></div>
+<details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i>Regions</summary><div class="Accordion-content"><blockquote class="callout callout_okay" theme="okay">us</blockquote><blockquote class="callout callout_okay" theme="okay">eu</blockquote></div></details>
+<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="🃏"><span class="callout-icon">🃏</span><blockquote class="callout callout_info" theme="info">Inside a custom component</blockquote></blockquote></div>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>2</td><td>Ada</td></tr></table></div></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="lone-variables-stay-bare"></div><div class="heading-text">Lone variables stay bare</div><a aria-label="Skip link to Lone variables stay bare" class="heading-anchor-icon fa fa-regular fa-anchor" href="#lone-variables-stay-bare"></a></h2>
+<blockquote class="callout callout_default" theme="default">Ada</blockquote>
+<!-- -->Ada"
+`;
+
+exports[`Render engine regressions tests > multiline-jsx-expressions (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="multiline-jsx-expressions"></div><div class="heading-text">Multiline JSX expressions</div><a aria-label="Skip link to Multiline JSX expressions" class="heading-anchor-icon fa fa-regular fa-anchor" href="#multiline-jsx-expressions"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-conditional-whose-branch-sits-on-its-own-line"></div><div class="heading-text">A conditional whose branch sits on its own line</div><a aria-label="Skip link to A conditional whose branch sits on its own line" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-conditional-whose-branch-sits-on-its-own-line"></a></h2>
+<blockquote class="callout callout_info" theme="info"><p>Ask your CSM for a higher limit.</p></blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-list-rendered-from-data"></div><div class="heading-text">A list rendered from data</div><a aria-label="Skip link to A list rendered from data" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-list-rendered-from-data"></a></h2>
+<blockquote class="callout callout_okay" theme="okay"><p>Region us</p></blockquote>
+<blockquote class="callout callout_okay" theme="okay"><p>Region eu</p></blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-callback-body-with-a-blank-line-between-statements"></div><div class="heading-text">A callback body with a blank line between statements</div><a aria-label="Skip link to A callback body with a blank line between statements" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-callback-body-with-a-blank-line-between-statements"></a></h2>
+<blockquote class="callout callout_okay" theme="okay"><p>US</p></blockquote>
+<blockquote class="callout callout_okay" theme="okay"><p>EU</p></blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inline-and-text-results-keep-their-paragraph"></div><div class="heading-text">Inline and text results keep their paragraph</div><a aria-label="Skip link to Inline and text results keep their paragraph" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inline-and-text-results-keep-their-paragraph"></a></h2>
+<p><a href="/reference" target="" title="">API reference</a></p>
+<p>GET / POST</p>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inside-components"></div><div class="heading-text">Inside components</div><a aria-label="Skip link to Inside components" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inside-components"></a></h2>
+<div class="readme-tailwind"><div class="TabGroup"><header><nav class="TabGroup-nav"><button class="TabGroup-tab_active">Enterprise</button><button class="TabGroup-tab">Free</button></nav></header><section><div><div class="TabContent"><blockquote class="callout callout_info" theme="info"><p>Enterprise tab</p></blockquote></div></div><div hidden=""><div class="TabContent"><p>Nothing here.</p></div></div></section></div></div>
+<div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i>Regions</summary><div class="Accordion-content"><blockquote class="callout callout_okay" theme="okay"><p>us</p></blockquote><blockquote class="callout callout_okay" theme="okay"><p>eu</p></blockquote></div></details></div>
+<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="🃏"><span class="callout-icon">🃏</span><blockquote class="callout callout_info" theme="info"><p>Inside a custom component</p></blockquote></blockquote></div>
+<div class="readme-tailwind"><div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>2</td><td><span>Ada</span></td></tr></table></div></div></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="lone-variables-stay-bare"></div><div class="heading-text">Lone variables stay bare</div><a aria-label="Skip link to Lone variables stay bare" class="heading-anchor-icon fa fa-regular fa-anchor" href="#lone-variables-stay-bare"></a></h2>
+<div class="readme-tailwind"><blockquote class="callout callout_default" theme="default"><span>Ada</span></blockquote></div>
+<p><span>Ada</span></p>"
 `;
 
 exports[`Render engine regressions tests > rich (mdx) 1`] = `
@@ -1221,6 +1430,24 @@ exports[`Render engine regressions tests > unclosed-tags (mdxish) 1`] = `
 "
 `;
 
+exports[`Render engine regressions tests > unquoted-html-attributes (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > unquoted-html-attributes (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="unquoted-html-attributes"></div><div class="heading-text">Unquoted HTML attributes</div><a aria-label="Skip link to Unquoted HTML attributes" class="heading-anchor-icon fa fa-regular fa-anchor" href="#unquoted-html-attributes"></a></h1>
+<p>Read the <a href="https://example.com/docs#start" target="" title="">docs</a> before you start.</p>
+<p><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img  " height="auto" loading="lazy" src="https://example.com/image.png" title="" width="auto"/></span></span></p>
+<p><span class="badge">Beta</span> and <a href="/relative/path" target="" title="">a relative link</a>.</p>
+<p>Open <a href="https://example.com/users/{id}" target="" title=""><strong>your profile</strong></a> to continue.</p>
+<div data-url="https://example.com">
+<p>A paragraph inside a block tag.</p>
+</div>
+<p>Pass &lt;input.value=foo&gt; to the CLI, or &lt;key=value&gt;, or compare &lt;a = b&gt;.</p>
+<a href="https://example.com?a=b" target="" title="name">Mixed brace and unquoted</a>
+<pre class="x">\`</pre>\`
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="heading-after-a-raw-tag"></div><div class="heading-text">Heading after a raw tag</div><a aria-label="Skip link to Heading after a raw tag" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading-after-a-raw-tag"></a></h2>
+"
+`;
+
 exports[`Render engine regressions tests > variables-everywhere (mdx) 1`] = `""`;
 
 exports[`Render engine regressions tests > variables-everywhere (mdxish) 1`] = `
@@ -1256,4 +1483,42 @@ stays literal:</p>
 <div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-rocket"></i>us-east-1</summary><div class="Accordion-content"><p>Accordion body with <span>sk_test_abc123</span></p></div></details></div>
 <div class="readme-tailwind"><div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:auto-fit"><a class="Card Card_card" href="https://example.com/us-east-1"><div class="Card-content"><div class="Card-title">Key: sk_test_abc123 / &lt;&lt;apiKey&gt;&gt;<i aria-hidden="true" class="Card-arrow fa-regular fa-arrow-right"></i></div><p>Card body</p></div></a></div></div>
 <p>Closing prose with a glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
+`;
+
+exports[`Render engine regressions tests > vars-in-inline-html (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > vars-in-inline-html (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="variables-in-inline-html"></div><div class="heading-text">Variables in inline HTML</div><a aria-label="Skip link to Variables in inline HTML" class="heading-anchor-icon fa fa-regular fa-anchor" href="#variables-in-inline-html"></a></h1>
+<p><span>Inline: <span>Acme Inc</span></span></p>
+<div><span>Acme Inc</span></div>
+<p><span>Acme Inc</span></p>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="companyname"></div><div class="heading-text"><span>Acme Inc</span></div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#companyname"></a></h3>
+<div><span>Acme Inc</span></div>
+<p>Plan: <span>Enterprise</span></p>
+<div><strong>bold</strong> and <span>Acme Inc</span></div>
+<div style="color:red"><span>Acme Inc</span></div>
+<div>{ color: red }</div>
+<div>{1 + 1}</div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="wrapper-layouts"></div><div class="heading-text">Wrapper layouts</div><a aria-label="Skip link to Wrapper layouts" class="heading-anchor-icon fa fa-regular fa-anchor" href="#wrapper-layouts"></a></h2>
+<div><span>Acme Inc</span></div>
+<div><span>Acme Inc</span></div>
+<div>
+<p><span>Acme Inc</span></p>
+</div>
+<div><span>Acme Inc</span></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="bigger-trees"></div><div class="heading-text">Bigger trees</div><a aria-label="Skip link to Bigger trees" class="heading-anchor-icon fa fa-regular fa-anchor" href="#bigger-trees"></a></h2>
+<div class="card"><h4 class="heading heading-4 header-scroll"><div class="heading-anchor anchor waypoint" id="companyname-1"></div><div class="heading-text"><span>Acme Inc</span></div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#companyname-1"></a></h4><p>Plan: <span>Enterprise</span></p><ul><li><span>Acme Inc</span></li></ul></div>
+<div><section><ul><li><span>Acme Inc</span></li></ul></section></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="wrapped-in-html-inside-a-component"></div><div class="heading-text">Wrapped in HTML inside a component</div><a aria-label="Skip link to Wrapped in HTML inside a component" class="heading-anchor-icon fa fa-regular fa-anchor" href="#wrapped-in-html-inside-a-component"></a></h2>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="info"><div><span>Acme Inc</span></div></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="info"><div><span>Acme Inc</span></div></blockquote></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="glossary-terms"></div><div class="heading-text">Glossary terms</div><a aria-label="Skip link to Glossary terms" class="heading-anchor-icon fa fa-regular fa-anchor" href="#glossary-terms"></a></h2>
+<p><span><span class="GlossaryItem-trigger">owlbert</span></span></p>
+<div><span class="GlossaryItem-trigger">owlbert</span></div>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="owlbert"></div><div class="heading-text"><span class="GlossaryItem-trigger">owlbert</span></div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#owlbert"></a></h3>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="mixed-expression-bodies"></div><div class="heading-text">Mixed expression bodies</div><a aria-label="Skip link to Mixed expression bodies" class="heading-anchor-icon fa fa-regular fa-anchor" href="#mixed-expression-bodies"></a></h2>
+<div><span>Acme Inc</span> 2</div>
+<div>{color: red} <span>Acme Inc</span></div>
+<div>{1 + 1} {2 + 2}</div>
+<div><span>Acme Inc</span> <span>Enterprise</span></div>"
 `;

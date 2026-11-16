@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 
 import { migrate } from '../../helpers';
 
@@ -40,20 +41,20 @@ describe('migrating html blocks', () => {
   });
 
   it('does not unescape backslashes', async () => {
-    const md = fs.readFileSync(`${__dirname}/fixtures/html-block-escapes/in.md`, 'utf-8');
+    const md = fs.readFileSync(path.join(__dirname, 'fixtures/html-block-escapes/in.md'), 'utf-8');
 
-    await expect(migrate(md)).toMatchFileSnapshot(`${__dirname}/fixtures/html-block-escapes/out.mdx`);
+    await expect(migrate(md)).toMatchFileSnapshot(path.join(__dirname, 'fixtures/html-block-escapes/out.mdx'));
   });
 
   it('correctly migrates html with newlines', async () => {
-    const md = fs.readFileSync(`${__dirname}/fixtures/html-block-escapes-newlines/in.md`, 'utf-8');
+    const md = fs.readFileSync(path.join(__dirname, 'fixtures/html-block-escapes-newlines/in.md'), 'utf-8');
 
-    await expect(migrate(md)).toMatchFileSnapshot(`${__dirname}/fixtures/html-block-escapes-newlines/out.mdx`);
+    await expect(migrate(md)).toMatchFileSnapshot(path.join(__dirname, 'fixtures/html-block-escapes-newlines/out.mdx'));
   });
 
   it('correctly migrates html with brackets and template literals', async () => {
-    const md = fs.readFileSync(`${__dirname}/fixtures/html-block-with-brackets/in.md`, 'utf-8');
+    const md = fs.readFileSync(path.join(__dirname, 'fixtures/html-block-with-brackets/in.md'), 'utf-8');
 
-    await expect(migrate(md)).toMatchFileSnapshot(`${__dirname}/fixtures/html-block-with-brackets/out.mdx`);
+    await expect(migrate(md)).toMatchFileSnapshot(path.join(__dirname, 'fixtures/html-block-with-brackets/out.mdx'));
   });
 });

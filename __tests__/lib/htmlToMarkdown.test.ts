@@ -2,7 +2,7 @@ import { htmlToMarkdown } from '../../lib';
 
 describe('htmlToMarkdown', () => {
   it('returns an empty string for non-string or blank input', () => {
-    expect(htmlToMarkdown(undefined)).toBe('');
+    expect(htmlToMarkdown()).toBe('');
     expect(htmlToMarkdown(null)).toBe('');
     expect(htmlToMarkdown('')).toBe('');
     expect(htmlToMarkdown('   ')).toBe('');
@@ -22,7 +22,8 @@ describe('htmlToMarkdown', () => {
   });
 
   it('converts an html table to a gfm markdown table', () => {
-    const html = '<table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>';
+    const html =
+      '<table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>';
     expect(htmlToMarkdown(html)).toBe('| a | b |\n| - | - |\n| 1 | 2 |');
   });
 

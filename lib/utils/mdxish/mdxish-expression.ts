@@ -4,6 +4,7 @@ import { buildJsx } from 'estree-util-build-jsx';
 import { toJs } from 'estree-util-to-js';
 
 import { evaluate, jsxAcornParser } from '../../../processor/utils';
+import { componentNamePattern } from '../../constants';
 
 const parseExpression = (expression: string): Program =>
   jsxAcornParser.parse(expression, { ecmaVersion: 'latest', sourceType: 'module' }) as Program;
@@ -21,20 +22,16 @@ const containsJsxNode = (value: unknown): boolean => {
   return Object.values(value).some(containsJsxNode);
 };
 
-/** Read the component name off a JSX element name node (`Foo`, `Foo.Bar`, `foo:Bar`). */
 const jsxElementName = (name: unknown): string | undefined => {
   if (name === null || typeof name !== 'object') return undefined;
-  const node = name as { name?: unknown; namespace?: unknown; object?: unknown; type?: string };
+  const node = name as { name?: unknown; type?: string };
 
-  if (node.type === 'JSXIdentifier') return typeof node.name === 'string' ? node.name : undefined;
-  // `<Foo.Bar/>` and `<foo:Bar/>` resolve through their leftmost part.
-  if (node.type === 'JSXMemberExpression') return jsxElementName(node.object);
-  if (node.type === 'JSXNamespacedName') return jsxElementName(node.namespace);
-  return undefined;
+  if (node.type !== 'JSXIdentifier' || typeof node.name !== 'string') return undefined;
+  return componentNamePattern.test(node.name) ? node.name : undefined;
 };
 
 /**
- * Collect the capitalized names an expression uses as JSX tags. Parsed rather than pattern
+ * Collect the component names an expression uses as JSX tags. Parsed rather than pattern
  * matched: `{count < Max ? <Foo/> : <Bar/>}` puts a capitalized name straight after a `<` without
  * it being a tag, and only the parser can tell the two apart. Unparseable input yields nothing —
  * evaluation is about to throw on it anyway.
@@ -58,8 +55,7 @@ export const jsxComponentNames = (expression: string): string[] => {
     const node = value as { name?: unknown; type?: string };
     if (node.type === 'JSXOpeningElement') {
       const name = jsxElementName(node.name);
-      // Lowercase tags compile to a string type, never a variable reference.
-      if (name && /^[A-Z]/.test(name)) names.add(name);
+      if (name) names.add(name);
     }
 
     Object.values(node).forEach(walk);

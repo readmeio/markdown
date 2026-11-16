@@ -79,7 +79,6 @@ const migrateTableCells = (vfile: VFile, rdmd: RDMD) => (table: Table) => {
 
   visit(table, 'inlineCode', (code: Code | InlineCode) => {
     if (code.value.includes('\n')) {
-       
       code.type = 'code';
     }
   });

@@ -1,3 +1,4 @@
+import type { RenderConfig } from '../../contexts/RenderConfig';
 import type { MDXContent } from 'mdx/types';
 
 import { render } from '@testing-library/react';
@@ -8,8 +9,8 @@ import { createRehypeReactProcessor } from '../../lib/utils/mdxish/mdxish-render
 import { execute } from '../helpers';
 
 export const renderingEngines = [
-  ['mdx', (md: string) => execute(md) as MDXContent] as const,
-  ['mdxish', (md: string) => renderMdxish(mdxish(md)).default as MDXContent] as const,
+  ['mdx', (md: string, config?: RenderConfig) => execute(md, {}, config) as MDXContent] as const,
+  ['mdxish', (md: string, config?: RenderConfig) => renderMdxish(mdxish(md), config).default as MDXContent] as const,
 ];
 
 /**

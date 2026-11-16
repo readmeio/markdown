@@ -7,22 +7,10 @@ import { EXIT, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../../enums';
 
+import { cellStyle } from './cell-style';
 import { hasChildren, normalizeCellChildrenForGfm } from './gfm-cell-normalization';
 
 const SELF_CLOSING_JSX_REGEX = /^\s*<[A-Z][^>]*\/>\s*$/;
-
-const alignToStyle = (align: 'center' | 'left' | 'right' | null) => {
-  if (!align || align === 'left') return null;
-
-  return {
-    type: 'mdxJsxAttribute',
-    name: 'style',
-    value: {
-      type: 'mdxJsxAttributeValueExpression',
-      value: `{ textAlign: "${align}" }`,
-    },
-  };
-};
 
 const isTableCell = (node: Node) => ['tableHead', 'tableCell'].includes(node.type);
 
@@ -34,7 +22,7 @@ const isLiteral = (node: Node): node is Literal => 'value' in node;
  */
 const isFlowChild = (child: Nodes): boolean => {
   if (child.type === 'paragraph' || child.type === 'plain' || child.type === 'escape') return false;
-  if (child.type === NodeTypes.variable) return false;
+  if (child.type === NodeTypes.variable || child.type === NodeTypes.noTranslate) return false;
   if (phrasing(child)) return false;
   if (child.type === 'html') return SELF_CLOSING_JSX_REGEX.test(child.value);
 
@@ -44,7 +32,8 @@ const isFlowChild = (child: Nodes): boolean => {
 /** A newline in a normalized cell (e.g. inside `inlineCode`) has no inline equivalent. */
 const containsLiteralNewline = (nodes: Node[]): boolean =>
   nodes.some(
-    node => (isLiteral(node) && node.value.includes('\n')) || (hasChildren(node) && containsLiteralNewline(node.children)),
+    node =>
+      (isLiteral(node) && node.value.includes('\n')) || (hasChildren(node) && containsLiteralNewline(node.children)),
   );
 
 /** True when normalized cell content survives a single-line GFM pipe cell without losing structure. */
@@ -86,10 +75,20 @@ const mdxishTablesToJsx = (): Transform => tree => {
           return EXIT;
         }
         gfmCells.push([cell, normalized]);
-        return undefined;
       });
 
-      if (!requiresJsxTable) {
+      const widths = table.data?.widths ?? [];
+      const hasWidths = widths.some(Boolean);
+      // Lowercase cells can carry a width but not an alignment, so an aligned table becomes <Table>
+      const hasAlignment = table.align.some(align => align && align !== 'left');
+      const stayLowercase = table.data?.lowercaseTable === true && !hasAlignment;
+
+      // We transform to GFM tables if:
+      // 1. If it doesn't contain complex elements that the syntax can't represent
+      // 2. The original table is not lowercase HTML <table>, because we want to
+      // preserve original tables as much as possible
+      // 3. No column has a width, which GFM can't express
+      if (!requiresJsxTable && !stayLowercase && !hasWidths) {
         gfmCells.forEach(([cell, children]) => {
           cell.children = children;
         });
@@ -97,9 +96,14 @@ const mdxishTablesToJsx = (): Transform => tree => {
         return;
       }
 
+      // Nothing to build a JSX table from; leave the empty node to the GFM stringifier.
+      const [headerRow, ...bodyRows] = table.children;
+      if (!headerRow) return;
+
       visit(table, isTableCell, flattenBreaksToNewlines);
 
-      const styles = table.align.map(alignToStyle);
+      const headerStyles = table.align.map((align, i) => cellStyle(align, widths[i] ?? null, { html: stayLowercase }));
+      const bodyStyles = table.align.map(align => cellStyle(align, null, { html: stayLowercase }));
 
       const head: MdxJsxFlowElement = {
         attributes: [],
@@ -110,13 +114,13 @@ const mdxishTablesToJsx = (): Transform => tree => {
             attributes: [],
             type: 'mdxJsxFlowElement',
             name: 'tr',
-            children: table.children[0].children.map((cell, cellIndex) => {
+            children: headerRow.children.map((cell, cellIndex) => {
               return {
                 attributes: [],
                 type: 'mdxJsxFlowElement',
                 name: 'th',
                 children: cell.children,
-                ...(styles[cellIndex] && { attributes: [styles[cellIndex]] }),
+                ...(headerStyles[cellIndex] && { attributes: [headerStyles[cellIndex]] }),
               } as MdxJsxFlowElement;
             }),
           },
@@ -127,7 +131,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
         attributes: [],
         type: 'mdxJsxFlowElement',
         name: 'tbody',
-        children: table.children.splice(1).map(row => {
+        children: bodyRows.map(row => {
           return {
             attributes: [],
             type: 'mdxJsxFlowElement',
@@ -137,7 +141,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
                 type: 'mdxJsxFlowElement',
                 name: 'td',
                 children: cell.children,
-                ...(styles[cellIndex] && { attributes: [styles[cellIndex]] }),
+                ...(bodyStyles[cellIndex] && { attributes: [bodyStyles[cellIndex]] }),
               };
             }),
           } as MdxJsxFlowElement;
@@ -157,8 +161,8 @@ const mdxishTablesToJsx = (): Transform => tree => {
 
       const jsx: MdxJsxFlowElement = {
         type: 'mdxJsxFlowElement',
-        name: 'Table',
-        attributes: table.align.find(a => a) ? attributes : [],
+        name: stayLowercase ? 'table' : 'Table',
+        attributes: !stayLowercase && table.align.find(a => a) ? attributes : [],
         children: [head, body],
       };
 

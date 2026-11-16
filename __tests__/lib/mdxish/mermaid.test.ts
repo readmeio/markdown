@@ -61,7 +61,9 @@ describe('mermaid diagrams', () => {
       );
 
       const pres = findAllElementsByTagName(tree, 'pre');
-      const mermaidPre = pres.find(p => Array.isArray(p.properties?.className) && p.properties.className.includes('mermaid-render'));
+      const mermaidPre = pres.find(
+        p => Array.isArray(p.properties?.className) && p.properties.className.includes('mermaid-render'),
+      );
       expect(mermaidPre).toBeDefined();
     });
 

@@ -1,6 +1,9 @@
 import type { Element } from 'hast';
 
+import { toHtml } from 'hast-util-to-html';
+
 import { mdast, mdx, mdxish } from '../../index';
+import { collectNodes, findElementByTagName, parseMdxishWithSlices, roundTripMdxish } from '../helpers';
 
 describe('GFM strikethrough', () => {
   describe('mdx compiler', () => {
@@ -232,19 +235,6 @@ describe('GFM footnotes', () => {
   });
 
   describe('mdxish compiler', () => {
-    // Depth-first search for the first element with the given tag name.
-    const findElement = (root: ReturnType<typeof mdxish>, tag: string): Element | undefined => {
-      const stack: (typeof root.children)[number][] = [...root.children];
-      while (stack.length) {
-        const node = stack.shift();
-        if (node?.type === 'element') {
-          if (node.tagName === tag) return node;
-          stack.unshift(...node.children);
-        }
-      }
-      return undefined;
-    };
-
     it('processes single footnote', () => {
       const markdown = 'Text with footnote[^1]\n\n[^1]: Footnote definition';
       const hast = mdxish(markdown);
@@ -285,73 +275,75 @@ describe('GFM footnotes', () => {
         | undefined;
       expect(footnoteDef).toBeDefined();
     });
+  });
 
-    // A lowercase `<table>` goes through the html node path that `mdxishTables`
-    // rewrites, unlike a GFM pipe table which parses straight into an mdast table.
-    it('processes footnote reference inside a lowercase <table> cell', () => {
-      const markdown = [
-        '<table>',
+  // RM-16727: tables are re-parsed on their own, away from the page's footnote definitions.
+  // Pipe tables never reach that re-parse, so these use `<Table>` / `<table>`.
+  describe('mdxish compiler in a table cell', () => {
+    const table = (cell: string, tag = 'Table') =>
+      [
+        `<${tag}>`,
         '  <thead>',
-        '    <tr><th>Term</th><th>Definition</th></tr>',
+        '    <tr><th>H</th></tr>',
         '  </thead>',
         '  <tbody>',
         '    <tr>',
-        '      <td>Example[^1]</td>',
-        '      <td>See footnote</td>',
+        `      <td>${cell}</td>`,
         '    </tr>',
         '  </tbody>',
-        '</table>',
-        '',
-        '[^1]: This footnote should render.',
+        `</${tag}>`,
       ].join('\n');
-      const hast = mdxish(markdown);
+    const withNote = (body: string, label = '1') => `${body}\n\n[^${label}]: A note.`;
+    const cellOf = (md: string) => toHtml(findElementByTagName(mdxish(md), 'td')!);
+    const footnotesOf = (md: string) => findElementByTagName(mdxish(md), 'section');
 
-      expect(findElement(hast, 'sup')).toBeDefined();
-      expect(hast.children.some(child => child.type === 'element' && child.tagName === 'section')).toBe(true);
+    it.each([
+      ['a JSX <Table>', withNote(table('Example[^1]'))],
+      ['a lowercase <table>', withNote(table('Example[^1]', 'table'))],
+      ['a cell mixing markdown and a reference', withNote(table('**b**[^1]'))],
+      ['a mixed-case label', withNote(table('Example[^Note]'), 'note')],
+      ['a cell after a blank line', withNote(table('\n\nExample[^1]\n\n'))],
+      // mdxjs rejects the lone `{` and no repair fixes it, so this goes through the fallback parse.
+      [
+        'a lowercase <table> mdxjs rejects',
+        withNote(table('\n\nExample[^1]\n\n</td>\n    </tr>\n    <tr>\n      <td>{', 'table')),
+      ],
+    ])('links the reference in %s', (_, md) => {
+      expect(cellOf(md)).toMatch(/<sup><a href="#user-content-fn-\w+" id="user-content-fnref-\w+" data-footnote-ref/);
+      expect(toHtml(footnotesOf(md)!)).toContain('A note.');
     });
 
-    it('processes footnote reference inside a JSX <Table> cell', () => {
-      const markdown = [
-        '<Table>',
-        '  <thead>',
-        '    <tr><th>Term</th><th>Definition</th></tr>',
-        '  </thead>',
-        '  <tbody>',
-        '    <tr>',
-        '      <td>Example[^1]</td>',
-        '      <td>See footnote</td>',
-        '    </tr>',
-        '  </tbody>',
-        '</Table>',
-        '',
-        '[^1]: This footnote should render.',
-      ].join('\n');
-      const hast = mdxish(markdown);
-
-      expect(findElement(hast, 'sup')).toBeDefined();
-      expect(hast.children.some(child => child.type === 'element' && child.tagName === 'section')).toBe(true);
+    it.each([
+      ['an undefined label', withNote(table('Example[^2]')), 'Example[^2]'],
+      // Mixed so the cell isn't re-parsed from its unescaped text.
+      ['an escaped reference', withNote(table('Example\\[^1] *em*')), 'Example[^1] <em>em</em>'],
+    ])('keeps %s as text', (_, md, text) => {
+      expect(cellOf(md)).toBe(`<td>${text}</td>`);
     });
 
-    // Regression: an unterminated code fence in a cell would swallow the appended
-    // footnote placeholder def, leaking `[^1]: x` into the rendered code (RM-16727).
-    it('does not leak footnote placeholders into an unterminated code fence cell', () => {
-      const markdown = [
-        '<Table>',
-        '  <thead><tr><th>H</th></tr></thead>',
-        '  <tbody><tr><td>```js',
-        'const a = 1;</td></tr></tbody>',
-        '</Table>',
-        '',
-        '[^1]: A real footnote.',
-        '',
-        'Body[^1]',
-      ].join('\n');
-      const hast = mdxish(markdown);
+    // Nothing is added to the cell's source, so an unterminated fence has nothing to swallow.
+    it('keeps an unterminated fence in a cell to its own text', () => {
+      const md = withNote(table('```js\nconst a = 1;'));
+      expect(findElementByTagName(mdxish(md), 'code')?.children).toStrictEqual([
+        expect.objectContaining({ type: 'text', value: 'const a = 1;\n' }),
+      ]);
+    });
 
-      const code = findElement(hast, 'code');
-      const codeText = code?.children.map(child => (child.type === 'text' ? child.value : '')).join('');
-      expect(codeText?.trimEnd()).toBe('const a = 1;');
-      expect(codeText).not.toContain('[^1]');
+    // The table processors are cached per label set, so a later page must not reuse an earlier page's labels.
+    it('links each page against its own definitions', () => {
+      expect(cellOf(withNote(table('Example[^a]'), 'a'))).toContain('data-footnote-ref');
+      expect(cellOf(withNote(table('Example[^a]'), 'b'))).toBe('<td>Example[^a]</td>');
+    });
+
+    // Unlinked, the editor would save the reference as an escaped `\\[^1]`.
+    it('saves the reference unescaped', () => {
+      const md = withNote(table('Example[^1]'));
+      expect(roundTripMdxish(md, { newEditorTypes: true })).toContain('| Example[^1] |');
+    });
+
+    it('positions the reference on the page', () => {
+      const { tree, sliceOf } = parseMdxishWithSlices(withNote(table('**b**[^1]')));
+      expect(collectNodes(tree, 'footnoteReference').map(sliceOf)).toStrictEqual(['[^1]']);
     });
   });
 });

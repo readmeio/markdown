@@ -71,7 +71,6 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
                   // 0 = no newline between blocks
                   return isTight ? 0 : undefined;
                 }
-                return undefined;
               },
             ],
           },

@@ -503,7 +503,9 @@ plain trailing text`;
   // must survive a blank line rather than collapsing into an indented-code block.
   describe('custom component wrappers', () => {
     const components: Record<string, RMDXModule> = {
-      Card: run(compile('\nexport const Card = ({ children }) => {\n  return <div>{children}</div>;\n};\n\n<Card />\n')),
+      Card: run(
+        compile('\nexport const Card = ({ children }) => {\n  return <div>{children}</div>;\n};\n\n<Card />\n'),
+      ),
     };
 
     it('keeps an indented HTML island whole across a blank line', () => {

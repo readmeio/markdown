@@ -18,11 +18,11 @@ import nullAttributesJson from './null-attributes/out.json';
 import tablesMdx from './tables/in.mdx?raw';
 // @ts-expect-error - these are being imported as json
 import tablesJson from './tables/out.json';
+import variablesWithSpacesMdx from './variables-with-spaces/in.mdx?raw';
+import variablesWithSpacesJson from './variables-with-spaces/out.json';
 // @ts-expect-error - these are being imported as strings
 import variablesMdx from './variables/in.mdx?raw';
 import variablesJson from './variables/out.json';
-import variablesWithSpacesMdx from './variables-with-spaces/in.mdx?raw';
-import variablesWithSpacesJson from './variables-with-spaces/out.json';
 
 describe('mdast transformer', () => {
   it('parses null attributes', () => {

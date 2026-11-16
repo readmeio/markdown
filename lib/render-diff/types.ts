@@ -65,9 +65,7 @@ export interface Change {
  *
  * TypeScript narrowing on `result.status === 'differ'` exposes `severity` and `changes`.
  */
-export type DiffResult =
-  | { changes: Change[]; severity: Severity; status: 'differ' }
-  | { status: 'match' };
+export type DiffResult = { changes: Change[]; severity: Severity; status: 'differ' } | { status: 'match' };
 
 /**
  * Canonicalization preset for `diff()`.

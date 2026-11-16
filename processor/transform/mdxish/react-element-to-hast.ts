@@ -39,7 +39,9 @@ function renderFallbackHtml(element: React.ReactElement): ElementContent[] {
   try {
     const rawNode: Raw = { type: 'raw', value: renderToStaticMarkup(element) };
     return [rawNode];
-  } catch {
+  } catch (error) {
+    // oxlint-disable-next-line no-console
+    console.warn('[mdxish] Could not render expression result:', error);
     return [];
   }
 }

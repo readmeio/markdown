@@ -115,7 +115,8 @@ describe('block-wrapper claims for type-7 wrapper tags', () => {
     });
 
     it('renders a tab-indented island sitting directly after the opener blank line', () => {
-      const md = '<button class="tabbed">\n\n\t<h3>Tab-indented heading</h3>\n\t<p>Indented with a real tab.</p>\n</button>';
+      const md =
+        '<button class="tabbed">\n\n\t<h3>Tab-indented heading</h3>\n\t<p>Indented with a real tab.</p>\n</button>';
 
       const ast = mdxish(md);
 
@@ -441,7 +442,9 @@ After **bold** text`;
   // so component → HTML → component nesting must not fragment past the blank line.
   describe('custom component wrappers', () => {
     const wrap = (name: string) =>
-      run(compile(`\nexport const ${name} = ({ children }) => {\n  return <div>{children}</div>;\n};\n\n<${name} />\n`));
+      run(
+        compile(`\nexport const ${name} = ({ children }) => {\n  return <div>{children}</div>;\n};\n\n<${name} />\n`),
+      );
     const components: Record<string, RMDXModule> = { Card: wrap('Card'), Grid: wrap('Grid') };
 
     it('preserves component → HTML → component nesting past the indent threshold', () => {

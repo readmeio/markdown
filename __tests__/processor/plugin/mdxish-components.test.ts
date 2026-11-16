@@ -67,12 +67,11 @@ Hello`;
   });
 
   it('should parse Image caption as markdown with decoded HTML entities', () => {
-    const md = '<Image src="test.png" alt="test" caption="With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used." />';
+    const md =
+      '<Image src="test.png" alt="test" caption="With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used." />';
     const hast = mdxish(md);
 
-    const imgElement = hast.children.find(
-      (node): node is Element => node.type === 'element' && node.tagName === 'img',
-    );
+    const imgElement = hast.children.find((node): node is Element => node.type === 'element' && node.tagName === 'img');
     expect(imgElement).toBeDefined();
     expect(imgElement!.children.length).toBeGreaterThan(0);
 

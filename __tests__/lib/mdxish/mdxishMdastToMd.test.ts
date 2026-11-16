@@ -1,9 +1,10 @@
 import type { ListMarker, ListWithMarker } from '../../../lib';
+import type { Callout } from '../../../types';
 import type { List, ListItem, Root as MdastRoot, RootContent, Table } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxishMdastToMd } from '../../../lib';
-import { roundTripMdxish } from '../../helpers';
+import { collectNodes, parseMdxish, roundTripMdxish } from '../../helpers';
 
 describe('mdxishMdastToMd', () => {
   it('should convert a simple paragraph', () => {
@@ -143,6 +144,100 @@ describe('mdxishMdastToMd', () => {
 
     const result = mdxishMdastToMd(mdast);
     expect(result).toBe('{user.name} - {user.email}\n');
+  });
+
+  describe('tables with column widths', () => {
+    it('should serialize a plain table with widths to JSX <Table> with the width on each header cell', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, 'center', null],
+            data: { widths: ['20%', null, '50%'] },
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'text', value: 'Name' }] },
+                  { type: 'tableCell', children: [{ type: 'text', value: 'Type' }] },
+                  { type: 'tableCell', children: [{ type: 'text', value: 'Description' }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'text', value: 'id' }] },
+                  { type: 'tableCell', children: [{ type: 'text', value: 'string' }] },
+                  { type: 'tableCell', children: [{ type: 'text', value: 'Unique identifier' }] },
+                ],
+              },
+            ],
+          } as Table,
+        ],
+      };
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "<Table align={[null,"center",null]}>
+          <thead>
+            <tr>
+              <th style={{ width: "20%" }}>
+                Name
+              </th>
+
+              <th style={{ textAlign: "center" }}>
+                Type
+              </th>
+
+              <th style={{ width: "50%" }}>
+                Description
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>
+                id
+              </td>
+
+              <td style={{ textAlign: "center" }}>
+                string
+              </td>
+
+              <td>
+                Unique identifier
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        "
+      `);
+    });
+
+    it('should keep a table without widths as GFM', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            data: { widths: [null, null] },
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'text', value: 'a' }] },
+                  { type: 'tableCell', children: [{ type: 'text', value: 'b' }] },
+                ],
+              },
+            ],
+          } as Table,
+        ],
+      };
+
+      expect(mdxishMdastToMd(mdast)).toBe('| a | b |\n| - | - |\n');
+    });
   });
 
   describe('tables with flow content', () => {
@@ -1584,6 +1679,171 @@ Final plain paragraph at end of file.
     // There needs to be a space after the checkbox for the list item to be parsed as a checklist item
     expect(result).toBe('- [ ] hi\n- [ ] \n- [x] there\n- [x] \n- normal\n');
   });
+
+  describe('lowercase <table> serialization', () => {
+    const listCell = ['<ul>', '<li>one</li>', '<li>two</li>', '</ul>'].join('\n');
+
+    const uppercaseWidthTable = (): string =>
+      [
+        '<Table>',
+        '<thead>',
+        '<tr>',
+        '<th style={{ width: "30%" }}>Name</th>',
+        '<th>Notes</th>',
+        '</tr>',
+        '</thead>',
+        '<tbody>',
+        '<tr>',
+        '<td>Foo</td>',
+        '<td>Bar</td>',
+        '</tr>',
+        '</tbody>',
+        '</Table>',
+      ].join('\n');
+
+    const lowercaseTableWithCell = (cell: string, openTag = '<table>'): string =>
+      [
+        openTag,
+        '<thead>',
+        '<tr>',
+        '<th>Name</th>',
+        '<th>Notes</th>',
+        '</tr>',
+        '</thead>',
+        '<tbody>',
+        '<tr>',
+        '<td>Foo</td>',
+        '<td>',
+        cell,
+        '</td>',
+        '</tr>',
+        '</tbody>',
+        '</table>',
+        '',
+      ].join('\n');
+
+    it('serializes a lowercase <table> back as lowercase <table>', () => {
+      // The table has to reach the editable mdast form; a raw html node would pass through untouched.
+      expect(collectNodes(parseMdxish(lowercaseTableWithCell(listCell)), 'table')).toHaveLength(1);
+
+      const markdown = roundTripMdxish(lowercaseTableWithCell(listCell));
+
+      expect(markdown).toMatch(/^<table>\n/);
+      expect(markdown).toMatch(/\n<\/table>\n$/);
+      expect(markdown).not.toContain('<Table');
+      expect(markdown).not.toContain('align=');
+    });
+
+    it('keeps the thead/tbody structure and the list inside the lowercase <table>', () => {
+      const markdown = roundTripMdxish(lowercaseTableWithCell(listCell));
+
+      expect(markdown).toContain('<thead>');
+      expect(markdown).toContain('<tbody>');
+      expect(markdown).toContain('<li>one</li>');
+    });
+
+    it('serializes a phrasing-only lowercase <table> as <table> instead of a GFM pipe table', () => {
+      const markdown = roundTripMdxish(lowercaseTableWithCell('plain'));
+
+      expect(markdown).toMatch(/^<table>\n/);
+      expect(markdown).not.toMatch(/^\|/m);
+    });
+
+    it('serializes a <Table> back as <Table>', () => {
+      const markdown = roundTripMdxish(lowercaseTableWithCell(listCell, '<Table>').replace('</table>', '</Table>'));
+
+      expect(markdown).toMatch(/^<Table>\n/);
+      expect(markdown).not.toContain('<table');
+    });
+
+    it('serializes a GFM table that gains flow content as <Table>', () => {
+      expect(roundTripMdxish('| H |\n| --- |\n| <Image src="x.png" /> |')).toMatch(/^<Table/);
+    });
+
+    const lowercaseWithWidth = lowercaseTableWithCell('plain').replace(
+      '<th>Name</th>',
+      '<th style="width: 30%">Name</th>',
+    );
+
+    // Width handling lives on the editor path, so these parse with editor types on.
+    const editor = { newEditorTypes: true };
+
+    it('serializes a lowercase <table> width as an HTML style attribute', () => {
+      expect(collectNodes(parseMdxish(lowercaseWithWidth, editor), 'table')).toHaveLength(1);
+
+      const markdown = roundTripMdxish(lowercaseWithWidth, editor);
+
+      expect(markdown).toMatch(/^<table>\n/);
+      expect(markdown).toContain('<th style="width: 30%">');
+      expect(markdown).not.toContain('style={{');
+    });
+
+    it('serializes a lowercase <table> that gains an alignment as <Table>', () => {
+      const [table] = parseMdxish(lowercaseWithWidth, editor).children as [Table];
+      table.align = ['center', null];
+
+      const markdown = mdxishMdastToMd({ type: 'root', children: [table] });
+
+      expect(markdown).toMatch(/^<Table align=/);
+      expect(markdown).toContain('<th style={{ textAlign: "center", width: "30%" }}>');
+    });
+
+    it('keeps widths stable across repeated round trips, on both table forms', () => {
+      const uppercase = lowercaseTableWithCell(listCell, '<Table>')
+        .replace('</table>', '</Table>')
+        .replace('<th>Name</th>', '<th style={{ width: "30%" }}>Name</th>');
+
+      [lowercaseWithWidth, uppercase].forEach(source => {
+        expect(collectNodes(parseMdxish(source, editor), 'table')).toHaveLength(1);
+        const once = roundTripMdxish(source, editor);
+        const twice = roundTripMdxish(once, editor);
+
+        expect(twice).toBe(once);
+        expect(twice).toContain('30%');
+      });
+    });
+
+    it('keeps a width on a table nested inside a component', () => {
+      const source = ['<Accordion title="Details">', uppercaseWidthTable(), '</Accordion>', ''].join('\n');
+
+      expect(collectNodes(parseMdxish(source, editor), 'table')).toHaveLength(1);
+      const markdown = roundTripMdxish(source, editor);
+
+      expect(markdown).toMatch(/^<Accordion title="Details">/);
+      expect(markdown).toContain('<th style={{ width: "30%" }}>');
+      expect(roundTripMdxish(markdown, editor)).toBe(markdown);
+    });
+
+    it('is stable across repeated round trips', () => {
+      const once = roundTripMdxish(lowercaseTableWithCell(listCell));
+      const twice = roundTripMdxish(once);
+
+      expect(twice).toBe(once);
+      expect(roundTripMdxish(twice)).toBe(once);
+    });
+
+    it.each([
+      [
+        'a compact header row',
+        lowercaseTableWithCell(listCell).replace(
+          /<tr>\n<th>Name<\/th>\n<th>Notes<\/th>\n<\/tr>/,
+          '<tr><th>Name</th><th>Notes</th></tr>',
+        ),
+      ],
+      [
+        'indented sections',
+        lowercaseTableWithCell(listCell).replace(/^(<thead>|<tbody>|<\/thead>|<\/tbody>)$/gm, '  $1'),
+      ],
+      ['blank lines around the list', lowercaseTableWithCell(`\n${listCell}\n`)],
+    ])('keeps the lowercase spelling with %s', (_label, source) => {
+      expect(collectNodes(parseMdxish(source), 'table')).toHaveLength(1);
+
+      const markdown = roundTripMdxish(source);
+
+      expect(markdown).toMatch(/^<table>\n/);
+      expect(markdown).not.toContain('<Table');
+    });
+  });
 });
 
 describe('mdxishMdastToMd callout JSX serialization', () => {
@@ -1656,12 +1916,42 @@ describe('mdxishMdastToMd callout JSX serialization', () => {
     expect(mdxishMdastToMd(mdast)).toContain('<Callout icon="🚧" theme="warn">');
   });
 
-  it('fills a missing icon from the theme', () => {
-    const mdast = callout({ theme: 'info', empty: false }, [
-      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'FYI' }] },
+  it.each(['default', 'info', 'okay', 'warn', 'error'])('keeps a cleared icon off a %s callout', theme => {
+    const mdast = callout({ icon: '', theme, empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'No icon' }] },
     ]);
 
-    expect(mdxishMdastToMd(mdast)).toContain('<Callout icon="📘" theme="info">');
+    expect(mdxishMdastToMd(mdast)).toBe(
+      `<Callout theme="${theme}">
+  ### No icon
+</Callout>
+`,
+    );
+  });
+
+  describe('editor round trip of callout icons', () => {
+    // Callouts only parse into callout nodes on the editor path
+    const opts = { newEditorTypes: true };
+    const iconOf = (md: string) =>
+      (collectNodes(parseMdxish(md, opts), NodeTypes.callout)[0] as Callout).data.hProperties.icon;
+
+    it.each(['📘', '🦉', 'far fa-circle-check', 'fad fa-wagon-covered'])('keeps a %s icon', icon => {
+      const md = `<Callout icon="${icon}" theme="info">\n  ### Title\n</Callout>\n`;
+      const once = roundTripMdxish(md, opts);
+
+      expect(once).toBe(md);
+      expect(iconOf(once)).toBe(icon);
+      expect(roundTripMdxish(once, opts)).toBe(once);
+    });
+
+    it('keeps a cleared icon cleared', () => {
+      const md = '<Callout icon="" theme="info">\n  ### Title\n</Callout>\n';
+      const once = roundTripMdxish(md, opts);
+
+      expect(once).toBe('<Callout theme="info">\n  ### Title\n</Callout>\n');
+      expect(iconOf(once)).toBe('');
+      expect(roundTripMdxish(once, opts)).toBe(once);
+    });
   });
 
   it('converts nested callouts in the body to JSX', () => {
@@ -1838,5 +2128,459 @@ describe('mdxishMdastToMd bullet marker preservation', () => {
     };
 
     expect(mdxishMdastToMd(mdast)).toBe('<Accordion title="More">\n  1) a\n  2) b\n</Accordion>\n');
+  });
+});
+
+const PIPE_ROW = /^\|.*\|$/m;
+
+/**
+ * The same serializer, fed the other tree shape: straight out of the parser rather than rebuilt
+ * from editor state, so it still carries the node types the editor converts away on ingest.
+ */
+describe('mdxishMdastToMd on parser-produced trees', () => {
+  describe('tables (RM-18383)', () => {
+    // The old tablesToJsx sampled only the FIRST cell and bailed on an empty one, so a table
+    // whose block content sits in later cells collapsed into a flattened pipe table.
+    const tableWithBlockCells = `<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Item
+      </th>
+
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        **Section header**
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        2.
+      </td>
+
+      <td>
+        Pick a region:
+
+        1. Click the Region icon.
+        2. Select **Add Region**.
+      </td>
+    </tr>
+  </tbody>
+</Table>
+`;
+
+    it('keeps a JSX-authored Table with block-content cells in JSX form', () => {
+      const result = roundTripMdxish(tableWithBlockCells);
+
+      expect(result).toContain('<Table');
+      expect(result).not.toMatch(PIPE_ROW);
+      // The nested ordered list survives as a real list, not run-on text.
+      expect(result).toMatch(/1\. Click the Region icon\./);
+      expect(result).toMatch(/2\. Select \*\*Add Region\*\*\./);
+    });
+
+    it('keeps a simple pipe table as a pipe table', () => {
+      const result = roundTripMdxish('| a | b |\n| - | - |\n| 1 | 2 |\n');
+
+      expect(result).toMatch(PIPE_ROW);
+      expect(result).not.toContain('<Table');
+    });
+  });
+
+  describe('parser-only node types', () => {
+    it('round-trips expressions and JSX comments verbatim', () => {
+      const doc = 'Your plan is {user.plan} today.\n\n{/* reviewer note */}\n';
+
+      const result = roundTripMdxish(doc);
+
+      expect(result).toContain('{user.plan}');
+      expect(result).toContain('{/* reviewer note */}');
+    });
+
+    it('round-trips an export statement verbatim', () => {
+      const result = roundTripMdxish('export const meta = { flag: true };\n\nProse after.\n');
+
+      expect(result).toContain('export const meta = { flag: true };');
+      expect(result).toContain('Prose after.');
+    });
+
+    it('serializes a captioned image block to an Image element', () => {
+      const doc = [
+        '[block:image]',
+        JSON.stringify({
+          images: [
+            {
+              image: ['https://files.readme.io/abc-shot.png', '', 'Dashboard screenshot'],
+              align: 'center',
+              caption: 'The dashboard after setup',
+            },
+          ],
+        }),
+        '[/block]',
+      ].join('\n');
+
+      const result = roundTripMdxish(doc);
+
+      expect(result).toContain('<Image');
+      expect(result).toContain('src="https://files.readme.io/abc-shot.png"');
+      expect(result).toContain('The dashboard after setup');
+    });
+
+    it('serializes an image-block caption holding readme nodes instead of crashing', () => {
+      const doc = [
+        '[block:image]',
+        JSON.stringify({
+          images: [
+            {
+              image: ['https://files.readme.io/abc-shot.png', '', 'Alt'],
+              align: 'center',
+              caption: 'Includes :joy: and <<glossary:merchantId>>',
+            },
+          ],
+        }),
+        '[/block]',
+      ].join('\n');
+
+      expect(() => roundTripMdxish(doc)).not.toThrow();
+    });
+
+    it('serializes a tutorial tile to a Recipe element', () => {
+      const doc = [
+        '[block:tutorial-tile]',
+        JSON.stringify({ slug: 'send-a-message', title: 'Send a message' }),
+        '[/block]',
+      ].join('\n');
+
+      const result = roundTripMdxish(doc);
+
+      expect(result).toContain('<Recipe');
+      expect(result).toContain('slug="send-a-message"');
+    });
+
+    // A sidebar magic block parses into an `rdme-pin` wrapper the mdxish dialect has no
+    // spelling for, so it unwraps to its content — matching readmeToMdx's behavior
+    // (readmeio/markdown#1618, greptile P1).
+    it('unwraps a pinned magic block instead of throwing', () => {
+      const doc = [
+        '[block:code]',
+        JSON.stringify({ sidebar: true, codes: [{ code: 'const x = 1', language: 'javascript' }] }),
+        '[/block]',
+      ].join('\n');
+
+      expect(roundTripMdxish(doc)).toContain('const x = 1');
+    });
+
+    // A plain image is phrasing content, so it has to keep a block wrapper or the serializer runs
+    // it straight into the next block (`![Alt](src)# Heading`) and the rest of the doc collapses.
+    it('keeps block separation around plain images in every flow position', () => {
+      const doc = [
+        '![Alt](https://x.io/a.png)',
+        '',
+        '# Heading',
+        '',
+        '> ![note](https://x.io/n.png)',
+        '>',
+        '> Quoted caption.',
+        '',
+        '- item',
+        '- ![shot](https://x.io/s.png)',
+        '',
+        'Trailing paragraph.',
+        '',
+      ].join('\n');
+
+      const result = roundTripMdxish(doc);
+
+      expect(result).toContain('![Alt](https://x.io/a.png)\n\n# Heading');
+      expect(result).toContain('> ![note](https://x.io/n.png)\n>\n> Quoted caption.');
+      expect(result.split('\n').every(line => line.length < 120)).toBe(true);
+    });
+
+    it('serializes an attribute-less image block as plain markdown', () => {
+      const doc = [
+        '[block:image]',
+        JSON.stringify({ images: [{ image: ['https://x.io/a.png', '', 'Alt'] }] }),
+        '[/block]',
+      ].join('\n');
+
+      expect(roundTripMdxish(doc)).toContain('![Alt](https://x.io/a.png)');
+    });
+
+    it('keeps block separation around an image carrying readme attributes', () => {
+      const doc = [
+        'Intro paragraph.',
+        '',
+        '[block:image]',
+        JSON.stringify({ images: [{ image: ['https://x.io/a.png', null, null], align: 'left', sizing: '50%' }] }),
+        '[/block]',
+        '',
+        '# Heading',
+        '',
+        'Trailing paragraph.',
+        '',
+      ].join('\n');
+
+      const result = roundTripMdxish(doc);
+
+      expect(result).toContain('align="left"');
+      expect(result).toContain('width="50%"');
+      expect(result).toContain('\n\n# Heading\n\n');
+    });
+
+    it('keeps the HTMLBlock wrapper on an html magic block, gate included', () => {
+      const doc = ['[block:html]', JSON.stringify({ html: '<style>.x{color:red}</style>' }), '[/block]'].join('\n');
+
+      const result = roundTripMdxish(doc);
+
+      expect(result).toContain('<HTMLBlock runScripts="false">');
+      expect(result).toContain('<style>.x{color:red}</style>');
+    });
+
+    it('serializes a legacy callout magic block as a Callout element', () => {
+      const doc = [
+        '[block:callout]',
+        JSON.stringify({ type: 'info', title: 'Heads up', body: 'The body.' }),
+        '[/block]',
+      ].join('\n');
+
+      const result = roundTripMdxish(doc);
+
+      expect(result).toContain('<Callout icon="📘"');
+      expect(result).toContain('Heads up');
+      expect(result).toContain('The body.');
+    });
+
+    it('serializes a multi-language code magic block as named adjacent fences', () => {
+      const doc = [
+        '[block:code]',
+        JSON.stringify({
+          codes: [
+            { code: 'a=1', language: 'python', name: 'first' },
+            { code: 'b=2', language: 'js', name: 'second' },
+          ],
+        }),
+        '[/block]',
+      ].join('\n');
+
+      expect(roundTripMdxish(doc)).toBe('```python first\na=1\n```\n```js second\nb=2\n```\n');
+    });
+
+    it('serializes an embed magic block as an Embed element', () => {
+      const doc = [
+        '[block:embed]',
+        JSON.stringify({ html: false, url: 'https://youtu.be/abc', title: 'Vid', favicon: 'https://y.t/f.ico' }),
+        '[/block]',
+      ].join('\n');
+
+      const result = roundTripMdxish(doc);
+
+      expect(result).toContain('<Embed url="https://youtu.be/abc"');
+      expect(result).toContain('title="Vid"');
+    });
+
+    it('round-trips frontmatter verbatim', () => {
+      expect(roundTripMdxish('---\ntitle: Hi\n---\n\nBody text\n')).toBe('---\ntitle: Hi\n---\n\nBody text\n');
+    });
+  });
+
+  describe('NoTranslate round trip', () => {
+    const docs = [
+      'Hello <NoTranslate>Acme **Cloud**</NoTranslate> world\n',
+      '<NoTranslate>Acme</NoTranslate> is great\n',
+      '<NoTranslate>Acme</NoTranslate>\n',
+      '<NoTranslate></NoTranslate>\n**after**\n',
+      '<NoTranslate><Anchor target="_blank" href="https://example.com">Acme</Anchor></NoTranslate> after\n',
+      '<Anchor target="_blank" href="https://example.com"><NoTranslate>Acme</NoTranslate></Anchor> after\n',
+      '<NoTranslate>a <NoTranslate>b</NoTranslate> c</NoTranslate> after\n',
+      'Hello <NoTranslate>a <NoTranslate>**b**</NoTranslate> c</NoTranslate> end\n',
+      'Use<NoTranslate> Acme </NoTranslate>now\n',
+      'Use<NoTranslate> </NoTranslate>now\n',
+      '<NoTranslate>Acme\nCloud</NoTranslate> after\n',
+      '<NoTranslate>\\*literal\\*</NoTranslate> after\n',
+      'Use <NoTranslate>[Acme](https://example.com), `acme run`, _Acme_, {user.name} and :joy:</NoTranslate> today\n',
+      '| a                                   |\n| ----------------------------------- |\n| <NoTranslate>**Acme**</NoTranslate> |\n',
+      '| a                                        |\n| ---------------------------------------- |\n| Before <NoTranslate></NoTranslate> after |\n',
+      'Use <NoTranslate>{/* internal note */}</NoTranslate> now.\n',
+      'Use <NoTranslate><Badge label="Acme" /></NoTranslate> today\n',
+      '| a                                          |\n| ------------------------------------------ |\n| Use <NoTranslate>`a\\|b`</NoTranslate> now. |\n',
+      '| a                                          |\n| ------------------------------------------ |\n| Use <NoTranslate>`a\\\\b`</NoTranslate> now. |\n',
+      'Hello <NoTranslate>{/* note */}\nkept</NoTranslate> after\n',
+      'Hello <NoTranslate><Badge label="Acme" />\nkept</NoTranslate> after\n',
+    ];
+
+    it.each([false, true])('round-trips byte for byte with newEditorTypes %s', newEditorTypes => {
+      docs.forEach(doc => {
+        expect(roundTripMdxish(doc, { newEditorTypes })).toBe(doc);
+      });
+    });
+
+    it('keeps the escaped pipe in a cell code span of any promoted inline component', () => {
+      const doc =
+        '| a                                           |\n| ------------------------------------------- |\n| Use <Anchor href={"x"}>`a\\|b`</Anchor> now. |\n';
+
+      expect(roundTripMdxish(doc)).toBe(doc);
+      expect(roundTripMdxish(doc, { newEditorTypes: true })).toContain('`a|b`');
+    });
+  });
+
+  describe('block NoTranslate round trip', () => {
+    const saved = '<NoTranslate>\n  Para one **bold**\n\n  - item\n</NoTranslate>\n\nafter\n';
+
+    it.each([false, true])(
+      'writes a NoTranslate spread over paragraphs as a block with newEditorTypes %s',
+      newEditorTypes => {
+        expect(roundTripMdxish('<NoTranslate>one\n\ntwo</NoTranslate>\n', { newEditorTypes })).toBe(
+          '<NoTranslate>\n  one\n\n  two\n</NoTranslate>\n',
+        );
+      },
+    );
+
+    it.each([false, true])('writes a block NoTranslate as a block with newEditorTypes %s', newEditorTypes => {
+      expect(
+        roundTripMdxish('<NoTranslate>\nPara one **bold**\n\n- item\n</NoTranslate>\n\nafter', { newEditorTypes }),
+      ).toBe(saved);
+    });
+
+    it.each([false, true])(
+      'round-trips a saved block NoTranslate byte for byte with newEditorTypes %s',
+      newEditorTypes => {
+        expect(roundTripMdxish(saved, { newEditorTypes })).toBe(saved);
+      },
+    );
+
+    it.each([false, true])(
+      'keeps the block after an empty block NoTranslate with newEditorTypes %s',
+      newEditorTypes => {
+        expect(roundTripMdxish('<NoTranslate>\n</NoTranslate>\n\n# Heading\n', { newEditorTypes })).toBe(
+          '<NoTranslate>\n\n</NoTranslate>\n\n# Heading\n',
+        );
+      },
+    );
+
+    describe.each([
+      [
+        'an expression',
+        '<NoTranslate>\n{"</NoTranslate>"}</NoTranslate>\n',
+        '<NoTranslate>\n  {"</NoTranslate>"}\n</NoTranslate>\n',
+      ],
+      [
+        'an inline NoTranslate',
+        '<NoTranslate>\n<NoTranslate>inner</NoTranslate></NoTranslate>\n',
+        '<NoTranslate>\n  <NoTranslate>inner</NoTranslate>\n</NoTranslate>\n',
+      ],
+      [
+        'an inline NoTranslate opened on an earlier line',
+        '<NoTranslate>\nkept <NoTranslate>inner\nstill</NoTranslate></NoTranslate>\n',
+        '<NoTranslate>\n  kept <NoTranslate>inner\n  still</NoTranslate>\n</NoTranslate>\n',
+      ],
+    ])('with a closer inside %s on the last line', (_label, doc, expected) => {
+      it.each([false, true])('ends the block at its own closer with newEditorTypes %s', newEditorTypes => {
+        expect(roundTripMdxish(doc, { newEditorTypes })).toBe(expected);
+      });
+    });
+
+    describe.each([
+      [
+        'a blockquote',
+        '> <NoTranslate>\n> first\n> </NoTranslate> later\n',
+        '> <NoTranslate>\n>   first\n> </NoTranslate>\n>\n> later\n',
+      ],
+      [
+        'a list item',
+        '- <NoTranslate>\n  first\n  </NoTranslate> later\n',
+        '- <NoTranslate>\n    first\n  </NoTranslate>\n  later\n',
+      ],
+      ['trailing spaces', '<NoTranslate>\nfirst\n</NoTranslate>   \n', '<NoTranslate>\n  first\n</NoTranslate>\n'],
+    ])('in %s', (_label, doc, expected) => {
+      it.each([false, true])('ends the block at its closer with newEditorTypes %s', newEditorTypes => {
+        expect(roundTripMdxish(doc, { newEditorTypes })).toBe(expected);
+      });
+    });
+  });
+
+  describe('mdxish dialect', () => {
+    it('serializes a legacy callout in JSX form, like the editor serializer', () => {
+      const result = roundTripMdxish('> 📘 Nota\n>\n> El cuerpo.\n');
+
+      expect(result).toContain('<Callout');
+      expect(result).toContain('Nota');
+      expect(result).not.toContain('> 📘');
+    });
+
+    it('round-trips a gemoji shortcode verbatim', () => {
+      expect(roundTripMdxish('A :joy: shortcode\n')).toBe('A :joy: shortcode\n');
+    });
+
+    // `mdxishCompilers` owns the `variable` handler and writes `{user.<name>}`. Pinned so an edit
+    // there can't quietly change what a parsed doc round-trips to.
+    it('writes variables as expressions and stays stable across a second pass', () => {
+      const once = roundTripMdxish('Hello <<user>> there\n');
+
+      expect(once).toContain('{user.user}');
+      expect(roundTripMdxish(once)).toBe(once);
+    });
+
+    it('serializes a glossary term as a Glossary element', () => {
+      expect(roundTripMdxish('See <<glossary:merchantId>> here\n')).toContain('<Glossary>merchantId</Glossary>');
+    });
+
+    it('keeps CJK-adjacent emphasis parseable through the round trip', () => {
+      // The `_` marker cannot flank a CJK letter, so the serializer entity-encodes the
+      // neighbours (`こ&#x306E;_…_`); byte-ugly, but the emphasis survives a re-parse.
+      const result = roundTripMdxish('この*用語*は**重要**です。\n');
+
+      expect(result).toContain('**重要**');
+      const reparsed = parseMdxish(result);
+      const emphasisValues: string[] = [];
+      const walk = (node: { children?: unknown[]; type?: string; value?: string }): void => {
+        if (node.type === 'emphasis') {
+          (node.children as { value?: string }[] | undefined)?.forEach(child => {
+            if (child.value) emphasisValues.push(child.value);
+          });
+        }
+        (node.children as (typeof node)[] | undefined)?.forEach(walk);
+      };
+      walk(reparsed as never);
+      expect(emphasisValues).toContain('用語');
+    });
+
+    it('is stable across a second round trip on editor-vocabulary content', () => {
+      const doc = [
+        '# Title',
+        '',
+        'Prose with **bold**, *emphasis*, and `code`.',
+        '',
+        '> 📘 Heads up',
+        '>',
+        '> Callout body.',
+        '',
+        '- item one',
+        '- item two',
+        '',
+        '| a | b |',
+        '| - | - |',
+        '| 1 | 2 |',
+        '',
+        '```js',
+        'const x = 1;',
+        '```',
+        '',
+      ].join('\n');
+      const once = roundTripMdxish(doc);
+
+      expect(roundTripMdxish(once)).toBe(once);
+    });
   });
 });

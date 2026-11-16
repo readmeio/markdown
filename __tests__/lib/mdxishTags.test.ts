@@ -236,7 +236,7 @@ This is phrasing: <Inline />
   describe('deeply indented components', () => {
     it('captures a 4+ column indented component at the top level', () => {
       const mdx = '      <MyComponent />';
-  
+
       expect(mdxishTags(mdx)).toStrictEqual(['MyComponent']);
     });
 

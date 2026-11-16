@@ -121,9 +121,7 @@ export const repairUnclosedTags = (html: string): RepairResult => {
     },
   });
 
-  findOrphanClosers(html).forEach(({ offset, length }) =>
-    inserts.push({ offset, text: '', consumes: length }),
-  );
+  findOrphanClosers(html).forEach(({ offset, length }) => inserts.push({ offset, text: '', consumes: length }));
 
   return applyInserts(html, inserts);
 };

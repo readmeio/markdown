@@ -1,5 +1,5 @@
-import type { MdastOpts } from './ast-processor';
 import type { MdastComponents } from '../types';
+import type { MdastOpts } from './ast-processor';
 
 import remarkRehype from 'remark-rehype';
 

@@ -1,7 +1,6 @@
 import type { Element } from 'hast';
 
 import { toHtml } from 'hast-util-to-html';
-
 import { describe, it, expect } from 'vitest';
 
 import { mdxish } from '../../../lib/mdxish';
@@ -196,7 +195,7 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
     ))}
   </div>`;
       const html = toHtml(mdxish(md));
-  
+
       expect(html).toContain(
         '<a href="https://example.com/card" class="card-link"><div class="card"><h3 id="card">Card</h3><ul><li><a href="https://example.com/link">Link</a></li></ul></div></a>',
       );
@@ -221,7 +220,7 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
   </div>`;
       const ast = mdxish(md);
       const html = toHtml(ast);
-  
+
       expect(html.match(/class="card-link"/g)).toHaveLength(1);
       expect(html).toContain('<a href="https://example.com/inner">inner</a>');
       expect((ast.children[0] as Element).tagName).toBe('div');

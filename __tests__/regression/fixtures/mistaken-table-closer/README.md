@@ -19,6 +19,13 @@ bare second `<table>` to `</table>` before `jsxTable` /
 ## What flips this fixture
 
 Any change to `repairMistakenTableClosers`, its placement in
-`preprocessContent`, or the typo heuristic (a bare opener alone on its
-line, at table depth ≥ 1, whose element ends implicitly without table-
-structure children).
+`preprocessContent`, or the typo heuristic (a bare opener that finishes
+its line, at table depth ≥ 1, whose element ends implicitly without
+table-structure children).
+
+## Both closer positions
+
+The second table covers the one-line variant, where the mistyped closer
+trails `</thead>` instead of sitting on its own line. The original
+heuristic required the opener to be alone on its line, so this shape was
+left unrepaired and the Notes callout was escaped to `\>` on save.

@@ -1,6 +1,9 @@
 name: BundleWatch
 on: [push]
 
+permissions:
+  contents: read
+
 jobs:
   check:
     name: Bundle Watch

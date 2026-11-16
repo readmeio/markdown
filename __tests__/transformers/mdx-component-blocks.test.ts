@@ -4,10 +4,10 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
 
+import { NodeTypes } from '../../enums';
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
 import mdxishComponentBlocks from '../../processor/transform/mdxish/components/mdx-blocks';
-import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/components/self-closing-blocks';
 import { collectNodes, parseMdxish } from '../helpers';
 
 interface MdxJsxFlowElement extends Parent {
@@ -27,7 +27,6 @@ const parseWithPlugin = (markdown: string): Root => {
     .data('micromarkExtensions', [mdxComponent()])
     .data('fromMarkdownExtensions', [mdxComponentFromMarkdown()])
     .use(remarkParse)
-    .use(mdxishSelfClosingBlocks)
     .use(mdxishComponentBlocks);
   const tree = processor.parse(markdown);
   processor.runSync(tree, new VFile({ value: markdown }));
@@ -494,10 +493,48 @@ More content here
         ]);
       });
 
-      it('should not promote a wrapper around a legacy <<VARIABLE>>', () => {
+      // Left raw, parse5 reads `<<NAME>>` as a stray `<` plus a `<NAME>` tag.
+      it('should promote a wrapper around a legacy <<VARIABLE>>', () => {
         const tree = parseWithPlugin('<p>Hello <<NAME>>!</p>');
 
-        expect(tree.children).toMatchObject([{ type: 'html', value: '<p>Hello <<NAME>>!</p>' }]);
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'p',
+            children: [
+              { type: 'text', value: 'Hello ' },
+              { type: NodeTypes.variable, data: { hProperties: { name: 'NAME', isLegacy: true } } },
+              { type: 'text', value: '!' },
+            ],
+          },
+        ]);
+      });
+
+      it('should promote a wrapper around a sole {user.*} reference', () => {
+        const tree = parseWithPlugin('<p>{user.name}</p>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'p',
+            children: [{ type: 'mdxFlowExpression', value: 'user.name' }],
+          },
+        ]);
+      });
+
+      // The body scanner used to read the inner `<name>` of `<<name>>` as a nested opening
+      // tag, leaving the block unbalanced so the tokenizer dropped its claim and CommonMark
+      // split it at the blank line — after which the closer was a separate html node.
+      it('should keep a wrapper whose body holds a <<VARIABLE>> in one node across a blank line', () => {
+        const tree = parseWithPlugin('<div><<NAME>>\n\n</div>');
+
+        expect(tree.children).toMatchObject([{ type: 'mdxJsxFlowElement', name: 'div' }]);
+      });
+
+      it('should not promote a wrapper around an expression that names no variable', () => {
+        const tree = parseWithPlugin('<div>{ color: red }</div>');
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: '<div>{ color: red }</div>' }]);
       });
 
       it('should not promote a wrapper whose only component has a dedicated transformer', () => {
@@ -778,6 +815,44 @@ hello
         const tag = listItem.children[0] as MdxJsxFlowElement;
         expect(tag.type).toBe('mdxJsxFlowElement');
         expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>\n    body\n  </Tag>');
+      });
+
+      // A multi-line self-closing tag has the same stripped prefixes; its end used to be
+      // measured against the html value alone and fell short by exactly the `/>` (CX-3940).
+      describe('multi-line self-closing tag inside a container', () => {
+        it.each([
+          ['a list item', '- four\n  <Tag\n  attr="x"\n  />', '<Tag\n  attr="x"\n  />'],
+          [
+            'a list item indented past the content column',
+            '- four\n    <Tag\n    attr="x"\n    />',
+            '  <Tag\n    attr="x"\n    />',
+          ],
+          ['an ordered list item', '1. four\n   <Tag attr="x"\n   />', '<Tag attr="x"\n   />'],
+          ['a blockquote', '> <Tag\n> attr="x"\n> />', '<Tag\n> attr="x"\n> />'],
+          ['a nested list item', '- a\n  - four\n    <Tag\n    attr="x"\n    />', '<Tag\n    attr="x"\n    />'],
+        ])('position spans the full tag inside %s', (_, markdown, expectedSource) => {
+          const tree = parseWithPlugin(markdown);
+
+          const [tag] = collectNodes<MdxJsxFlowElement>(tree, 'mdxJsxFlowElement');
+          expect(tag).toMatchObject({
+            name: 'Tag',
+            attributes: [{ type: 'mdxJsxAttribute', name: 'attr', value: 'x' }],
+          });
+          expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe(expectedSource);
+        });
+
+        it('ends at the tag when trailing content follows inside a list item', () => {
+          const markdown = '- <Tag\n  attr="x"\n  /> trailing';
+          const tree = parseWithPlugin(markdown);
+
+          const listItem = (tree.children[0] as Parent).children[0] as Parent;
+          expect(listItem.children).toMatchObject([
+            { type: 'mdxJsxFlowElement', name: 'Tag' },
+            { type: 'paragraph', children: [{ type: 'text', value: 'trailing' }] },
+          ]);
+          const tag = listItem.children[0] as MdxJsxFlowElement;
+          expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag\n  attr="x"\n  />');
+        });
       });
     });
   });
@@ -1560,6 +1635,35 @@ Second paragraph
         const tree = parseMdxish(md);
         expect(counts(tree).callouts).toBe(1);
       });
+    });
+  });
+
+  describe('stray `<` before a tag', () => {
+    const elementNames = (md: string) =>
+      [
+        ...collectNodes<MdxJsxFlowElement>(parseMdxish(md), 'mdxJsxFlowElement'),
+        ...collectNodes<MdxJsxFlowElement>(parseMdxish(md), 'mdxJsxTextElement'),
+      ].map(node => node.name);
+
+    it('does not claim a stray `<word` as the tag that a later `>` closes', () => {
+      // The opener scan bails at `<`; it used to claim a bogus `b` element here.
+      expect(elementNames('a <b and <i data-a={1}>x</i> more')).toStrictEqual(['i']);
+    });
+
+    it('still allows `<` inside a brace or quoted attribute', () => {
+      expect(elementNames('<div title="<x>" data-a={a < b}>\n\nhi\n\n</div>')).toStrictEqual(['div']);
+    });
+  });
+
+  describe('nested expression attribute detection', () => {
+    // One name char before `=` suffices; `[\w-]+` backtracked quadratically (see perf tests).
+    it('still detects a nested expression attribute with whitespace around `=`', () => {
+      const md = `<div>
+  <span data-index = {1}>x</span>
+</div>`;
+      const tree = parseWithPlugin(md);
+      const [div] = collectNodes<MdxJsxFlowElement>(tree, 'mdxJsxFlowElement');
+      expect(div.name).toBe('div');
     });
   });
 });

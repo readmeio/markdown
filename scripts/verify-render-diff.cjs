@@ -16,16 +16,11 @@ const path = require('path');
 // and absent from lib/render-diff/**/*.ts (negative control). DO NOT substitute
 // generic substrings ('compile', 'mdxish', 'htmlparser2') — those produce
 // false positives.
-const bundlePath = process.env.VERIFY_RENDER_DIFF_BUNDLE_PATH || path.join(__dirname, '..', 'dist', 'render-diff.node.js');
+const bundlePath =
+  process.env.VERIFY_RENDER_DIFF_BUNDLE_PATH || path.join(__dirname, '..', 'dist', 'render-diff.node.js');
 const bundle = fs.readFileSync(bundlePath, 'utf-8');
 
-const ENGINE_TOKENS = [
-  'mdxishAstProcessor',
-  'mdxishMdastToMd',
-  'renderMdxish',
-  'mdxCompileSync',
-  'sanitizeSchema',
-];
+const ENGINE_TOKENS = ['mdxishAstProcessor', 'mdxishMdastToMd', 'renderMdxish', 'mdxCompileSync', 'sanitizeSchema'];
 
 ENGINE_TOKENS.forEach(token => {
   assert(

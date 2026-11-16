@@ -1,11 +1,10 @@
-import type { RenderContext } from './loadFixture';
 import type { RMDXModule } from '../../types';
+import type { RenderContext } from './loadFixture';
 
 import { createElement } from 'react';
 import { renderToString } from 'react-dom/server';
 
 import { compile, run, mdxish, renderMdxish } from '..';
-
 
 export type Engine = 'mdx' | 'mdxish';
 
@@ -41,11 +40,7 @@ function withFrozenClock<T>(fn: () => T): T {
   };
   try {
     const result = fn();
-    if (
-      result !== null &&
-      typeof result === 'object' &&
-      typeof (result as { then?: unknown }).then === 'function'
-    ) {
+    if (result !== null && typeof result === 'object' && typeof (result as { then?: unknown }).then === 'function') {
       throw new Error(
         'withFrozenClock: fn returned a Promise. This helper is sync-only — ' +
           'an async render would restore the real clock before the engine ' +
@@ -64,9 +59,7 @@ function withFrozenClock<T>(fn: () => T): T {
  * Build the components map for compile() — MDX compile() accepts
  * `Record<tag, source>` (raw source strings).
  */
-function buildMdxSources(
-  components: RenderContext['components'],
-): Record<string, string> {
+function buildMdxSources(components: RenderContext['components']): Record<string, string> {
   return components.reduce<Record<string, string>>((acc, { tag, source }) => {
     acc[tag] = source;
     return acc;
@@ -77,9 +70,7 @@ function buildMdxSources(
  * Compile each custom block through compile+run to produce RMDXModules.
  * Used by run()'s `components` option and renderMdxish()'s `components` option.
  */
-function buildModules(
-  components: RenderContext['components'],
-): Record<string, RMDXModule> {
+function buildModules(components: RenderContext['components']): Record<string, RMDXModule> {
   return components.reduce<Record<string, RMDXModule>>((acc, { tag, source }) => {
     const code = compile(source, {});
     acc[tag] = run(code, {}) as RMDXModule;
@@ -97,11 +88,7 @@ function buildModules(
  *
  * The loader's `ctx.glossary` is mapped onto the engine's `terms` parameter.
  */
-export function renderFixture(
-  body: string,
-  ctx: RenderContext,
-  engine: Engine,
-): FixtureRenderResult {
+export function renderFixture(body: string, ctx: RenderContext, engine: Engine): FixtureRenderResult {
   return withFrozenClock(() => {
     try {
       if (engine === 'mdx') {

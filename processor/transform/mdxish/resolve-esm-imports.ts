@@ -9,8 +9,7 @@ export type ModuleRegistry = Record<string, unknown>;
 // and it's a common use case. Add other common libraries here.
 export const defaultModuleRegistry: ModuleRegistry = { react: React };
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 
 // Get the value of a named export from a module
 const getModuleExport = (module: unknown, importedName: string): unknown =>
@@ -18,10 +17,10 @@ const getModuleExport = (module: unknown, importedName: string): unknown =>
 
 /**
  * Turn `import` declarations into a flat map of binding → value.
- * 
+ *
  * A "binding" is a mapping of a local name to the value of it in the module exports
  * Example: `import { useState } from 'react'` yields `{ useState: React.useState }`.
- * 
+ *
  * Unsupported specifiers are skipped with a warning rather than throwing, so a
  * single unknown import can't break the rest of the document.
  */

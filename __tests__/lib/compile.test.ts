@@ -62,6 +62,8 @@ describe('compile', () => {
     it('sanitizes unsafe protocols on raw HTML anchors', () => {
       const anchor = renderMarkdown('<a href="javascript:alert(1)">test</a>');
 
+      // The assertion is that this protocol is stripped.
+      // oxlint-disable-next-line no-script-url
       expect(anchor).not.toHaveAttribute('href', 'javascript:alert(1)');
     });
   });

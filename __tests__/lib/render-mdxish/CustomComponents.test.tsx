@@ -9,9 +9,9 @@ import { compile, mdxish, run, renderMdxish } from '../../../lib';
 describe('custom components', () => {
   describe('components with children', () => {
     it('should pass in props correctly without unexpected whitespace', () => {
-        // Before, this would pass in some unexpected whitespace to the children
-        // and creating more steps
-        const customComponentCode = `
+      // Before, this would pass in some unexpected whitespace to the children
+      // and creating more steps
+      const customComponentCode = `
 import React, { useState, useMemo } from 'react';
 
 export const SimpleStepper = ({ children }) => {
@@ -48,14 +48,14 @@ export const SimpleStep = ({ header, children }) => (
 </SimpleStepper>
         `;
 
-        const compiledModule = run(compile(customComponentCode));
-        const components: Record<string, RMDXModule> = {
-          ExampleComponent: compiledModule,
-          SimpleStepper: compiledModule,
-          SimpleStep: compiledModule,
-        };
+      const compiledModule = run(compile(customComponentCode));
+      const components: Record<string, RMDXModule> = {
+        ExampleComponent: compiledModule,
+        SimpleStepper: compiledModule,
+        SimpleStep: compiledModule,
+      };
 
-        const md = `
+      const md = `
 <SimpleStepper>
   <SimpleStep header="Step 1: Plan">
     Plan your documentation and gather resources.
@@ -68,12 +68,12 @@ export const SimpleStep = ({ header, children }) => (
   </SimpleStep>
 </SimpleStepper>
         `;
-        const tree = mdxish(md, { components });
-        const mod = renderMdxish(tree, { components });
-        const { container } = render(<mod.default />);
+      const tree = mdxish(md, { components });
+      const mod = renderMdxish(tree, { components });
+      const { container } = render(<mod.default />);
 
-        // There should be 3 children of the SimpleStepper component
-        expect(container.querySelectorAll('.step-indicator')).toHaveLength(3);
+      // There should be 3 children of the SimpleStepper component
+      expect(container.querySelectorAll('.step-indicator')).toHaveLength(3);
     });
 
     it('should filter whitespace-only text nodes between component children', () => {
@@ -333,7 +333,7 @@ export const D = () => <span className="level-d">leaf</span>;
       expect(CSpans[1]?.textContent).toBe('2');
       expect(container.querySelectorAll('.level-d')).toHaveLength(4);
     });
-  })
+  });
 
   describe('with various types of props', () => {
     const exampleComponentCode = `
@@ -425,7 +425,7 @@ This is the response
       const mod = renderMdxish(tree, { components: { Terminal } });
       render(<mod.default />);
 
-      expect(typeof receivedChildren).toBe('string');
+      expect(receivedChildren).toBeTypeOf('string');
       expect(receivedChildren as string).toContain('$ npx run command');
     });
   });

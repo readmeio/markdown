@@ -44,16 +44,14 @@ const fixtures: { name: string; src: string; shouldMatch: boolean }[] = [
   { name: 'no closing brace', src: '{/* hi */', shouldMatch: false },
   { name: 'only open brace', src: '{', shouldMatch: false },
   { name: 'plain expression', src: '{1 + 1}', shouldMatch: false },
-];
+] as const;
 
 describe('JSX comment pattern parity: regex vs tokenizer', () => {
-  fixtures.forEach(({ name, src, shouldMatch }) => {
-    it(`both agree on: ${name}`, () => {
-      const regex = regexMatches(src);
-      const tokenizer = tokenizerMatches(src);
-      expect(regex).toBe(shouldMatch);
-      expect(tokenizer).toBe(shouldMatch);
-      expect(regex).toBe(tokenizer);
-    });
+  it.each(fixtures)(`both agree on: $name`, ({ src, shouldMatch }) => {
+    const regex = regexMatches(src);
+    const tokenizer = tokenizerMatches(src);
+    expect(regex).toBe(shouldMatch);
+    expect(tokenizer).toBe(shouldMatch);
+    expect(regex).toBe(tokenizer);
   });
 });

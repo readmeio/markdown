@@ -1,0 +1,1 @@
+export { noTranslate } from './syntax';

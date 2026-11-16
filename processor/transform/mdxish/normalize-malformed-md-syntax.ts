@@ -331,12 +331,12 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     return flag && isInsideInlineHtmlCode(index, parent);
   };
 
-  visit(tree, 'text', function visitor(node: Text, index, parent: Parent) {
-    if (index === undefined || !parent) return undefined;
+  visit(tree, 'text', (node: Text, index, parent: Parent) => {
+    if (index === undefined || !parent) return;
 
     // Skip if inside code blocks, inline code, or MDX JSX <code> elements.
     if (parent.type === 'inlineCode' || parent.type === 'code') {
-      return undefined;
+      return;
     }
     // The parent type check for mdxJsxTextElement/mdxJsxFlowElement handles
     // raw HTML <code>...</code> inside table cells, which the table re-parser
@@ -346,7 +346,7 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
       'name' in parent &&
       parent.name === 'code'
     ) {
-      return undefined;
+      return;
     }
     const text = node.value;
 
@@ -356,14 +356,14 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     // html-sibling scan so marker-free text never pays for that either.
     const hasAsterisk = text.includes('*');
     const hasUnderscore = text.includes('_');
-    if (!hasAsterisk && !hasUnderscore) return undefined;
+    if (!hasAsterisk && !hasUnderscore) return;
 
     // In GFM tables, inline <code>...</code> is represented as sibling `html`
     // nodes rather than as an mdxJsxTextElement, so the check above doesn't
     // apply. Scan backwards through siblings to see if we are enclosed by a
     // <code>…</code> inline HTML pair.
     if (mayBeInsideInlineHtmlCode(index, parent)) {
-      return undefined;
+      return;
     }
 
     const gates: Record<(typeof REGEX_FAMILIES)[number]['gate'], boolean> = {
@@ -389,7 +389,7 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
       });
     });
 
-    if (allMatches.length === 0) return undefined;
+    if (allMatches.length === 0) return;
 
     allMatches.sort((a, b) => (a.match.index ?? 0) - (b.match.index ?? 0));
 
@@ -404,7 +404,7 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
       }
     });
 
-    if (filteredMatches.length === 0) return undefined;
+    if (filteredMatches.length === 0) return;
 
     const parts: (Emphasis | Strong | Text)[] = [];
     let lastIndex = 0;
@@ -513,8 +513,6 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
       parent.children.splice(index, 1, ...mergedParts);
       return [SKIP, index + mergedParts.length];
     }
-
-    return undefined;
   });
 
   // Handle malformed emphasis spanning multiple nodes (e.g., **text [link](url) **)

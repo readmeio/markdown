@@ -9,6 +9,7 @@ import { toJs } from 'estree-util-to-js';
 import React from 'react';
 import { visit } from 'unist-util-visit';
 
+import { stripJsxTags } from '../../plugin/strip-tags';
 import { evaluate, isMDXEsm } from '../../utils';
 
 import { collectImportValues } from './resolve-esm-imports';
@@ -60,6 +61,11 @@ const collectExportNames = (declaration: Declaration): string[] => {
   return [];
 };
 
+interface Options {
+  /** Drop `STRIPPED_TAG_NAMES` JSX from the exported code before it is evaluated. */
+  sanitize?: boolean;
+}
+
 /**
  * Evaluate `export const/function` declarations introduced by mdxjsEsm nodes.
  *
@@ -72,7 +78,7 @@ const collectExportNames = (declaration: Declaration): string[] => {
  * Any evaluation error is consumed and logged. We don't throw because it's
  * against the spirit of this engine to be less permissive than MDX needs.
  */
-const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
+const evaluateExports: Plugin<[Options?], Root> = (opts?: Options) => (tree: Root, file: VFile) => {
   const programBody: Declaration[] = [];
   const exportNames: string[] = [];
   const importDeclarations: ImportDeclaration[] = [];
@@ -114,9 +120,7 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
   });
 
   // Remove the mdxjsEsm nodes from the tree
-  nodesToRemove
-    .sort((a, b) => b.index - a.index)
-    .forEach(({ index, parent }) => parent.children.splice(index, 1));
+  nodesToRemove.sort((a, b) => b.index - a.index).forEach(({ index, parent }) => parent.children.splice(index, 1));
 
   if (!exportNames.length) return tree;
 
@@ -125,6 +129,7 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
   // Evaluate the declarations together at once in a single sandboxed Function
   try {
     const program: Program = { type: 'Program', sourceType: 'module', body: programBody };
+    if (opts?.sanitize) stripJsxTags(program);
     buildJsx(program, { runtime: 'classic', pragma: 'React.createElement', pragmaFrag: 'React.Fragment' });
     const { value: source } = toJs(program);
 
@@ -133,10 +138,10 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
 
     // Evaluate and build on the expression source
     // Use react to compile JSX codes
-    const evaluatedExports = evaluate(
-      `(() => { ${source}\nreturn { ${exportNames.join(', ')} }; })()`,
-      { React, ...importValues },
-    ) as Record<string, unknown>;
+    const evaluatedExports = evaluate(`(() => { ${source}\nreturn { ${exportNames.join(', ')} }; })()`, {
+      React,
+      ...importValues,
+    }) as Record<string, unknown>;
 
     Object.assign(scope, evaluatedExports);
   } catch (error) {

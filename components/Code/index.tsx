@@ -1,7 +1,7 @@
 import copy from 'copy-to-clipboard';
 import React, { createRef, useContext } from 'react';
 
-import CodeOptsContext from '../../contexts/CodeOpts';
+import RenderConfigContext from '../../contexts/RenderConfig';
 import ThemeContext from '../../contexts/Theme';
 import useHydrated from '../../hooks/useHydrated';
 
@@ -58,7 +58,7 @@ interface CodeProps {
 const Code = (props: CodeProps) => {
   const { children, lang, value } = props;
   const theme = useContext(ThemeContext);
-  const copyButtons = useContext(CodeOptsContext) || props.copyButtons;
+  const copyButtons = useContext(RenderConfigContext).copyButtons || props.copyButtons;
   const isHydrated = useHydrated();
 
   const language = canonicalLanguage(lang);

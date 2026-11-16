@@ -124,7 +124,7 @@ export const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root>
   };
 };
 
-const MAX_DEPTH = 2;
+const MAX_DEPTH = 3;
 
 /**
  * Get the depth of a heading element based on its tag name.
@@ -187,7 +187,10 @@ export const tocToHast = (headings: HastHeading[] = [], variables?: Variables): 
     }
 
     if (heading.properties) {
-      const content = plain({ type: 'root', children: heading.children }, { separator: '', variables: flatVars }) as string;
+      const content = plain(
+        { type: 'root', children: heading.children },
+        { separator: '', variables: flatVars },
+      ) as string;
 
       stack[stack.length - 1].children.push(
         h('li', null, h('a', { href: `#${heading.properties.id}` }, content)) as TocListItem,

@@ -25,8 +25,7 @@ interface Flanking {
 const analyzeFlanking = (source: string, char: string, start: number, end: number): Flanking => {
   const before = source[start - 1];
   const after = source[end];
-  const leftFlanking =
-    !isWhitespace(after) && (!isPunctuation(after) || isWhitespace(before) || isPunctuation(before));
+  const leftFlanking = !isWhitespace(after) && (!isPunctuation(after) || isWhitespace(before) || isPunctuation(before));
   const rightFlanking =
     !isWhitespace(before) && (!isPunctuation(before) || isWhitespace(after) || isPunctuation(after));
 
@@ -66,10 +65,18 @@ const collectEvents = (html: string): WalkEvent[] => {
     const start = match.index;
     // eslint-disable-next-line no-continue
     if (html[start - 1] === '\\') continue; // already escaped
-    events.push({ kind: 'emphasis', offset: start, char, length: run.length, flanking: analyzeFlanking(html, char, start, start + run.length) });
+    events.push({
+      kind: 'emphasis',
+      offset: start,
+      char,
+      length: run.length,
+      flanking: analyzeFlanking(html, char, start, start + run.length),
+    });
   }
 
-  return events.sort((a, b) => a.offset - b.offset || (a.kind === 'tagClose' ? 1 : 0) - (b.kind === 'tagClose' ? 1 : 0));
+  return events.sort(
+    (a, b) => a.offset - b.offset || (a.kind === 'tagClose' ? 1 : 0) - (b.kind === 'tagClose' ? 1 : 0),
+  );
 };
 
 interface OpenEmphasis {

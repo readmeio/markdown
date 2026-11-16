@@ -20,16 +20,14 @@
  *   (primitives first, public `diff()` last) so the public API anchors the
  *   end of the file.
  */
-/* eslint-disable no-restricted-syntax, no-continue, @typescript-eslint/no-use-before-define */
+/* eslint-disable no-continue, @typescript-eslint/no-use-before-define */
 import type { Change, DiffOptions, DiffResult, Severity } from './types';
 import type { AnyNode, ChildNode, Element, Text } from 'domhandler';
 
 import { createHash } from 'node:crypto';
 
-// eslint-disable-next-line import/no-extraneous-dependencies -- transitive via htmlparser2
 import { ElementType, isTag } from 'domelementtype';
 import { parseDocument } from 'htmlparser2';
-
 
 /* ---------- internal canonical node types ---------- */
 
@@ -180,11 +178,7 @@ function walkAndCanonicalize(node: AnyNode, opts: DiffOptions, isRoot: boolean):
     let normalizedValue = value;
 
     if (name === 'class') {
-      normalizedValue = normalizedValue
-        .split(/\s+/)
-        .filter(Boolean)
-        .sort()
-        .join(' ');
+      normalizedValue = normalizedValue.split(/\s+/).filter(Boolean).sort().join(' ');
       // oxlint-disable-next-line no-continue
       if (!normalizedValue) continue; // drop empty class
     }
@@ -216,7 +210,7 @@ function walkAndCanonicalize(node: AnyNode, opts: DiffOptions, isRoot: boolean):
   const rawChildren: ChildNode[] = isRoot
     ? ((node as unknown as { children: ChildNode[] }).children ?? [])
     : isTag(node as AnyNode)
-      ? (node as Element).children ?? []
+      ? ((node as Element).children ?? [])
       : [];
 
   const children: CanonNode[] = [];
@@ -386,8 +380,7 @@ function normalizeBoundaryWhitespace(children: CanonNode[], selfInline: boolean)
   const out: CanonNode[] = [];
   for (let k = 0; k < children.length; k += 1) {
     const leftIsBlockBoundary = k === 0 ? !selfInline : isBlockLevel(children[k - 1]);
-    const rightIsBlockBoundary =
-      k === children.length - 1 ? !selfInline : isBlockLevel(children[k + 1]);
+    const rightIsBlockBoundary = k === children.length - 1 ? !selfInline : isBlockLevel(children[k + 1]);
 
     let node: CanonNode | null = children[k];
     if (leftIsBlockBoundary) node = trimInlineEdge(node, 'leading');
@@ -489,12 +482,7 @@ function attrSeverity(name: string): Severity {
  *
  * Children are visited in document position order.
  */
-function alignChildren(
-  aChildren: CanonNode[],
-  bChildren: CanonNode[],
-  parentPath: string,
-  changes: Change[],
-): void {
+function alignChildren(aChildren: CanonNode[], bChildren: CanonNode[], parentPath: string, changes: Change[]): void {
   let i = 0;
   let j = 0;
   while (i < aChildren.length && j < bChildren.length) {
@@ -547,8 +535,7 @@ function missingOrExtra(kind: 'extra' | 'missing', node: CanonNode, pathStr: str
   // 'missing' = present in left, absent in right; 'extra' = present in right, absent in left.
   const isText = node.type === 'text';
   const severity: Severity = isText ? 'content' : 'structural';
-  const repr =
-    node.type === 'text' ? `#text(${JSON.stringify(node.value)})` : serializeShallow(node);
+  const repr = node.type === 'text' ? `#text(${JSON.stringify(node.value)})` : serializeShallow(node);
   return {
     path: pathStr,
     kind,

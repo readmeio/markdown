@@ -6,6 +6,9 @@ on:
       - next
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   Test:
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
@@ -24,11 +27,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
 
       - name: Verify subpath exports (build + dist-grep + self-ref probes)
         run: npm run build:verify
@@ -36,6 +37,10 @@ jobs:
   visual:
     name: 'Visual Tests'
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
+    # upload-artifact needs actions: write; job permissions replace the workflow set.
+    permissions:
+      actions: write
+      contents: read
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -52,7 +57,7 @@ jobs:
         if: ${{ failure() }}
         with:
           name: snapshots-diffs
-          path: __tests__/browser/__image_snapshots__/__diff_output__
+          path: __tests__/browser/__diff_output__
           overwrite: true
 
       - name: Update regression test snapshots
@@ -64,5 +69,5 @@ jobs:
         if: ${{ failure() }}
         with:
           name: image-snapshots
-          path: __tests__/browser/__image_snapshots__/
+          path: __tests__/browser/__screenshots__/
           overwrite: true

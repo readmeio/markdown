@@ -52,7 +52,8 @@ const UNITLESS_CSS_PROPERTIES = new Set([
 ]);
 
 /** Convert a camelCase (or CSS custom property) key into its kebab-case CSS name. */
-const cssPropertyName = (key: string): string => (key.startsWith('--') ? key : key.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`));
+const cssPropertyName = (key: string): string =>
+  key.startsWith('--') ? key : key.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
 
 /** React appends `px` to non-zero numeric values, except unitless and custom properties. */
 const cssPropertyValue = (key: string, value: unknown): string =>

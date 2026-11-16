@@ -21,6 +21,7 @@ export const stringifyVariableValue = (value: unknown): string => {
     try {
       return JSON.stringify(value) ?? '';
     } catch {
+      // oxlint-disable-next-line no-console
       console.warn('[WARNING] Could not stringify a structured user variable.');
       return '';
     }
