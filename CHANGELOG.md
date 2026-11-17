@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 16.2.3
+### 🛠 Fixes & Updates
+
+* add buffer devDependency for the dev server ([#1691](https://github.com/readmeio/markdown/issues/1691)) ([e441f55](https://github.com/readmeio/markdown/commit/e441f5538ef9333cf05282dfc5adeae5fd52d504)), closes [#1683](https://github.com/readmeio/markdown/issues/1683)
+* preserve link definitions in blockquotes ([#1687](https://github.com/readmeio/markdown/issues/1687)) ([e5b636f](https://github.com/readmeio/markdown/commit/e5b636f79088756d9d2870d732bea9530e4208c1))
+
 ## Version 16.2.2
 ### 🛠 Fixes & Updates
 
