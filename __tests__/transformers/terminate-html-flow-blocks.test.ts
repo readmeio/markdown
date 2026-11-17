@@ -270,6 +270,11 @@ text at column 0`);
       ['</li> text', '## Heading'],
       ['<li> test', '```js\ncode\n```'],
       ['<figure> intro', '[block:callout]\n{}\n[/block]\n</figure>'],
+      // An indented opener still opens an HTML block, as mdxish disables indented code.
+      [' <li> test', '[block:parameters]'],
+      ['   <div> hi', '## Heading'],
+      ['    <li> test', '[block:parameters]'],
+      ['\t<li> test', '```js\ncode\n```'],
     ])('inserts blank line between %j and %j', (line, next) => {
       expect(terminateHtmlFlowBlocks(`${line}\n${next}`)).toBe(`${line}\n\n${next}`);
     });
@@ -279,7 +284,9 @@ text at column 0`);
       ['<your-api-key> replace this', '## Heading'],
       ['<https://example.com> is our docs', '## Heading'],
       ['<lit> test', '## Heading'],
-      [' <li> test', '[block:parameters]'],
+      // An indented next line is container content (list item, component body).
+      ['<li> test', '  ## Heading'],
+      ['  <li> test', '  [block:parameters]'],
       // Legacy continuation lines stay inside the HTML block, as on `next`.
       ['<div> hi', '**bold**'],
       ['<li>Step one', 'more detail\n<li>Step two\n</ol>'],

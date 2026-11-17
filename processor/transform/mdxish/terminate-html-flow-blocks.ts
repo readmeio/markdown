@@ -112,15 +112,9 @@ function shouldTerminateBetween(
   if (isLineHtml(nextTrimmed) || lineLeavesRawOpen) return false;
 
   // RM-16379: a type-6 opener with trailing text only splits before a markdown block, so
-  // legacy continuation lines (`<li>Step\nmore`) stay glued; the walk runs last.
+  // legacy continuation lines (`<li>Step\nmore`) stay glued. Any opener indent counts (no indented code).
   if (!isLineHtml(currentTrimmed)) {
-    return (
-      currentIndent === 0 &&
-      nextIndent === 0 &&
-      !insideRawContent &&
-      SWALLOWED_BLOCK_START_REGEX.test(nextTrimmed) &&
-      leavesBlockOpen()
-    );
+    return nextIndent === 0 && !insideRawContent && SWALLOWED_BLOCK_START_REGEX.test(nextTrimmed) && leavesBlockOpen();
   }
 
   // Column-0 pairs keep the original (pre-relaxation) rule, deliberately ignoring
