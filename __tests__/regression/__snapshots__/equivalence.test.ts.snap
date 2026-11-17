@@ -387,6 +387,38 @@ exports[`MDX↔MDXish equivalence > expressions-in-tables 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > footnotes-in-table 1`] = `
+{
+  "changes": [
+    {
+      "attrName": "ariadescribedby",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[0]/div[0]/table[0]/tbody[1]/tr[0]/td[0]/sup[1]/a[0]",
+      "right": "footnote-label",
+      "severity": "structural",
+    },
+    {
+      "attrName": "ariadescribedby",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[0]/div[0]/table[0]/tbody[1]/tr[0]/td[1]/sup[2]/a[0]",
+      "right": "footnote-label",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "table",
+      "path": "/table[1]",
+      "right": "div",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > htmlblock 1`] = `
 {
   "status": "match",
