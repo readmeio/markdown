@@ -3,7 +3,6 @@ import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { Plugin } from 'unified';
 
 import { mdxFromMarkdown } from 'mdast-util-mdx';
-import { phrasing } from 'mdast-util-phrasing';
 import { mdxjs } from 'micromark-extension-mdxjs';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -17,14 +16,8 @@ import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-ext
 import { getAttrs, isMDXElement } from '../../../utils';
 import calloutTransformer from '../../callouts';
 import codeTabsTransformer from '../../code-tabs';
-import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
-import {
-  createNodeValueToDocumentMapper,
-  getDocumentSource,
-  type MarkdownFragment,
-  mapReparsedPositionsToDocument,
-} from '../parse-markdown-fragment';
+import { createNodeValueToDocumentMapper, getDocumentSource } from '../parse-markdown-fragment';
 
 import { escapeCrossingEmphasis } from './escape-crossing-emphasis';
 import { escapeStrayLessThan } from './escape-stray-less-than';
@@ -130,60 +123,20 @@ const parseTableNode = (
   return parsed;
 };
 
-/** A text-only cell's text as written, spanning its text children. */
-const cellTextFragment = (cell: MdxJsxTableCell, documentSource: string): MarkdownFragment => {
-  const start = cell.children[0]?.position?.start;
-  const end = cell.children[cell.children.length - 1]?.position?.end;
-  const value = start && end ? documentSource.slice(start.offset, end.offset) : '';
-  return {
-    parentNode: { position: start && end ? { start, end } : undefined, value },
-    offsetInParentNode: 0,
-    rawText: value,
-  };
-};
-
 /**
- * Check if children are only text nodes that might contain markdown
- */
-const isTextOnly = (children: unknown[]): boolean => {
-  return children.every(child => child && typeof child === 'object' && 'type' in child && child.type === 'text');
-};
-
-/**
- * Convenience wrapper that extracts text content from an array of children nodes.
- */
-const extractTextFromChildren = (children: unknown[]): string => {
-  return children
-    .map(child => {
-      if (child && typeof child === 'object' && 'type' in child) {
-        return extractText(child as Parameters<typeof extractText>[0]);
-      }
-      return '';
-    })
-    .join('');
-};
-
-/**
- * Returns true if any node in the array is block-level (non-phrasing) content.
- */
-const hasFlowContent = (nodes: Node[]): boolean => {
-  return nodes.some(node => !phrasing(node) && node.type !== 'paragraph');
-};
-
-/**
- * Process a Table node: re-parse text-only cell content, then return it as
- * a markdown table (phrasing-only) or keep it as JSX <Table> (has flow content).
+ * Process a Table node: return it as a markdown table, or keep it as JSX <Table>
+ * when mdast can't represent it. Cells are already parsed with the table; re-parsing
+ * their text read inline `- foo` as a list (RM-16838).
  */
 const processTableNode = (
   node: MdxJsxFlowElement | MdxJsxTextElement,
-  documentSource: string,
   documentPosition?: Node['position'],
 ): MdxJsxFlowElement | MdxJsxTextElement | Table => {
   const position = documentPosition ?? node.position;
   const { align: alignAttr } = getAttrs<Pick<Table, 'align'>>(node);
   const align = Array.isArray(alignAttr) ? alignAttr : null;
 
-  let tableHasFlowContent = false;
+  let hasHtmlBlock = false;
 
   // An `<HTMLBlock>` (still a JSX element here; converted to `html-block` by
   // `mdxishHtmlBlocks` after this transformer) is block-level content that a
@@ -195,39 +148,10 @@ const processTableNode = (
       ((candidate.type === 'mdxJsxFlowElement' || candidate.type === 'mdxJsxTextElement') &&
         (candidate as MdxJsxFlowElement | MdxJsxTextElement).name === 'HTMLBlock'),
     () => {
-      tableHasFlowContent = true;
+      hasHtmlBlock = true;
       return EXIT;
     },
   );
-
-  // Re-parse text-only cells through markdown and detect flow content
-  visit(node as Node, isTableCell, (cell: MdxJsxTableCell) => {
-    if (!isTextOnly(cell.children as unknown[])) return;
-
-    const textContent = extractTextFromChildren(cell.children as unknown[]);
-    if (!textContent.trim()) return;
-
-    // Since now we are using remarkMdx, which can fail and error, we need to
-    // gate this behind a try/catch to ensure that malformed syntaxes do not
-    // crash the page
-    try {
-      const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(textContent)) as Root;
-      if (parsed.children.length > 0) {
-        mapReparsedPositionsToDocument(
-          parsed.children,
-          cellTextFragment(cell, documentSource),
-          textContent,
-          documentSource,
-        );
-        cell.children = parsed.children as MdxJsxTableCell['children'];
-        if (hasFlowContent(parsed.children as Node[])) {
-          tableHasFlowContent = true;
-        }
-      }
-    } catch {
-      // If parsing fails, keep original children
-    }
-  });
 
   // mdast's table node always treats the first tableRow as <thead>, so we can't
   // represent a header-less table in mdast without the first body row getting
@@ -244,7 +168,7 @@ const processTableNode = (
     }
   });
 
-  if (tableHasFlowContent || !hasThead || hasStructuralAttributes) {
+  if (hasHtmlBlock || !hasThead || hasStructuralAttributes) {
     // remarkMdx wraps inline elements in paragraph nodes (e.g. <td> on the
     // same line as content becomes mdxJsxTextElement inside a paragraph).
     // Unwrap these so <td>/<th> sit directly under <tr>, and strip
@@ -269,7 +193,7 @@ const processTableNode = (
     return { ...node, position };
   }
 
-  // All cells are phrasing-only — convert to markdown table
+  // Convert to a markdown table
   const children: TableRow[] = [];
 
   // Collect `<td>`/`<th>` cells under any container (a `<tr>`, or a section
@@ -405,7 +329,7 @@ const replaceTableHtml = (node: Html, index: number, parent: Parent, source: str
     // to build on the markdown / JSX table
     visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
       if (tableNode.name !== 'Table' && tableNode.name !== 'table') return;
-      parent.children.splice(index, 1, processTableNode(tableNode, source, node.position));
+      parent.children.splice(index, 1, processTableNode(tableNode, node.position));
       return EXIT;
     });
   } else if (node.value.startsWith('<table')) {
@@ -421,15 +345,15 @@ const replaceTableHtml = (node: Html, index: number, parent: Parent, source: str
 };
 
 /**
- * Converts JSX Table elements to markdown table nodes and re-parses markdown in cells.
+ * Converts JSX Table elements to markdown table nodes.
  *
  * The jsxTable micromark tokenizer captures `<Table>...</Table>` as a single html node,
  * preventing CommonMark HTML block type 6 from fragmenting it at blank lines. This
  * transformer then re-parses the html node with remarkMdx to produce proper JSX AST nodes
  * and converts them to MDAST table/tableRow/tableCell nodes.
  *
- * When cell content contains block-level nodes (callouts, code blocks, etc.), the table
- * is kept as a JSX <Table> element so that remarkRehype can properly handle the flow content.
+ * When a cell holds an `<HTMLBlock>`, the table is kept as a JSX <Table> element so that
+ * remarkRehype can properly handle the flow content.
  */
 const mdxishTables: Plugin<[], Root> = () => (tree, file) => {
   const documentSource = getDocumentSource(file);

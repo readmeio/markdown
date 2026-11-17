@@ -240,10 +240,9 @@ The reverse direction: serializes an MDAST back into a markdown string (used by 
 
 Every node's `position` is an offset into the page (`parserReadyContent`). The editor slices the page by these offsets to keep untouched markdown byte-for-byte and to anchor comments, so a position pointing anywhere else silently corrupts saves.
 
-Some content is parsed a second time on its own: component bodies, inline components, Image captions, table cells and magic blocks. A fresh `unified()` parse gives offsets into that snippet, not the page. Nothing fails when this happens: rendering looks right and only the editor goes wrong. So any code that re-parses must map positions back itself:
+Some content is parsed a second time on its own: component bodies, inline components, Image captions, tables and magic blocks. A fresh `unified()` parse gives offsets into that snippet, not the page. Nothing fails when this happens: rendering looks right and only the editor goes wrong. So any code that re-parses must map positions back itself:
 
 - **Markdown cut from the page** (a component body, a caption): parse it with `reparseMarkdownFragment`, which returns children already positioned in the page.
-- **Text your own processor parses** (e.g. a table's cell re-parse): run its output through `mapReparsedPositionsToDocument`.
 - **Text not written verbatim in the page** (e.g. JSON inside a magic block): give the new nodes the parent's whole range.
 
 Never insert sub-parsed nodes with their own positions. `__tests__/regression/positions.test.ts` checks every regression fixture for nodes that fall outside their parent or the document.

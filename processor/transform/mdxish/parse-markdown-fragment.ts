@@ -213,7 +213,7 @@ const findFragmentRange = ({ parentNode, offsetInParentNode, rawText }: Markdown
  * deindent / trim) onto the document. Nodes whose text isn't verbatim there take the
  * fragment's range; without a parent position there's nothing to map onto, so they lose theirs.
  */
-export const mapReparsedPositionsToDocument = (
+const mapReparsedPositionsToDocument = (
   reparsedNodes: Node[],
   fragment: MarkdownFragment,
   textToParse: string,

@@ -244,15 +244,13 @@ describe('mdxish table positions inside component bodies (CX-4004)', () => {
     });
   });
 
-  // A text-only cell is re-parsed from its extracted text. Text that isn't verbatim in the
-  // document (the unescaped `\*a\*`) takes the cell text's whole range.
-  describe('given a text-only cell re-parsed as markdown', () => {
+  // Text that isn't verbatim in the document (the unescaped `\*a\*`) takes its whole range.
+  describe('given a text-only cell', () => {
     const plainTable = ['<Table>', '  <thead>', '    <tr>', '      <th>plain</th>', '      <th>\\*a\\*</th>', '    </tr>', '  </thead>', '</Table>']; // prettier-ignore
     const plainCellSlices: [string, string][] = [
       ['tableCell', '<th>plain</th>'],
       ['text', 'plain'],
       ['tableCell', '<th>\\*a\\*</th>'],
-      ['emphasis', '\\*a\\*'],
       ['text', '\\*a\\*'],
     ];
 
