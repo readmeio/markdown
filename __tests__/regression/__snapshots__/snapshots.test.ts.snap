@@ -252,6 +252,36 @@ exports[`Render engine regressions tests > footnotes-in-table (mdxish) 1`] = `
 </section>"
 `;
 
+exports[`Render engine regressions tests > html-opener-trailing-text (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > html-opener-trailing-text (mdxish) 1`] = `
+"<li> test
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th style="text-align:left">Heading</th><th style="text-align:left"></th></tr></thead><tbody><tr><td style="text-align:left">Content</td><td style="text-align:left"></td></tr></tbody></table></div></div>
+<div class="note"> intro text
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="heading-under-a-div-with-text"></div><div class="heading-text">Heading under a div with text</div><a aria-label="Skip link to Heading under a div with text" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading-under-a-div-with-text"></a></h2>
+<li><p>closed later</p><div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p class="callout-heading empty"></p><p>Callout inside a closed li</p></blockquote></div></li>
+<div><strong>bold</strong><br/>
+more</div>
+</div></li><li> First sibling, never closed
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p class="callout-heading empty"></p><p>Callout under an implicitly closed li</p></blockquote></div>
+</li><li> Second sibling</li>
+<p><b> bold text<br/>
+stays in the same paragraph</b></p>"
+`;
+
 exports[`Render engine regressions tests > htmlblock (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="htmlblock-rendering"></div><div class="heading-text">HTMLBlock rendering</div><a aria-label="Skip link to HTMLBlock rendering" class="heading-anchor-icon fa fa-regular fa-anchor" href="#htmlblock-rendering"></a></h1>
 <h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="plain-html-inside-an-htmlblock-no-script-execution"></div><div class="heading-text">Plain HTML inside an HTMLBlock (no script execution)</div><a aria-label="Skip link to Plain HTML inside an HTMLBlock (no script execution)" class="heading-anchor-icon fa fa-regular fa-anchor" href="#plain-html-inside-an-htmlblock-no-script-execution"></a></h2>
