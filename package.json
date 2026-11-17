@@ -155,6 +155,7 @@
     "@vitest/ui": "^5.1.0",
     "babel-loader": "^9.1.2",
     "browserify-fs": "^1.0.0",
+    "buffer": "^6.0.3",
     "codemirror": "^5.54.0",
     "css-loader": "^7.1.2",
     "hast-util-to-text": "^4.0.2",
