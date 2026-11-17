@@ -1,3 +1,4 @@
+import type { Html } from 'mdast';
 import type { Processor } from 'unified';
 
 import { NodeTypes } from '../../enums';
@@ -38,6 +39,8 @@ function compilers(this: Processor, mdxish = false) {
     yaml: compatibility,
 
     // needed only for mdxish
+    // MDX-ish parses and hides `<!-- -->`, so it stays as written; only MDX needs the JSX comment.
+    ...(mdxish && { html: (node: Html) => node.value }),
     ...(mdxish && { heading }),
     ...(mdxish && { list }),
     ...(mdxish && { listItem }),

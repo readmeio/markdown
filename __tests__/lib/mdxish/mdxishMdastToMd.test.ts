@@ -2200,6 +2200,17 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
   });
 
   describe('parser-only node types', () => {
+    it.each([
+      ['a block comment', '<!-- reviewer note -->\n'],
+      ['an inline comment', 'Before <!-- reviewer note --> after\n'],
+      ['a comment holding `*/`', '<!-- path /usr/*/bin */ end -->\n'],
+      ['adjacent comments', '<!-- one --><!-- two -->\n'],
+      ['a comment in a style tag', '<style>\n<!--\n.a { color: red }\n-->\n</style>\n'],
+      ['a comment after a heading', '# Title <!-- note -->\n'],
+    ])('round-trips %s as an html comment', (_label, doc) => {
+      expect(roundTripMdxish(doc)).toBe(doc);
+    });
+
     it('round-trips expressions and JSX comments verbatim', () => {
       const doc = 'Your plan is {user.plan} today.\n\n{/* reviewer note */}\n';
 
