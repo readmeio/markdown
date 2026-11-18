@@ -1,16 +1,22 @@
 import type { Callout } from '../../types';
-import type { Element } from 'hast';
-import type { Blockquote, Heading, List, Paragraph } from 'mdast';
+import type { Element, Root as HastRoot } from 'hast';
+import type { Blockquote, Definition, Heading, ImageReference, List, Paragraph, Root } from 'mdast';
 
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { removePosition } from 'unist-util-remove-position';
 
-import { mdast } from '../../index';
+import { hast, mdast } from '../../index';
 import { mdxish } from '../../lib/mdxish';
 import calloutTransformer from '../../processor/transform/callouts';
-import { collectNodes, findAllElementsByTagName, findElementByTagName, parseMdxishWithSlices } from '../helpers';
+import {
+  collectNodes,
+  findAllElementsByTagName,
+  findElementByTagName,
+  parseMdxish,
+  parseMdxishWithSlices,
+} from '../helpers';
 
 const mdxishMdast = (md: string) => {
   const processor = unified().use(remarkParse).use(remarkGfm).use(calloutTransformer, { isMdxish: true });
@@ -766,6 +772,123 @@ describe('callouts transformer', () => {
           child.children?.some(c => c.type === 'image' && c.url === 'https://example.com/image.png'),
       );
       expect(hasImage).toBe(true);
+    });
+
+    describe('non-text blockquotes, RM-19377', () => {
+      describe.each([
+        ['MDX', mdast, hast],
+        ['MDXish', parseMdxish, mdxish],
+        [
+          'MDXish editor',
+          (source: string) => parseMdxish(source, { newEditorTypes: true }),
+          (source: string) => mdxish(source, { newEditorTypes: true }),
+        ],
+      ] satisfies [string, (source: string) => Root, (source: string) => HastRoot][])(
+        '%s',
+        (_engine, parse, render) => {
+          it.each([
+            ['a full image reference', '![alt][img]', 'alt'],
+            ['an image reference without alt text', '![][img]', ''],
+            ['a collapsed image reference', '![img][]', 'img'],
+            ['a shortcut image reference', '![img]', 'img'],
+          ])('preserves %s and resolves its image', (_label, imageSource, alt) => {
+            const source = `> ${imageSource}\n\n[img]: https://example.com/image.png`;
+            const tree = parse(source);
+            const [image] = collectNodes<ImageReference>(tree, 'imageReference');
+
+            expect(tree.children[0].type).toBe('blockquote');
+            expect(image).toMatchObject({ identifier: 'img', alt });
+            expect(source.slice(image.position?.start.offset, image.position?.end.offset)).toBe(imageSource);
+
+            const quote = findElementByTagName(render(source), 'blockquote');
+            expect(quote).not.toBeNull();
+            expect(findElementByTagName(quote!, 'img')?.properties).toMatchObject({
+              src: 'https://example.com/image.png',
+              alt,
+            });
+          });
+
+          it.each([
+            ['a thematic break', '> ---', 'thematicBreak', 'hr'],
+            ['an empty fenced code block', '> ```\n> ```', 'code', 'code'],
+            ['an empty heading', '> #', 'heading', 'h1'],
+          ])('preserves a quote containing %s', (_label, source, nodeType, tagName) => {
+            const tree = parse(source);
+
+            expect(tree.children[0].type).toBe('blockquote');
+            expect(collectNodes(tree, nodeType)).toHaveLength(1);
+
+            const quote = findElementByTagName(render(source), 'blockquote');
+            expect(quote).not.toBeNull();
+            expect(findElementByTagName(quote!, tagName)).not.toBeNull();
+          });
+
+          it.each(['>', '> ', '>\n> '])('keeps a literal marker for the empty quote %j', source => {
+            expect(parse(source).children).toMatchObject([
+              { type: 'paragraph', children: [{ type: 'text', value: '>' }] },
+            ]);
+          });
+
+          it('preserves the outer quote around an empty nested quote', () => {
+            expect(parse('> >').children).toMatchObject([
+              {
+                type: 'blockquote',
+                children: [{ type: 'paragraph', children: [{ type: 'text', value: '>' }] }],
+              },
+            ]);
+          });
+        },
+      );
+    });
+
+    describe('reference-only blockquotes, RM-19377', () => {
+      const definitionSources = [
+        ['a direct definition', '> [x]: https://x.com'],
+        ['a nested definition', '> > [x]: https://x.com'],
+        ['multiple definitions', '> [x]: https://x.com\n> [y]: https://y.com'],
+      ] as const;
+
+      describe.each([
+        ['MDX', mdast],
+        ['MDXish', parseMdxish],
+        ['MDXish editor', (source: string) => parseMdxish(source, { newEditorTypes: true })],
+      ] satisfies [string, (source: string) => Root][])('%s', (_engine, parse) => {
+        it.each(definitionSources)('preserves %s and its page offsets', (_label, definitionSource) => {
+          const source = `Before\n\n${definitionSource}\n\n[x]\n\nAfter`;
+          const tree = parse(source);
+          const definitions = collectNodes<Definition>(tree, 'definition');
+
+          expect(collectNodes(tree, 'blockquote')).not.toHaveLength(0);
+          expect(definitions.map(node => node.identifier)).toStrictEqual(
+            definitionSource.includes('[y]') ? ['x', 'y'] : ['x'],
+          );
+          for (const definition of definitions) {
+            expect(source.slice(definition.position?.start.offset, definition.position?.end.offset)).toBe(
+              `[${definition.identifier}]: ${definition.url}`,
+            );
+          }
+        });
+      });
+
+      describe.each([
+        ['MDX', hast],
+        ['MDXish', mdxish],
+        ['MDXish editor', (source: string) => mdxish(source, { newEditorTypes: true })],
+      ])('%s rendering', (_engine, render) => {
+        it.each(definitionSources)('resolves a link from %s', (_label, definitionSource) => {
+          const tree = render(`${definitionSource}\n\n[x]`);
+
+          expect(findAllElementsByTagName(tree, 'a').map(node => node.properties.href)).toContain('https://x.com');
+        });
+
+        it('keeps the first definition when a later definition repeats its identifier', () => {
+          const tree = render('> > [x]: https://first.com\n\n[x]: https://second.com\n\n[x]');
+
+          expect(findAllElementsByTagName(tree, 'a').map(node => node.properties.href)).toStrictEqual([
+            'https://first.com',
+          ]);
+        });
+      });
     });
   });
 

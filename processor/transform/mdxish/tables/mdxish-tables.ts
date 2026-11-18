@@ -13,6 +13,7 @@ import { visitParents } from 'unist-util-visit-parents';
 
 import { NodeTypes } from '../../../../enums';
 import { mdxishExpressionFromMarkdown } from '../../../../lib/mdast-util/mdx-expression';
+import { footnoteLabels } from '../../../../lib/micromark/footnote-labels';
 import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { getAttrs, isMDXElement } from '../../../utils';
 import calloutTransformer from '../../callouts';
@@ -20,10 +21,12 @@ import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 import {
+  collectFootnoteLabels,
   createNodeValueToDocumentMapper,
   getDocumentSource,
   type MarkdownFragment,
   mapReparsedPositionsToDocument,
+  memoizeByFootnotes,
 } from '../parse-markdown-fragment';
 
 import { escapeCrossingEmphasis } from './escape-crossing-emphasis';
@@ -55,8 +58,11 @@ const tableTypes = {
 //
 // mdx parsing is used because it heavily simplifies the parsing of the table structure;
 // it can identify the rows and cells. The heavy lifting is done by it
-const buildTableNodeProcessor = (withMdx: boolean) => {
+//
+// The table parses alone, so `footnotes` hands it the page's labels for `[^a]` to link.
+const buildTableNodeProcessor = (withMdx: boolean, footnotes: readonly string[]) => {
   const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.tableCell);
+  if (footnotes.length) micromarkExtensions.push(footnoteLabels(footnotes));
 
   // `mdxjs` goes first (= lowest priority): its `mdxJsx` also claims `text` + `<`,
   // and `legacyVariable` has to keep winning that race so `<<var>>` still parses.
@@ -73,8 +79,17 @@ const buildTableNodeProcessor = (withMdx: boolean) => {
     .use(remarkGfm);
 };
 
-const tableNodeProcessor = buildTableNodeProcessor(true);
-const fallbackTableNodeProcessor = buildTableNodeProcessor(false);
+type TableNodeProcessor = ReturnType<typeof buildTableNodeProcessor>;
+
+interface TableNodeProcessors {
+  fallback: TableNodeProcessor;
+  primary: TableNodeProcessor;
+}
+
+const getTableNodeProcessors = memoizeByFootnotes((footnotes): TableNodeProcessors => ({
+  primary: buildTableNodeProcessor(true, footnotes),
+  fallback: buildTableNodeProcessor(false, footnotes),
+}));
 
 // Targeted repairs for tables mdxjs rejects, tried cumulatively (each runs on
 // the prior's output) since one table can carry independent per-cell defects.
@@ -99,7 +114,7 @@ const tableRepairs: ((html: string) => RepairResult)[] = [
  * After parsing, we need to update the node positions
  */
 const parseTableNode = (
-  processor: typeof tableNodeProcessor,
+  processor: TableNodeProcessor,
   node: Html,
   documentSource: string,
   repair?: { layers: Insert[][]; originalSource: string },
@@ -176,6 +191,7 @@ const hasFlowContent = (nodes: Node[]): boolean => {
  */
 const processTableNode = (
   node: MdxJsxFlowElement | MdxJsxTextElement,
+  processor: TableNodeProcessor,
   documentSource: string,
   documentPosition?: Node['position'],
 ): MdxJsxFlowElement | MdxJsxTextElement | Table => {
@@ -211,7 +227,7 @@ const processTableNode = (
     // gate this behind a try/catch to ensure that malformed syntaxes do not
     // crash the page
     try {
-      const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(textContent)) as Root;
+      const parsed = processor.runSync(processor.parse(textContent)) as Root;
       if (parsed.children.length > 0) {
         mapReparsedPositionsToDocument(
           parsed.children,
@@ -370,7 +386,7 @@ const processTableNode = (
  * once the accumulated result parses. Each layer's inserts are relative to the
  * string that repair received, so they stay ordered for position remapping.
  */
-const repairAndReparse = (node: Html, source: string): Root | undefined => {
+const repairAndReparse = (node: Html, processor: TableNodeProcessor, source: string): Root | undefined => {
   let repairedValue = node.value;
   const layers: Insert[][] = [];
   let parsed: Root | undefined;
@@ -380,7 +396,7 @@ const repairAndReparse = (node: Html, source: string): Root | undefined => {
     if (value === repairedValue) return false;
     repairedValue = value;
     layers.push(inserts);
-    parsed = parseTableNode(tableNodeProcessor, { ...node, value: repairedValue }, source, {
+    parsed = parseTableNode(processor, { ...node, value: repairedValue }, source, {
       layers,
       originalSource: node.value,
     });
@@ -394,25 +410,31 @@ const repairAndReparse = (node: Html, source: string): Root | undefined => {
  * Re-parse a table html node and replace it with a markdown / JSX table, or the
  * fallback parse's fragments for a lowercase table mdxjs rejects.
  */
-const replaceTableHtml = (node: Html, index: number, parent: Parent, source: string) => {
+const replaceTableHtml = (
+  node: Html,
+  index: number,
+  parent: Parent,
+  source: string,
+  { primary, fallback: fallbackProcessor }: TableNodeProcessors,
+) => {
   // Because the processor uses remarkMdx, it is stricter in what it accepts
   // and only accepts valid MDX syntax in the table node. To get around that,
   // fall back to the cumulative repairs when the first parse fails.
-  const parsed = parseTableNode(tableNodeProcessor, node, source) ?? repairAndReparse(node, source);
+  const parsed = parseTableNode(primary, node, source) ?? repairAndReparse(node, primary, source);
 
   if (parsed) {
     // If the table is parsed successfully, we can now process it further
     // to build on the markdown / JSX table
     visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
       if (tableNode.name !== 'Table' && tableNode.name !== 'table') return;
-      parent.children.splice(index, 1, processTableNode(tableNode, source, node.position));
+      parent.children.splice(index, 1, processTableNode(tableNode, primary, source, node.position));
       return EXIT;
     });
   } else if (node.value.startsWith('<table')) {
     // If the parsing still fails, give an opportunity to the fallback parser
     // without remarkMdx to process lowercase tables as it's likely to not
     // have needed MDX parsing anyway
-    const fallback = parseTableNode(fallbackTableNodeProcessor, node, source);
+    const fallback = parseTableNode(fallbackProcessor, node, source);
     if (!fallback || fallback.children.length <= 1) return;
     parent.children.splice(index, 1, ...fallback.children);
   }
@@ -433,6 +455,7 @@ const replaceTableHtml = (node: Html, index: number, parent: Parent, source: str
  */
 const mdxishTables: Plugin<[], Root> = () => (tree, file) => {
   const documentSource = getDocumentSource(file);
+  const processors = getTableNodeProcessors(collectFootnoteLabels(tree));
 
   // Pre-pass: lift `<table>`s wrapped in a raw HTML block out into their own
   // html nodes so the main pass below treats them like top-level tables.
@@ -456,7 +479,7 @@ const mdxishTables: Plugin<[], Root> = () => (tree, file) => {
     // paragraph. Leave them untouched so rehype-raw can reassemble the table.
     if (parent.type === 'paragraph') return;
 
-    replaceTableHtml(node, parent.children.indexOf(node), parent, documentSource);
+    replaceTableHtml(node, parent.children.indexOf(node), parent, documentSource, processors);
   });
 };
 

@@ -1,4 +1,4 @@
-import type { Node, RootContent } from 'mdast';
+import type { FootnoteDefinition, Node, RootContent } from 'mdast';
 import type { Point, Position } from 'unist';
 import type { VFile } from 'vfile';
 
@@ -75,30 +75,47 @@ const buildComponentBodyProcessor = ({ footnotes = [], phrasing = false, safeMod
 
 type ComponentBodyProcessor = ReturnType<typeof buildComponentBodyProcessor>;
 
-const componentBodyProcessors = new Map<string, ComponentBodyProcessor>();
+/**
+ * Memoizes `build` per footnote label set. Labels differ per page, so only the latest set is
+ * kept: one page's parses reuse it, and the cache can't grow.
+ */
+export const memoizeByFootnotes = <T>(build: (footnotes: readonly string[]) => T) => {
+  let base: T | undefined;
+  let latest: { key: string; value: T } | undefined;
+  return (footnotes: readonly string[] = []): T => {
+    if (!footnotes.length) {
+      base ??= build(footnotes);
+      return base;
+    }
+    const key = footnotes.join('\n');
+    if (latest?.key !== key) latest = { key, value: build(footnotes) };
+    return latest.value;
+  };
+};
 
-// Footnotes differ per document, so only the latest set is kept: one page's bodies reuse it, and it can't grow.
-let footnoteProcessor: { key: string; processor: ComponentBodyProcessor } | undefined;
+/** The page's footnote labels, spelled as gfm tracks them: the mdast `identifier` uppercased. */
+export const collectFootnoteLabels = (tree: Node): string[] => {
+  const labels = new Set<string>();
+  visit(tree, 'footnoteDefinition', (definition: FootnoteDefinition) => {
+    labels.add(definition.identifier.toUpperCase());
+  });
+  return [...labels];
+};
+
+const componentBodyProcessors = new Map<string, (footnotes?: readonly string[]) => ComponentBodyProcessor>();
 
 /**
  * Memoized per option set, so the construction cost isn't paid on every parse.
  * The key covers every option, so a new option has to join it.
  */
-const getComponentBodyProcessor = (options: ProcessorOptions) => {
+const getComponentBodyProcessor = ({ footnotes, ...options }: ProcessorOptions) => {
   const key = `${!!options.phrasing}:${!!options.safeMode}`;
-  if (options.footnotes?.length) {
-    const footnoteKey = `${key}:${options.footnotes.join('\n')}`;
-    if (footnoteProcessor?.key !== footnoteKey) {
-      footnoteProcessor = { key: footnoteKey, processor: buildComponentBodyProcessor(options) };
-    }
-    return footnoteProcessor.processor;
+  let getProcessor = componentBodyProcessors.get(key);
+  if (!getProcessor) {
+    getProcessor = memoizeByFootnotes(labels => buildComponentBodyProcessor({ ...options, footnotes: labels }));
+    componentBodyProcessors.set(key, getProcessor);
   }
-  let processor = componentBodyProcessors.get(key);
-  if (!processor) {
-    processor = buildComponentBodyProcessor(options);
-    componentBodyProcessors.set(key, processor);
-  }
-  return processor;
+  return getProcessor(footnotes);
 };
 
 const toDocumentRange = (position: Position | undefined): DocumentRange | undefined => {
