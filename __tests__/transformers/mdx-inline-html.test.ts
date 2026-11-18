@@ -97,7 +97,7 @@ describe('inline HTML with expression attributes transformation to MDX text', ()
     expect(collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement')).toHaveLength(0);
   });
 
-  // RM-19074: left as html, parse5 ignores the `/` and the tag wraps the rest of its parent.
+  // Left as html, parse5 ignores the `/` and the tag wraps the rest of its parent.
   describe('self-closing inline components without expression attrs', () => {
     const tags = [
       '<Anchor href="https://example.com" />',

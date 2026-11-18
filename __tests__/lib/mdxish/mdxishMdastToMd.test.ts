@@ -1680,7 +1680,7 @@ Final plain paragraph at end of file.
     expect(result).toBe('- [ ] hi\n- [ ] \n- [x] there\n- [x] \n- normal\n');
   });
 
-  // RM-19074: a promoted one-line wrapper went out as one block per child, splitting the line.
+  // A promoted one-line wrapper used to go out as one block per child, splitting the line.
   describe('one-line html wrappers with inline content', () => {
     it.each([
       '<div>Read <Anchor href="/x" /> and more</div>',

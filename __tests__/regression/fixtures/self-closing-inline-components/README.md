@@ -3,9 +3,9 @@
 Self-closing inline components (`<Anchor />`, `<NoTranslate />`, `<Glossary />`)
 with plain attributes, inline and on their own line.
 
-## Source bugs
+## Source bug
 
-- RM-19074: MDXish left a self-closing inline component as a raw html node, so
+- MDXish left a self-closing inline component as a raw html node, so
   parse5 (`rehype-raw`) ignored the `/` and opened the tag. Inline, it wrapped the
   rest of the paragraph, cell or list item; on its own line, it wrapped the
   paragraphs after it. Both component passes now promote it to an empty JSX element.

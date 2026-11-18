@@ -20,7 +20,7 @@ export const isPascalCase = (tag: string): boolean => /^[A-Z]/.test(tag);
 
 /**
  * True for a self-closing inline component (`<Anchor />`). Left as raw html, parse5
- * ignores the `/` on a non-void tag and it wraps everything after it (RM-19074).
+ * ignores the `/` on a non-void tag and it wraps everything after it.
  */
 export const isSelfClosingInlineComponent = (tag: string, selfClosing: boolean): boolean =>
   selfClosing && INLINE_COMPONENT_TAGS.has(tag);
