@@ -1,4 +1,4 @@
-import type { FootnoteDefinition, Html, InlineCode, Node, Paragraph, Parent, PhrasingContent, Root, Text } from 'mdast';
+import type { Html, InlineCode, Node, Paragraph, Parent, PhrasingContent, Root, Text } from 'mdast';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
@@ -6,6 +6,7 @@ import { visit } from 'unist-util-visit';
 import { INLINE_COMPONENT_TAGS, INLINE_ONLY_PARENT_TYPES } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import {
+  collectFootnoteLabels,
   type FragmentParseOptions,
   getDocumentSource,
   type MarkdownFragment,
@@ -142,10 +143,7 @@ const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> =
   (tree, file) => {
     const safeMode = !!opts.safeMode;
     const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
-    const footnotes: string[] = [];
-    visit(tree, 'footnoteDefinition', (def: FootnoteDefinition) => {
-      footnotes.push(def.identifier.toUpperCase());
-    });
+    const footnotes = collectFootnoteLabels(tree);
     const documentSource = getDocumentSource(file);
     const fragmentOptions: FragmentParseOptions = { documentSource, footnotes, phrasing: true, safeMode };
 
