@@ -163,6 +163,9 @@ export const FEATURES = {
    */
   tags: BLOCK_CLAIMS.filter(feature => feature !== 'htmlBlockComponent'),
 
+  /** `components/utils.ts` — strict JSX parse that finds same-line component siblings */
+  componentBoundary: ['legacyVariable'],
+
   /** `tables/mdxish-tables.ts` — table cells */
   tableCell: [...INLINE],
 

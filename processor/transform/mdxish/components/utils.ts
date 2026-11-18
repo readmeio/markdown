@@ -1,14 +1,64 @@
 import type { Html, Node, PhrasingContent } from 'mdast';
-import type { MdxJsxAttribute, MdxJsxExpressionAttribute, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
+import type {
+  MdxJsxAttribute,
+  MdxJsxExpressionAttribute,
+  MdxJsxFlowElement,
+  MdxJsxTextElement,
+} from 'mdast-util-mdx-jsx';
 
+import { mdxFromMarkdown } from 'mdast-util-mdx';
+import { mdxjs } from 'micromark-extension-mdxjs';
 import { htmlRawNames } from 'micromark-util-html-tag-name';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
 
+import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { NON_REPARSED_BODY_TAGS } from '../../../../utils/common-html-words';
 import { walkTags } from '../tables/tag-walker';
 import { tableTags } from '../tables/utils';
 import { soleUserVariableExpression } from '../variables-text';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
+
+const buildComponentBoundaryProcessor = () => {
+  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBoundary);
+  // `mdxjs` goes first (= lowest priority) so `legacyVariable` wins `<` and `<<var>>` doesn't throw.
+  return unified()
+    .data('micromarkExtensions', [mdxjs(), ...micromarkExtensions])
+    .data('fromMarkdownExtensions', [mdxFromMarkdown(), ...fromMarkdownExtensions])
+    .use(remarkParse);
+};
+const componentBoundaryProcessor = buildComponentBoundaryProcessor();
+
+/** Find top-level JSX siblings without changing MDXish's recovery for non-JSX bodies. */
+export function findComponentSiblingSpans(content: string, tag: string): { end: number; start: number }[] {
+  const closingTag = `</${tag}>`;
+  if (content.indexOf(closingTag) === content.lastIndexOf(closingTag)) return [];
+  const prefix = `<${tag}>`;
+  try {
+    const tree = componentBoundaryProcessor.parse(prefix + content);
+    const children = tree.children.flatMap(node =>
+      node.type === 'paragraph' && 'children' in node ? node.children : [node],
+    );
+    // Only same-name tags are ambiguous; other JSX stays in the gaps, parsed as markdown.
+    const components = children
+      .filter(
+        (node): node is MdxJsxFlowElement | MdxJsxTextElement =>
+          node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement',
+      )
+      .filter(node => node.name === tag);
+    if (components[0]?.position?.start.offset !== 0) return [];
+    const spans = components.map(node => ({
+      start: node.position.start.offset - prefix.length,
+      end: node.position.end.offset - prefix.length,
+    }));
+    // A lone span covering everything has nothing to split off.
+    return spans.length === 1 && spans[0].end >= content.trimEnd().length ? [] : spans;
+  } catch {
+    // MDXish accepts non-JSX syntax; preserve its existing closing-tag recovery.
+    return [];
+  }
+}
 
 /**
  * True when a tag name starts with an uppercase letter — ReadMe's marker for
