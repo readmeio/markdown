@@ -1,4 +1,4 @@
-import type { Literal, Node, Nodes, Table, TableCell } from 'mdast';
+import type { Html, Literal, Node, Nodes, Table, TableCell } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
@@ -6,6 +6,7 @@ import { phrasing } from 'mdast-util-phrasing';
 import { EXIT, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../../enums';
+import { compileHtml } from '../../../compile/compatibility';
 
 import { cellStyle } from './cell-style';
 import { hasChildren, normalizeCellChildrenForGfm } from './gfm-cell-normalization';
@@ -101,6 +102,10 @@ const mdxishTablesToJsx = (): Transform => tree => {
       if (!headerRow) return;
 
       visit(table, isTableCell, flattenBreaksToNewlines);
+      // The JSX table re-parses with strict mdxjs, which can't read `<!-- -->`.
+      visit(table, 'html', (node: Html) => {
+        node.value = compileHtml(node);
+      });
 
       const headerStyles = table.align.map((align, i) => cellStyle(align, widths[i] ?? null, { html: stayLowercase }));
       const bodyStyles = table.align.map(align => cellStyle(align, null, { html: stayLowercase }));
