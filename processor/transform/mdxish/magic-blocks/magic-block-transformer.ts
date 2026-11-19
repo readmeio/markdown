@@ -28,7 +28,6 @@ import type { Position } from 'unist';
 import { VARIABLE_REGEXP } from '@readme/variable';
 import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
 import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
-import { htmlBlockNames } from 'micromark-util-html-tag-name';
 import rehypeParse from 'rehype-parse';
 import rehypeStringify from 'rehype-stringify';
 import remarkGfm from 'remark-gfm';
@@ -39,7 +38,7 @@ import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
 import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
-import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
+import { HTML_BLOCK_TAG_NAMES, STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
@@ -147,9 +146,6 @@ const htmlStringifier = unified().use(rehypeStringify);
 const processBackslashEscapes = (text: string): string =>
   text.replace(/\\<([^>]*)>/g, '&lt;$1>').replace(/\\([<>|])/g, (_, c) => (c === '<' ? '&lt;' : c === '>' ? '>' : c));
 
-/** Block-level HTML tags that trigger CommonMark type 6 HTML blocks (condition 6). */
-const BLOCK_LEVEL_TAGS: ReadonlySet<string> = new Set(htmlBlockNames);
-
 const escapeInvalidTags = (str: string): string =>
   str.replace(HTML_TAG_RE, (match, tag, rest, offset, input) => {
     // Don't escape legacy variable syntax like <<var>> since we want to parse it
@@ -244,7 +240,7 @@ const separateBlockTagFromContent = (
   inlineChar?: string,
   nextLineChar?: string,
 ) => {
-  if (!BLOCK_LEVEL_TAGS.has(tag.toLowerCase())) return match;
+  if (!HTML_BLOCK_TAG_NAMES.has(tag.toLowerCase())) return match;
 
   const newlineCount = hardBreaks ? (match.match(NEWLINE_RE) ?? []).length : 0;
   const breaks = '<br>'.repeat(newlineCount);
