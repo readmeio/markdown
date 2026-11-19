@@ -252,6 +252,19 @@ exports[`Render engine regressions tests > footnotes-in-table (mdxish) 1`] = `
 </section>"
 `;
 
+exports[`Render engine regressions tests > html-in-component-body (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > html-in-component-body (mdxish) 1`] = `
+"<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Some text</p></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Hello</p><div>x</div></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Styled below.</p><style>
+.note {
+ color: red;
+}
+</style></blockquote></div>
+<div class="readme-tailwind"><div class="TabGroup"><header><nav class="TabGroup-nav"><button class="TabGroup-tab_active">First</button></nav></header><section><div><div class="TabContent"><p>Tab text</p></div></div></section></div></div>"
+`;
+
 exports[`Render engine regressions tests > html-opener-trailing-text (mdx) 1`] = `""`;
 
 exports[`Render engine regressions tests > html-opener-trailing-text (mdxish) 1`] = `

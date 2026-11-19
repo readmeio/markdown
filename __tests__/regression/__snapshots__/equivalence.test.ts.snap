@@ -419,6 +419,43 @@ exports[`MDX↔MDXish equivalence > footnotes-in-table 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > html-in-component-body 1`] = `
+{
+  "changes": [
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[0]",
+      "right": "<div class="readme-tailwind">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[1]",
+      "right": "<div class="readme-tailwind">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[2]",
+      "right": "<div class="readme-tailwind">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[3]",
+      "right": "<div class="readme-tailwind">…(1 children)…</div>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > html-opener-trailing-text 1`] = `
 {
   "changes": [
