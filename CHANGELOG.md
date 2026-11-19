@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 16.2.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** keep html comments syntax as written when serializing ([#1692](https://github.com/readmeio/markdown/issues/1692)) ([71c24b4](https://github.com/readmeio/markdown/commit/71c24b4bafec5136cbbfd6529f66807e2af3bd2b)), closes [#1686](https://github.com/readmeio/markdown/issues/1686)
+* **mdxish:** render footnote refs in table ([#1494](https://github.com/readmeio/markdown/issues/1494)) ([c41296f](https://github.com/readmeio/markdown/commit/c41296f90c792dd8ff4c4a1d9b59bc41740c47b9))
+* **mdxish:** terminate html flow block when opener has trailing text ([#1495](https://github.com/readmeio/markdown/issues/1495)) ([a273c3d](https://github.com/readmeio/markdown/commit/a273c3dd37b82271d651772b86fdc87617273d57))
+
 ## Version 16.2.3
 ### 🛠 Fixes & Updates
 

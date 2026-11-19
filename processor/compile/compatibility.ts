@@ -35,7 +35,7 @@ type CompatNodes =
  * as html, and serialize it back as xml!
  *
  */
-const compileHtml = (node: Html) => {
+export const compileHtml = (node: Html) => {
   const string = node.value.replaceAll(/<!--(.*?)-->/gs, '{/*$1*/}');
 
   return string;
