@@ -252,6 +252,45 @@ exports[`Render engine regressions tests > footnotes-in-table (mdxish) 1`] = `
 </section>"
 `;
 
+exports[`Render engine regressions tests > html-code-with-markdown (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="markdown-inside-an-html-code-tag"></div><div class="heading-text">Markdown inside an html code tag</div><a aria-label="Skip link to Markdown inside an html code tag" class="heading-anchor-icon fa fa-regular fa-anchor" href="#markdown-inside-an-html-code-tag"></a></h1>
+<p>Backticks inside the tag: <code><code class="rdmd-code lang-undefined theme-undefined">hello</code></code></p>
+<p>Inline code between text: <code>a <code class="rdmd-code lang-undefined theme-undefined">b</code> c</code></p>
+<p>Bold inside the tag: <code><strong>bold</strong></code> and <code><strong>bold</strong></code></p>
+<p>Emphasis inside the tag: <code><em>em</em></code> and <code><em>em</em></code></p>
+<p>Escaped backticks stay literal: <code>\`hello\`</code></p>
+<p>Plain inline code still works: <code class="rdmd-code lang-undefined theme-undefined">console.log(&quot;hi&quot;)</code></p>
+<ul>
+<li>In a list item: <code><code class="rdmd-code lang-undefined theme-undefined">hello</code> world</code></li>
+</ul>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Column</th></tr></thead><tbody><tr><td><code><code class="rdmd-code lang-undefined theme-undefined">in a cell</code></code></td></tr></tbody></table></div></div>"
+`;
+
+exports[`Render engine regressions tests > html-code-with-markdown (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="markdown-inside-an-html-code-tag"></div><div class="heading-text">Markdown inside an html code tag</div><a aria-label="Skip link to Markdown inside an html code tag" class="heading-anchor-icon fa fa-regular fa-anchor" href="#markdown-inside-an-html-code-tag"></a></h1>
+<p>Backticks inside the tag: <code class="rdmd-code lang-undefined theme-undefined"><code class="rdmd-code lang-undefined theme-undefined">hello</code></code></p>
+<p>Inline code between text: <code class="rdmd-code lang-undefined theme-undefined">a <code class="rdmd-code lang-undefined theme-undefined">b</code> c</code></p>
+<p>Bold inside the tag: <code class="rdmd-code lang-undefined theme-undefined"><strong>bold</strong></code> and <code class="rdmd-code lang-undefined theme-undefined"><strong>bold</strong></code></p>
+<p>Emphasis inside the tag: <code class="rdmd-code lang-undefined theme-undefined"><em>em</em></code> and <code class="rdmd-code lang-undefined theme-undefined"><em>em</em></code></p>
+<p>Escaped backticks stay literal: <code class="rdmd-code lang-undefined theme-undefined">\`hello\`</code></p>
+<p>Plain inline code still works: <code class="rdmd-code lang-undefined theme-undefined">console.log(&quot;hi&quot;)</code></p>
+<ul>
+<li>In a list item: <code class="rdmd-code lang-undefined theme-undefined"><code class="rdmd-code lang-undefined theme-undefined">hello</code> world</code></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Column</th></tr></thead><tbody><tr><td><code class="rdmd-code lang-undefined theme-undefined"><code class="rdmd-code lang-undefined theme-undefined">in a cell</code></code></td></tr></tbody></table></div></div>"
+`;
+
 exports[`Render engine regressions tests > html-opener-trailing-text (mdx) 1`] = `""`;
 
 exports[`Render engine regressions tests > html-opener-trailing-text (mdxish) 1`] = `
