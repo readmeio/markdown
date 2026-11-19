@@ -168,27 +168,30 @@ This is some in progress <!-- commented out stuff -->
   <tr><td>Row 3 {/* b */}</td></tr>
 </table>`;
 
-    describe.each([
-      ['mdx', mdx],
-      ['mdxishMdastToMd', mdxishMdastToMd],
-    ])('saved from the editor with %s', (_name, serialize) => {
-      it.each([
-        ['in different table rows', table, tableWithJsxComments],
-        ['on one line', '<p><!-- a --> kept <!-- b --></p>', '<p>{/* a */} kept {/* b */}</p>'],
-        [
-          'after a multi-line comment',
-          '<!--\n  first\n-->\n<p>kept</p>\n<!-- second -->',
-          '{/*\n  first\n*/}\n<p>kept</p>\n{/* second */}',
-        ],
-      ])('compiles each comment separately %s', (_label, value, expected) => {
-        const tree: MdastRoot = { type: 'root', children: [{ type: 'html', value }] };
+    const cases = [
+      ['in different table rows', table, tableWithJsxComments],
+      ['on one line', '<p><!-- a --> kept <!-- b --></p>', '<p>{/* a */} kept {/* b */}</p>'],
+      [
+        'after a multi-line comment',
+        '<!--\n  first\n-->\n<p>kept</p>\n<!-- second -->',
+        '{/*\n  first\n*/}\n<p>kept</p>\n{/* second */}',
+      ],
+    ];
 
-        expect(serialize(tree).trim()).toBe(expected);
-      });
+    it.each(cases)('compiles each comment separately %s with mdx', (_label, value, expected) => {
+      const tree: MdastRoot = { type: 'root', children: [{ type: 'html', value }] };
+
+      expect(mdx(tree).trim()).toBe(expected);
+    });
+
+    it.each(cases)('keeps html comments as written %s with mdxishMdastToMd', (_label, value) => {
+      const tree: MdastRoot = { type: 'root', children: [{ type: 'html', value }] };
+
+      expect(mdxishMdastToMd(tree).trim()).toBe(value);
     });
 
     it('keeps every table row when mdxish parses and re-serializes it', () => {
-      expect(roundTripMdxish(table).trim()).toBe(tableWithJsxComments);
+      expect(roundTripMdxish(table).trim()).toBe(table);
     });
   });
 
