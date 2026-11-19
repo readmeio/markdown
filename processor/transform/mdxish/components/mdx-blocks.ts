@@ -4,7 +4,7 @@ import type { Plugin } from 'unified';
 
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS, INLINE_ONLY_PARENT_TYPES } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
-import { expandIndentToColumns, leadingIndent } from '../indentation';
+import { expandIndentToColumns, indentWidth, leadingIndent } from '../indentation';
 import {
   createNodeValueToDocumentMapper,
   getDocumentSource,
@@ -44,12 +44,22 @@ const hasNestedGenericComponentTag = (content: string): boolean =>
   [...content.matchAll(NESTED_COMPONENT_TAG_RE)].some(match => !GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(match[1]));
 
 /**
+ * Remove `columns` of leading indent from each line. Expanding the indent to spaces first lets
+ * mixed tabs/spaces (and partial-tab remainders) strip cleanly while relative depth survives.
+ */
+const dedentLines = (lines: string[], columns: number): string[] =>
+  lines.map(line => {
+    const indent = leadingIndent(line);
+    return expandIndentToColumns(indent).slice(columns) + line.slice(indent.length);
+  });
+
+/**
  * Strip the shared leading indentation from a component body so it parses as it would at
  * column 0, e.g. `  <p>` / `   text` -> `<p>` / ` text`. Columns still shape parsing
  * (list/blockquote continuation, table rows, the mdxComponent claim gates), and relative
  * indentation is kept so genuinely deeper content still nests. We only strip when a line
- * reaches 4 columns; otherwise leading whitespace survives as text nodes, which mixed
- * component + HTML content needs.
+ * reaches 4 columns; shallower indents parse the same, and html blocks drop theirs after
+ * parsing (`stripHtmlBlockIndent`).
  *
  * Indentation is measured in CommonMark columns (tab = up to 4), matching micromark: a
  * char count (tab = 1) under-measures tab-indented bodies so they slip the gate (#1556).
@@ -65,14 +75,7 @@ function safeDeindent(text: string): string {
 
   if (maxIndent < 4 || minIndent === 0) return text;
 
-  // Expand each line's leading run to spaces before slicing so a shared indent of mixed
-  // tabs/spaces (and partial-tab remainders) strips cleanly while relative depth survives.
-  return lines
-    .map(line => {
-      const indent = leadingIndent(line);
-      return expandIndentToColumns(indent).slice(minIndent) + line.slice(indent.length);
-    })
-    .join('\n');
+  return dedentLines(lines, minIndent).join('\n');
 }
 
 /**
@@ -93,6 +96,25 @@ const trimmedFragmentFrom = (parentNode: MarkdownFragment['parentNode'], start: 
 };
 
 /**
+ * Html blocks keep their line's indent in `value` (CommonMark). A body under 4 columns skips
+ * `safeDeindent`, so strip it as a list item's container would and start the node at the `<`.
+ * A block with a line shallower than the first is left as is, so `<pre>` and `HTMLBlock`
+ * payloads keep their relative indent.
+ */
+const stripHtmlBlockIndent = (node: RootContent, documentSource: string) => {
+  if (node.type !== 'html') return;
+  const lines = node.value.split('\n');
+  const indent = indentWidth(lines[0]);
+  if (!indent) return;
+  if (lines.some(line => line.trim() && indentWidth(line) < indent)) return;
+
+  const contentStart = leadingIndent(lines[0]).length;
+  const start = createNodeValueToDocumentMapper(node, documentSource)?.(contentStart, contentStart).start;
+  if (start) node.position = { start, end: node.position.end };
+  node.value = dedentLines(lines, indent).join('\n');
+};
+
+/**
  * Parse component-body markdown into mdast children. Dedenting shifts columns and
  * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
  * re-runs here; other column-anchored fixups (compact headings, tables) do not.
@@ -104,6 +126,7 @@ const parseMdChildren = (fragment: MarkdownFragment, safeMode: boolean, document
   // child claimed whole (e.g. `<li>` in `<ol>`) before its containsMarkdownConstruct check (RM-17560).
   // eslint-disable-next-line @typescript-eslint/no-use-before-define -- mutually recursive; hoisted decl, safe at runtime
   promoteComponentBlocks({ type: 'root', children }, safeMode, documentSource);
+  children.forEach(child => stripHtmlBlockIndent(child, documentSource));
   return children;
 };
 
