@@ -1,3 +1,5 @@
+import { NodeTypes } from '../enums';
+
 /**
  * Pattern to match component tags (PascalCase or snake_case)
  */
@@ -54,6 +56,15 @@ export const INLINE_ONLY_PARENT_TYPES = new Set([
  * @see processor/transform/mdxish/components/inline-mdx-blocks.ts
  */
 export const INLINE_COMPONENT_TAGS = new Set(['Anchor', 'NoTranslate', 'Glossary']);
+
+/** Readme node types that write inline, which `mdast-util-phrasing` doesn't know about. */
+export const INLINE_README_TYPES = new Set<string>([
+  NodeTypes.anchor,
+  NodeTypes.emoji,
+  NodeTypes.glossary,
+  NodeTypes.noTranslate,
+  NodeTypes.variable,
+]);
 
 /**
  * PascalCase tags that have their own dedicated tokenizer / transformer
