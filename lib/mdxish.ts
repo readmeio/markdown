@@ -227,7 +227,6 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     // Readme nodes with no markdown spelling go out as JSX, the same tags mdxish re-parses.
     .use(mdxishCalloutToJsx)
     .use(mdxishTablesToJsx)
-    // Before the anchor and NoTranslate passes, which give an empty block NoTranslate a paragraph.
     .use(mdxishInlineWrappersToJsx)
     .use(mdxishAnchorToJsx)
     .use(mdxishNoTranslateToJsx)

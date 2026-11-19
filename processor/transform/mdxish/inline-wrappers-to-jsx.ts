@@ -5,19 +5,10 @@ import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import { phrasing } from 'mdast-util-phrasing';
 import { visit } from 'unist-util-visit';
 
-import { NodeTypes } from '../../../enums';
-import { INLINE_COMPONENT_TAGS } from '../../../lib/constants';
+import { INLINE_COMPONENT_TAGS, INLINE_README_TYPES } from '../../../lib/constants';
 
 import { isPascalCase } from './components/utils';
 import { tableTags } from './tables/utils';
-
-const INLINE_README_TYPES = new Set<string>([
-  NodeTypes.anchor,
-  NodeTypes.emoji,
-  NodeTypes.glossary,
-  NodeTypes.noTranslate,
-  NodeTypes.variable,
-]);
 
 const isInlineComponentFlow = (node: Node): node is MdxJsxFlowElement =>
   node.type === 'mdxJsxFlowElement' && INLINE_COMPONENT_TAGS.has((node as MdxJsxFlowElement).name ?? '');

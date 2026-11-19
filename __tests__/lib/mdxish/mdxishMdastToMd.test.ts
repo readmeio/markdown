@@ -2457,7 +2457,7 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
         '| a                                           |\n| ------------------------------------------- |\n| Use <Anchor href={"x"}>`a\\|b`</Anchor> now. |\n';
 
       expect(roundTripMdxish(doc)).toBe(doc);
-      expect(roundTripMdxish(doc, { newEditorTypes: true })).toContain('`a|b`');
+      expect(roundTripMdxish(doc, { newEditorTypes: true })).toContain('`a\\|b`');
     });
   });
 
@@ -2489,9 +2489,9 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     it.each([false, true])(
       'keeps the block after an empty block NoTranslate with newEditorTypes %s',
       newEditorTypes => {
-        expect(roundTripMdxish('<NoTranslate>\n</NoTranslate>\n\n# Heading\n', { newEditorTypes })).toBe(
-          '<NoTranslate>\n\n</NoTranslate>\n\n# Heading\n',
-        );
+        const once = roundTripMdxish('<NoTranslate>\n</NoTranslate>\n\n# Heading\n', { newEditorTypes });
+        expect(once).toBe('<NoTranslate />\n\n# Heading\n');
+        expect(roundTripMdxish(once, { newEditorTypes })).toBe(once);
       },
     );
 

@@ -34,13 +34,12 @@ describe('mdxishNoTranslateToJsx', () => {
     expect(first.children[0]).not.toBe(second.children[0]);
   });
 
-  it('gives every empty block NoTranslate its own child', () => {
-    const tree: Root = { type: 'root', children: [emptyFlowNoTranslate(), emptyFlowNoTranslate()] };
+  // Alone on a line, `<NoTranslate />` now reparses as an empty block, so it needs no child.
+  it('leaves an empty block NoTranslate childless', () => {
+    const tree: Root = { type: 'root', children: [emptyFlowNoTranslate()] };
 
     mdxishNoTranslateToJsx()(tree);
 
-    const [first, second] = tree.children as MdxJsxFlowElement[];
-    expect(first.children).toHaveLength(1);
-    expect(first.children[0]).not.toBe(second.children[0]);
+    expect((tree.children[0] as MdxJsxFlowElement).children).toHaveLength(0);
   });
 });
