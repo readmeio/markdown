@@ -1,4 +1,7 @@
-import { roundTripMdxish } from '../../helpers';
+import type { Parent, Table } from 'mdast';
+
+import { mdxishMdastToMd } from '../../../lib';
+import { collectNodes, parseMdxish, roundTripMdxish } from '../../helpers';
 
 // RM-19746: MDX-ish saves `<!-- -->` as written instead of rewriting it to `{/* */}`.
 describe('mdxishMdastToMd html comments', () => {
@@ -45,6 +48,35 @@ describe('mdxishMdastToMd html comments', () => {
 
       expect(once).toBe(saved);
       expect(roundTripMdxish(once)).toBe(saved);
+    });
+  });
+
+  // A table that can't stay GFM saves as JSX, which re-parses with strict mdxjs.
+  describe('a comment in a table saved as JSX', () => {
+    it.each([
+      [
+        'the table has column widths',
+        (table: Table) => {
+          table.data = { ...table.data, widths: ['200px'] };
+        },
+      ],
+      [
+        'a cell holds a code block',
+        (table: Table) => {
+          (table.children[1].children[0] as Parent).children.push({ type: 'code', lang: 'js', value: 'x' });
+        },
+      ],
+    ])('writes it as a JSX comment when %s', (_label, makeJsx) => {
+      const tree = parseMdxish('| a |\n| - |\n| x <!-- c --> **b** |\n');
+      makeJsx(collectNodes<Table>(tree, 'table')[0]);
+
+      const saved = mdxishMdastToMd(tree);
+      const reloaded = parseMdxish(saved);
+
+      expect(saved).toContain('<Table');
+      expect(saved).toContain('{/* c */}');
+      expect(collectNodes(reloaded, 'html')).toHaveLength(0);
+      expect(collectNodes(reloaded, 'strong')).toHaveLength(1);
     });
   });
 });
