@@ -98,22 +98,20 @@ const trimmedFragmentFrom = (parentNode: MarkdownFragment['parentNode'], start: 
 /**
  * Html blocks keep their line's indent in `value` (CommonMark). A body under 4 columns skips
  * `safeDeindent`, so strip it as a list item's container would and start the node at the `<`.
+ * A block with a line shallower than the first is left as is, so `<pre>` and `HTMLBlock`
+ * payloads keep their relative indent.
  */
 const stripHtmlBlockIndent = (node: RootContent, documentSource: string) => {
   if (node.type !== 'html') return;
   const lines = node.value.split('\n');
   const indent = indentWidth(lines[0]);
   if (!indent) return;
+  if (lines.some(line => line.trim() && indentWidth(line) < indent)) return;
 
   const contentStart = leadingIndent(lines[0]).length;
   const start = createNodeValueToDocumentMapper(node, documentSource)?.(contentStart, contentStart).start;
   if (start) node.position = { start, end: node.position.end };
-
-  // Strip later lines too only when none sits shallower, so `<pre>` keeps its relative indent.
-  const sharesIndent = lines.every(line => !line.trim() || indentWidth(line) >= indent);
-  const [first, ...rest] = lines;
-  const strippedLines = sharesIndent ? dedentLines(lines, indent) : [...dedentLines([first], indent), ...rest];
-  node.value = strippedLines.join('\n');
+  node.value = dedentLines(lines, indent).join('\n');
 };
 
 /**

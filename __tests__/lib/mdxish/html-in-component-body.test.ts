@@ -1,7 +1,8 @@
 import type { MdxishOpts } from '../../../lib/mdxish';
 import type { Html } from 'mdast';
 
-import { collectNodes, parseMdxishWithSlices, roundTripMdxish } from '../../helpers';
+import { mdxish } from '../../../lib';
+import { collectNodes, findElementByTagName, parseMdxishWithSlices, roundTripMdxish } from '../../helpers';
 
 /** Each html node's value with its source slice, which should start at the `<`. */
 const htmlNodes = (doc: string, opts: MdxishOpts) => {
@@ -39,12 +40,19 @@ describe.each([
     ]);
   });
 
-  it('keeps later lines as authored when one sits shallower than the first', () => {
+  it('leaves html as authored when a later line sits shallower than the first', () => {
     const md = '<Callout icon="📘" theme="info">\n  Hi\n\n  <pre>\nfoo\n  bar\n  </pre>\n</Callout>';
 
     expect(htmlNodes(md, opts)).toStrictEqual([
-      { value: '<pre>\nfoo\n  bar\n  </pre>', slice: '<pre>\nfoo\n  bar\n  </pre>' },
+      { value: '  <pre>\nfoo\n  bar\n  </pre>', slice: '  <pre>\nfoo\n  bar\n  </pre>' },
     ]);
+  });
+
+  it('keeps de-indenting an HTMLBlock payload that has a shallower line', () => {
+    const md = '<Callout>\n  <HTMLBlock>{`\n<pre>\n  bar\n</pre>\n  `}</HTMLBlock>\n</Callout>';
+    const htmlBlock = findElementByTagName(mdxish(md, opts), 'html-block');
+
+    expect(htmlBlock?.properties.html).toBe('<pre>\nbar\n</pre>');
   });
 
   it('strips by columns, so a tab keeps its remaining width', () => {
