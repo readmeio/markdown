@@ -1,4 +1,3 @@
-import type { Html } from 'mdast';
 import type { Processor } from 'unified';
 
 import { NodeTypes } from '../../enums';
@@ -9,6 +8,7 @@ import compatibility from './compatibility';
 import embed from './embed';
 import gemoji from './gemoji';
 import heading from './heading';
+import html from './html';
 import htmlBlock from './html-block';
 import list from './list';
 import listItem from './list-item';
@@ -32,15 +32,13 @@ function compilers(this: Processor, mdxish = false) {
     embed: compatibility,
     escape: compatibility,
     figure: compatibility,
-    html: compatibility,
+    html: mdxish ? html : compatibility,
     i: compatibility,
     plain,
     text,
     yaml: compatibility,
 
     // needed only for mdxish
-    // MDX-ish parses and hides `<!-- -->`, so it stays as written; only MDX needs the JSX comment.
-    ...(mdxish && { html: (node: Html) => node.value }),
     ...(mdxish && { heading }),
     ...(mdxish && { list }),
     ...(mdxish && { listItem }),
