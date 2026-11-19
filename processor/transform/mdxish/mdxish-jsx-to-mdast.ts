@@ -774,6 +774,8 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => (tree, file) => {
   // Inline JSX components (Anchor, NoTranslate)
   visit(tree, 'mdxJsxTextElement', (node: MdxJsxTextElement, index, parent: Parent | undefined) => {
     if (!parent || index === undefined || !node.name) return;
+    // An empty one has no text for the editor to show; as JSX it stays an editable syntax chip.
+    if (!node.children.length) return;
 
     if (node.name === 'Anchor') {
       const newNode = transformAnchor(node);

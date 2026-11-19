@@ -154,12 +154,15 @@ describe('mdxish anchor compiler', () => {
       expect(roundTripMdxish(once, { newEditorTypes: true })).toBe(once);
     });
 
-    it('should keep a table holding an anchor promoted to JSX', () => {
-      const md = '| a | b |\n| :- | :- |\n| <Anchor href="https://example.com">{user.company}</Anchor> | y |\n';
+    it.each([
+      '<Anchor href="https://example.com">{user.company}</Anchor>',
+      '<Anchor href="https://example.com" />',
+      '<Anchor href="https://example.com">link</Anchor> :joy:',
+    ])('should keep a table holding %s a GFM table', cell => {
+      const once = roundTripMdxish(`| a | b |\n| :- | :- |\n| ${cell} | y |\n`, { newEditorTypes: true });
 
-      expect(roundTripMdxish(md, { newEditorTypes: true })).toContain(
-        '<td>\n        <Anchor href="https://example.com">{user.company}</Anchor>\n      </td>',
-      );
+      expect(once).toContain(`| ${cell} |`);
+      expect(roundTripMdxish(once, { newEditorTypes: true })).toBe(once);
     });
 
     it('should round-trip a variable in a label nested in a callout', () => {

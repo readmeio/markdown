@@ -1680,6 +1680,32 @@ Final plain paragraph at end of file.
     expect(result).toBe('- [ ] hi\n- [ ] \n- [x] there\n- [x] \n- normal\n');
   });
 
+  // A promoted one-line wrapper used to go out as one block per child, splitting the line.
+  describe('one-line html wrappers with inline content', () => {
+    it.each([
+      '<div>Read <Anchor href="/x" /> and more</div>',
+      '<div>Read <Anchor href={url} /> and more</div>',
+      '<div>Read <Glossary /> and more</div>',
+      '<div>Read **bold** and _em_ {user.name} more</div>',
+      '- <div>Read <Anchor href="/x" /> more</div>',
+    ])('keeps %s on one line', md => {
+      [{}, { newEditorTypes: true }].forEach(opts => {
+        expect(roundTripMdxish(md, opts)).toBe(`${md}\n`);
+      });
+    });
+
+    it('keeps an empty NoTranslate inline', () => {
+      const once = roundTripMdxish('<div>Use <NoTranslate /> now</div>', { newEditorTypes: true });
+      expect(once).toBe('<div>Use <NoTranslate></NoTranslate> now</div>\n');
+      expect(roundTripMdxish(once, { newEditorTypes: true })).toBe(once);
+    });
+
+    it('leaves a wrapper with block content multi-line', () => {
+      const md = '<div>\n\n# Title\n\nRead **bold**\n\n</div>\n';
+      expect(roundTripMdxish(md)).toBe(md);
+    });
+  });
+
   describe('lowercase <table> serialization', () => {
     const listCell = ['<ul>', '<li>one</li>', '<li>two</li>', '</ul>'].join('\n');
 
@@ -2431,7 +2457,7 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
         '| a                                           |\n| ------------------------------------------- |\n| Use <Anchor href={"x"}>`a\\|b`</Anchor> now. |\n';
 
       expect(roundTripMdxish(doc)).toBe(doc);
-      expect(roundTripMdxish(doc, { newEditorTypes: true })).toContain('`a|b`');
+      expect(roundTripMdxish(doc, { newEditorTypes: true })).toContain('`a\\|b`');
     });
   });
 
@@ -2463,9 +2489,9 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     it.each([false, true])(
       'keeps the block after an empty block NoTranslate with newEditorTypes %s',
       newEditorTypes => {
-        expect(roundTripMdxish('<NoTranslate>\n</NoTranslate>\n\n# Heading\n', { newEditorTypes })).toBe(
-          '<NoTranslate>\n\n</NoTranslate>\n\n# Heading\n',
-        );
+        const once = roundTripMdxish('<NoTranslate>\n</NoTranslate>\n\n# Heading\n', { newEditorTypes });
+        expect(once).toBe('<NoTranslate />\n\n# Heading\n');
+        expect(roundTripMdxish(once, { newEditorTypes })).toBe(once);
       },
     );
 
