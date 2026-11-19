@@ -4,9 +4,17 @@ import { collectNodes, parseMdxishWithSlices, roundTripMdxish } from '../helpers
 
 describe('component body HTML indentation (RM-19815)', () => {
   it.each([
-    ['first-line comment', '<Callout icon="📘" theme="info">\n  <!-- note --> Some text\n</Callout>', '<!-- note --> Some text'],
+    [
+      'first-line comment',
+      '<Callout icon="📘" theme="info">\n  <!-- note --> Some text\n</Callout>',
+      '<!-- note --> Some text',
+    ],
     ['HTML after a paragraph', '<Callout>\n  Hello\n\n  <div>x</div>\n</Callout>', '<div>x</div>'],
-    ['nested component', '<Tabs>\n  <Tab title="One">\n    <!-- note --> Text\n  </Tab>\n</Tabs>', '<!-- note --> Text'],
+    [
+      'nested component',
+      '<Tabs>\n  <Tab title="One">\n    <!-- note --> Text\n  </Tab>\n</Tabs>',
+      '<!-- note --> Text',
+    ],
     ['component in a list', '- <Callout>\n    <!-- note --> Text\n  </Callout>', '<!-- note --> Text'],
     ['HTML in a list', '<Callout>\n  - item\n\n    <!-- note --> Text\n</Callout>', '<!-- note --> Text'],
     ['one space', '<Tab>\n <!-- note -->\n</Tab>', '<!-- note -->'],

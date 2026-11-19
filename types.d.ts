@@ -237,6 +237,10 @@ export interface NoTranslate extends Node {
 }
 
 declare module 'mdast' {
+  interface HtmlData {
+    componentBodyHtmlIndent?: string;
+  }
+
   interface Data {
     /** Set by a dedicated tokenizer (`lib/micromark/no-translate`) on an html node that holds a whole tag. */
     tokenized?: boolean;

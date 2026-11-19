@@ -1,6 +1,6 @@
 import type { HTMLBlock, MdxJsx } from '../../types';
 import type { Properties } from 'hast';
-import type { ListItem } from 'mdast';
+import type { Html, ListItem } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 import type { Handler, Handlers } from 'mdast-util-to-hast';
 
@@ -10,6 +10,13 @@ import { defaultHandlers } from 'remark-rehype';
 import { NodeTypes } from '../../enums';
 
 const HTML_COMMENT_REGEX = /^<!--[\s\S]*-->$/;
+
+// Restore the source indent for rendering, where mixed HTML/component children use it as whitespace.
+const htmlHandler: Handler = (state, node) => {
+  const html = node as Html;
+  const indent = html.data?.componentBodyHtmlIndent;
+  return defaultHandlers.html(state, typeof indent === 'string' ? { ...html, value: indent + html.value } : html);
+};
 
 // If hChildren is populated, it means the node holds a renderable value (e.g. React)
 // See evaluate-expressions.ts for more details
@@ -137,6 +144,7 @@ const listItemHandler: Handler = (state, node, parent) => {
 
 export const mdxComponentHandlers: Handlers = {
   embed: embedHandler,
+  html: htmlHandler,
   listItem: listItemHandler,
   mdxFlowExpression: mdxExpressionHandler,
   mdxJsxFlowElement: mdxJsxElementHandler,

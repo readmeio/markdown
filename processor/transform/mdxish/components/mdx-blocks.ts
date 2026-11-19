@@ -7,6 +7,7 @@ import { visit } from 'unist-util-visit';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS, INLINE_ONLY_PARENT_TYPES } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
+import { containsRawHtmlBlock } from '../mdxish-html-blocks';
 import {
   createNodeValueToDocumentMapper,
   getDocumentSource,
@@ -114,8 +115,10 @@ const normalizeBodyHtmlIndent = (children: MdxJsxFlowElement['children'], docume
   children.forEach(child =>
     visit(child, 'html', (node: Html) => {
       const indent = leadingIndent(node.value).length;
-      if (!indent) return;
+      // HTMLBlock's raw wrapper and its indentation are consumed by its own transformer.
+      if (!indent || containsRawHtmlBlock(node.value)) return;
       const position = createNodeValueToDocumentMapper(node, documentSource)?.(indent, node.value.length);
+      node.data = { ...node.data, componentBodyHtmlIndent: node.value.slice(0, indent) };
       node.value = node.value.slice(indent);
       if (position) node.position = position;
     }),
