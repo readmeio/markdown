@@ -15,6 +15,9 @@ type HtmlBlockJsx = MdxJsxFlowElement | MdxJsxTextElement;
 // node, so the tokenizer never sees the HTMLBlock — we recover it here.
 const RAW_HTML_BLOCK_RE = /<HTMLBlock\b([^>]*)>\s*\{\s*`((?:[^`\\]|\\.)*)`\s*\}\s*<\/HTMLBlock>/g;
 
+/** Whether the raw HTML transformer will consume an embedded HTMLBlock. */
+export const containsRawHtmlBlock = (value: string): boolean => value.search(RAW_HTML_BLOCK_RE) !== -1;
+
 /**
  * Builds the canonical `html-block` MDAST node the renderer expects.
  */

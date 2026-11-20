@@ -1,10 +1,13 @@
-import type { Node, Parent, RootContent } from 'mdast';
+import type { Html, Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
+
+import { visit } from 'unist-util-visit';
 
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS, INLINE_ONLY_PARENT_TYPES } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
+import { containsRawHtmlBlock } from '../mdxish-html-blocks';
 import {
   createNodeValueToDocumentMapper,
   getDocumentSource,
@@ -106,6 +109,21 @@ const parseMdChildren = (fragment: MarkdownFragment, safeMode: boolean, document
   // eslint-disable-next-line @typescript-eslint/no-use-before-define -- mutually recursive; hoisted decl, safe at runtime
   promoteComponentBlocks({ type: 'root', children }, safeMode, documentSource);
   return children;
+};
+
+/** Remove the Markdown block indent from HTML without changing its interior whitespace. */
+const normalizeBodyHtmlIndent = (children: MdxJsxFlowElement['children'], documentSource: string) => {
+  children.forEach(child =>
+    visit(child, 'html', (node: Html) => {
+      const indent = leadingIndent(node.value).length;
+      // HTMLBlock's raw wrapper and its indentation are consumed by its own transformer.
+      if (!indent || containsRawHtmlBlock(node.value)) return;
+      const position = createNodeValueToDocumentMapper(node, documentSource)?.(indent, node.value.length);
+      node.data = { ...node.data, componentBodyHtmlIndent: node.value.slice(0, indent) };
+      node.value = node.value.slice(indent);
+      if (position) node.position = position;
+    }),
+  );
 };
 
 // Splices trailing content in as sibling nodes. parseMdChildren has already
@@ -303,6 +321,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, documentSource:
         try {
           const body = { parentNode, offsetInParentNode: bodyStart, rawText: componentInnerContent };
           parsedChildren = parseMdChildren(body, safeMode, documentSource) as MdxJsxFlowElement['children'];
+          normalizeBodyHtmlIndent(parsedChildren, documentSource);
         } catch (error) {
           // Plain HTML bodies can hold anything (e.g. stray braces the strict
           // expression parser rejects) — keep the node raw instead of throwing.
