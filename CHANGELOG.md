@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 16.2.5
+### 🛠 Fixes & Updates
+
+* **mdxish:** render markdown inside an html code tag instead of an empty box ([#1688](https://github.com/readmeio/markdown/issues/1688)) ([eb520d3](https://github.com/readmeio/markdown/commit/eb520d354d9fc77454a681f32eab2e843171dc62))
+* **mdxish:** stop re-parsing inline component children ([#1690](https://github.com/readmeio/markdown/issues/1690)) ([5ba1a88](https://github.com/readmeio/markdown/commit/5ba1a88499fa6ff31fb0135a06cc44373965ff1b))
+* **mdxish:** stop self-closing inline components from swallowing the text after them ([#1689](https://github.com/readmeio/markdown/issues/1689)) ([7d018e1](https://github.com/readmeio/markdown/commit/7d018e1b27511284f002d38f09c4d784437e65e2))
+* **MdxishEditor:** strip body indent from html in component bodies ([#1694](https://github.com/readmeio/markdown/issues/1694)) ([71a0f3e](https://github.com/readmeio/markdown/commit/71a0f3eaba17941604a86386bbd429beab73468b)), closes [#1583](https://github.com/readmeio/markdown/issues/1583)
+
 ## Version 16.2.4
 ### 🛠 Fixes & Updates
 
