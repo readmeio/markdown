@@ -40,6 +40,7 @@ import evaluateStyleBlockExpressions from '../processor/transform/mdxish/evaluat
 import headingIdsTransformer from '../processor/transform/mdxish/heading-ids';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import mdxishImagesToJsx from '../processor/transform/mdxish/images-to-jsx';
+import mdxishInlineWrappersToJsx from '../processor/transform/mdxish/inline-wrappers-to-jsx';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
@@ -226,6 +227,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     // Readme nodes with no markdown spelling go out as JSX, the same tags mdxish re-parses.
     .use(mdxishCalloutToJsx)
     .use(mdxishTablesToJsx)
+    .use(mdxishInlineWrappersToJsx)
     .use(mdxishAnchorToJsx)
     .use(mdxishNoTranslateToJsx)
     // The rest only a PARSER tree carries.

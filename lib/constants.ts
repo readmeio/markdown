@@ -1,3 +1,5 @@
+import { NodeTypes } from '../enums';
+
 /**
  * Pattern to match component tags (PascalCase or snake_case)
  */
@@ -55,6 +57,15 @@ export const INLINE_ONLY_PARENT_TYPES = new Set([
  */
 export const INLINE_COMPONENT_TAGS = new Set(['Anchor', 'NoTranslate', 'Glossary']);
 
+/** Readme node types that write inline, which `mdast-util-phrasing` doesn't know about. */
+export const INLINE_README_TYPES = new Set<string>([
+  NodeTypes.anchor,
+  NodeTypes.emoji,
+  NodeTypes.glossary,
+  NodeTypes.noTranslate,
+  NodeTypes.variable,
+]);
+
 /**
  * PascalCase tags that have their own dedicated tokenizer / transformer
  * and must not be claimed by the generic `mdxComponent` construct.
@@ -78,12 +89,6 @@ export const GENERIC_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>([
  * by name via {@link GENERIC_MDX_COMPONENT_EXCLUDED_TAGS}.
  */
 export const TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>(['Table', ...INLINE_COMPONENT_TAGS]);
-
-/**
- * Lowercased variant of {@link INLINE_COMPONENT_TAGS} for consumers that
- * run after rehype (where hast `tagName` is normalized to lowercase).
- */
-export const INLINE_COMPONENT_TAGS_LOWER = new Set([...INLINE_COMPONENT_TAGS].map(t => t.toLowerCase()));
 
 /** Raw markup props injected with `dangerouslySetInnerHTML` by HTMLBlock and Embed; never interpolate reader values. */
 export const RAW_HTML_PROP_NAMES = new Set(['html']);

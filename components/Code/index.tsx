@@ -47,7 +47,7 @@ function CopyCode({
 }
 
 interface CodeProps {
-  children?: string[] | string;
+  children?: React.ReactNode;
   copyButtons?: boolean;
   lang?: string;
   meta?: string;
@@ -72,12 +72,16 @@ const Code = (props: CodeProps) => {
     dark: theme === 'dark',
   };
 
+  // Markup inside an HTML `<code>` (e.g. <code>`hi`</code>) reaches us as elements, which the
+  // highlighter renders empty, so those children render untouched instead.
+  const hasMarkup = value === undefined && React.Children.toArray(children).some(child => typeof child !== 'string');
   const code = value ?? (Array.isArray(children) ? children[0] : children) ?? '';
 
   const highlightedCode =
     syntaxHighlighter && typeof syntaxHighlighter === 'function' && code && isHydrated
       ? syntaxHighlighter(code, language, codeOpts, { mdx: true })
       : code;
+  const content = hasMarkup ? children : highlightedCode;
 
   if (isHydrated && isMermaid) {
     return code;
@@ -91,7 +95,7 @@ const Code = (props: CodeProps) => {
         className={['rdmd-code', `lang-${language}`, `theme-${theme}`].join(' ')}
         data-lang={language}
       >
-        {highlightedCode}
+        {content}
       </code>
     </>
   );
