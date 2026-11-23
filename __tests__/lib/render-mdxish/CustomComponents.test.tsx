@@ -154,13 +154,13 @@ export const CustomItem = ({ label }) => <span className="custom-item">{label}</
         CustomItem: compiledModule,
       };
 
-      // Mixed: custom component + standard HTML div with whitespace between
+      // Mixed: custom component + standard HTML with a meaningful space between the tags
       const md = `
 <MixedContainer>
 
   <CustomItem label="Custom" />
 
-  <div className="standard-div">I am a standard div</div>
+  <div className="standard-div">I am a standard div</div> <span>inline</span>
 
   <CustomItem label="Another" />
 
