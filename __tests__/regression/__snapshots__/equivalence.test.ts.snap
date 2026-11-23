@@ -419,6 +419,124 @@ exports[`MDX↔MDXish equivalence > footnotes-in-table 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > html-code-with-markdown 1`] = `
+{
+  "changes": [
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[1]/code[1]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[2]/code[1]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[3]/code[1]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[3]/code[3]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[4]/code[1]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[4]/code[3]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[5]/code[1]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/ul[7]/li[0]/code[1]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[8]/div[0]/table[0]/tbody[1]/tr[0]/td[0]/code[0]",
+      "right": "lang-undefined rdmd-code theme-undefined",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
+exports[`MDX↔MDXish equivalence > html-in-component-body 1`] = `
+{
+  "changes": [
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[0]",
+      "right": "<div class="readme-tailwind">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[1]",
+      "right": "<div class="readme-tailwind">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[2]",
+      "right": "<div class="readme-tailwind">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[3]",
+      "right": "<div class="readme-tailwind">…(1 children)…</div>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > html-opener-trailing-text 1`] = `
 {
   "changes": [
@@ -755,6 +873,36 @@ exports[`MDX↔MDXish equivalence > indented-markdown-islands-in-html 1`] = `
       "path": "/div[1]/a[0]/div[0]/h3[1]/a[2]",
       "right": "<a aria-label="Skip link to How to View and Download Invoices" class="fa fa-anchor fa-regular heading-anchor-icon" href="#how-to-view-and-download-invoices"></a>",
       "severity": "structural",
+    },
+  ],
+  "severity": "content",
+  "status": "differ",
+}
+`;
+
+exports[`MDX↔MDXish equivalence > inline-component-escapes 1`] = `
+{
+  "changes": [
+    {
+      "kind": "text",
+      "left": "line one line two",
+      "path": "/p[6]/a[1]/#text[0]",
+      "right": "line one",
+      "severity": "content",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[6]/a[1]/br[1]",
+      "right": "<br>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[6]/a[1]/#text[2]",
+      "right": "#text(" line two")",
+      "severity": "content",
     },
   ],
   "severity": "content",
@@ -1418,6 +1566,108 @@ exports[`MDX↔MDXish equivalence > rich 1`] = `
       "left": null,
       "path": "/div[3]/blockquote[0]/p[1]/br[4]",
       "right": "<br>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "content",
+  "status": "differ",
+}
+`;
+
+exports[`MDX↔MDXish equivalence > self-closing-inline-components 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/p[1]/a[1]",
+      "right": "span",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/p[1]/a[5]",
+      "right": "span",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/a[2]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/a[4]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[6]/span[1]",
+      "right": "readme-tailwind",
+      "severity": "structural",
+    },
+    {
+      "attrName": "translate",
+      "kind": "attr",
+      "left": "no",
+      "path": "/p[6]/span[1]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[6]/span[1]/span[0]",
+      "right": "<span translate="no"></span>",
+      "severity": "structural",
+    },
+    {
+      "kind": "text",
+      "left": " apart, and a too.",
+      "path": "/p[6]/#text[4]",
+      "right": " apart, and a ",
+      "severity": "content",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[6]/span[5]",
+      "right": "<span class="readme-tailwind"></span>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[6]/#text[6]",
+      "right": "#text(" too.")",
+      "severity": "content",
+    },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/ul[7]/li[0]/a[1]",
+      "right": "span",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/div[8]/div[0]/table[0]/tbody[1]/tr[0]/td[0]/a[1]",
+      "right": "span",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/div[9]/a[1]",
+      "right": "span",
       "severity": "structural",
     },
   ],

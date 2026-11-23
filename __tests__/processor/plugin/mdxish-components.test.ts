@@ -145,6 +145,39 @@ describe('recovering from "export"/"import" text inside a component', () => {
 });
 
 /**
+ * Inline components' children are parsed with the surrounding paragraph, so
+ * their text must not be re-parsed as markdown.
+ *
+ * Regression test for: https://linear.app/readme-io/issue/RM-19073
+ */
+describe('inline component children are not re-parsed', () => {
+  it.each([
+    ['escaped asterisks', 'Read <Anchor href="/x">\\*lit\\*</Anchor> now', '<Anchor href="/x">*lit*</Anchor>'],
+    ['escaped underscores', 'Read <Anchor href="/x">\\_lit\\_</Anchor> now', '<Anchor href="/x">_lit_</Anchor>'],
+    ['escaped bold', 'Read <Anchor href="/x">\\*\\*lit\\*\\*</Anchor> now', '<Anchor href="/x">**lit**</Anchor>'],
+    ['an encoded tag', 'Read <Anchor href="/x">&lt;b&gt;</Anchor> now', '<Anchor href="/x">&#x3C;b></Anchor>'],
+    ['a line-start Anchor', '<Anchor href="/x">\\*lit\\*</Anchor> now', '<Anchor href="/x">*lit*</Anchor>'],
+    ['Glossary', 'Read <Glossary>\\*lit\\*</Glossary> now', '<Glossary>*lit*</Glossary>'],
+  ])('keeps %s literal', (_, md, expected) => {
+    expect(mix(md)).toContain(expected);
+  });
+
+  it.each([
+    ['Anchor', 'Read <Anchor href="/x">l1\nl2</Anchor> now', '<Anchor href="/x">l1<br>\nl2</Anchor>'],
+    ['Glossary', 'Read <Glossary>l1\nl2</Glossary> now', '<Glossary>l1<br>\nl2</Glossary>'],
+  ])('keeps the text after a soft line break in %s', (_, md, expected) => {
+    expect(mix(md)).toContain(expected);
+  });
+
+  it.each([
+    ['**', 'Read <Anchor href="/x">**bold** and *em*</Anchor> now'],
+    ['__', 'Read <Anchor href="/x">__bold__ and _em_</Anchor> now'],
+  ])('still renders %s markdown inside an Anchor', (_, md) => {
+    expect(mix(md)).toContain('<Anchor href="/x"><strong>bold</strong> and <em>em</em></Anchor>');
+  });
+});
+
+/**
  * Tests for smartCamelCase prop normalization.
  *
  * HTML lowercases attribute names, so `iconColor` becomes `iconcolor`.

@@ -474,16 +474,25 @@ Body content
         expect(anchorNode.data?.hProperties?.title).toBe('Home');
       });
 
-      it('should handle empty Anchor children', () => {
-        const md = '<Anchor href="https://readme.com"></Anchor>';
-        const ast = processWithNewTypes(md);
+      // A childless readme-anchor is an invisible editor link that saves as `[](url)`.
+      it.each(['<Anchor href="https://readme.com"></Anchor>', 'Read <Anchor href="https://readme.com" /> more'])(
+        'should keep an empty Anchor as JSX: %s',
+        md => {
+          const para = processWithNewTypes(md).children[0] as Paragraph;
 
-        expect(ast.children).toHaveLength(1);
-        const para = ast.children[0] as Paragraph;
-        const anchorNode = para.children.find(c => c.type === NodeTypes.anchor) as Anchor;
-        expect(anchorNode).toBeDefined();
-        expect(anchorNode.data?.hProperties?.href).toBe('https://readme.com');
-        expect(anchorNode.children).toHaveLength(0);
+          expect(para.children.find(c => c.type === NodeTypes.anchor)).toBeUndefined();
+          expect(para.children.find(c => c.type === 'mdxJsxTextElement')).toMatchObject({
+            name: 'Anchor',
+            children: [],
+          });
+        },
+      );
+
+      it('should keep an empty NoTranslate as JSX', () => {
+        const para = processWithNewTypes('Use <NoTranslate /> now').children[0] as Paragraph;
+
+        expect(para.children.find(c => c.type === NodeTypes.noTranslate)).toBeUndefined();
+        expect(para.children.find(c => c.type === 'mdxJsxTextElement')).toMatchObject({ name: 'NoTranslate' });
       });
     });
 

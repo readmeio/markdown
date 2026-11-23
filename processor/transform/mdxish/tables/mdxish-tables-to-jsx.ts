@@ -5,7 +5,7 @@ import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import { phrasing } from 'mdast-util-phrasing';
 import { EXIT, visit } from 'unist-util-visit';
 
-import { NodeTypes } from '../../../../enums';
+import { INLINE_README_TYPES } from '../../../../lib/constants';
 import { compileHtml } from '../../../compile/compatibility';
 
 import { cellStyle } from './cell-style';
@@ -23,7 +23,7 @@ const isLiteral = (node: Node): node is Literal => 'value' in node;
  */
 const isFlowChild = (child: Nodes): boolean => {
   if (child.type === 'paragraph' || child.type === 'plain' || child.type === 'escape') return false;
-  if (child.type === NodeTypes.variable || child.type === NodeTypes.noTranslate) return false;
+  if (INLINE_README_TYPES.has(child.type)) return false;
   if (phrasing(child)) return false;
   if (child.type === 'html') return SELF_CLOSING_JSX_REGEX.test(child.value);
 
