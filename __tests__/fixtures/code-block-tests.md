@@ -105,3 +105,11 @@ console.log('one');
 ```
 This is a long line that will be wrapped to fit within the container.
 ```
+
+### Markdown inside HTML code
+
+<code>`hello`</code>
+
+<code>a `b` c</code>
+
+<code>**bold**</code>

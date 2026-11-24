@@ -54,6 +54,14 @@
     word-break: normal;
   }
 
+  // Markdown inside an HTML code tag can produce nested inline code.
+  code code {
+    background: none;
+    border-radius: 0;
+    font-size: inherit;
+    padding: 0;
+  }
+
   pre {
     background-color: $background;
     background-color: var(--md-code-background, $background);
