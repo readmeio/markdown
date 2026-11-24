@@ -39,6 +39,14 @@
     }
   }
 
+  // Markdown inside an html <code> (e.g. <code>`hi`</code>) nests a second code; keep it one box.
+  code code {
+    background: none;
+    border-radius: 0;
+    font-size: inherit;
+    padding: 0;
+  }
+
   pre {
     word-wrap: normal;
   }
