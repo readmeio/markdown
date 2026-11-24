@@ -54,6 +54,14 @@
     word-break: normal;
   }
 
+  // Markdown inside an HTML code tag can produce nested inline code.
+  code code {
+    background: none;
+    border-radius: 0;
+    font-size: inherit;
+    padding: 0;
+  }
+
   pre {
     background-color: $background;
     background-color: var(--md-code-background, $background);
@@ -146,7 +154,7 @@
 
     &:active {
       box-shadow:
-        inset 0 0 0 1px rgba(#8b8b8b, 0.5),
+        inset 0 0 0 1px rgba(black, 0.1),
         inset 1px 4px 6px -2px rgba(0, 0, 0, 0.175);
 
       &:before,
@@ -194,7 +202,7 @@
 
       &:after {
         transition: 0.3s 0.15s ease;
-        transform: translate(-50%, -50%) scale(1);
+        transform: scale(1);
         opacity: 1 !important;
       }
     }
